@@ -19,7 +19,7 @@ async function getPackage(slug: string): Promise<PackageItem | null> {
   try {
     const r = await fetch(`${API_URL}/packages/${slug}`, { next: { revalidate: 60 } });
     if (r.ok) return await r.json();
-  } catch { }
+  } catch {}
   return demoPackages.find((x) => x.slug === slug) || null;
 }
 
@@ -56,11 +56,11 @@ export default async function PackageDetail({
   const itinerary = Array.isArray(p.itinerary) ? p.itinerary : [];
   const dates = Array.isArray(p.departureDates) ? p.departureDates : [];
 
-  const mainImage = p.image || '/images/destinations/dubai.jpg';
+  const mainImage = p.image || '/images/dubai.svg';
   const thumbnails = [
     mainImage,
-    p.kind === 'HAJJ' || p.kind === 'UMRAH' ? '/images/destinations/makkah.jpg' : '/images/destinations/maldives.jpg',
-    '/images/destinations/kashmir.jpg',
+    p.kind === 'HAJJ' || p.kind === 'UMRAH' ? '/images/makkah.svg' : '/images/bali.svg',
+    '/images/hero-coast.svg',
   ];
 
   return (

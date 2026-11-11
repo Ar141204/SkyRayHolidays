@@ -47,7 +47,9 @@ export function PackageDetailScreen({ route, navigation }: any) {
     item.destination.includes('India') ||
     item.slug.includes('kashmir') ||
     item.slug.includes('kerala') ||
-    item.slug.includes('andaman');
+    item.slug.includes('andaman') ||
+    item.slug.includes('goa') ||
+    item.slug.includes('golden-triangle');
 
   const isPilgrim = item.kind === 'HAJJ' || item.kind === 'UMRAH';
 
