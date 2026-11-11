@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520">
+  <defs>
+    <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8b070"/>
+      <stop offset="60%" stop-color="#fcedc7"/>
+      <stop offset="100%" stop-color="#e3d6be"/>
+    </linearGradient>
+  </defs>
+  <!-- Sunrise Sky -->
+  <rect width="800" height="520" fill="url(#tg)"/>
+  <!-- Morning Sun behind monument -->
+  <circle cx="400" cy="220" r="75" fill="#fffbe6" opacity="0.85"/>
+  <!-- Base Terrace Platform -->
+  <rect y="380" width="800" height="140" fill="#c99f7a"/>
+  <rect y="370" width="800" height="12" fill="#a87c56"/>
+  <!-- Reflecting Pool -->
+  <rect x="220" y="400" width="360" height="120" fill="#5a7b88"/>
+  <path d="M220 400 L250 520 H530 L560 400 Z" fill="#4d6f7c"/>
+  <g stroke="#97c1ce" stroke-width="2" opacity="0.5">
+    <path d="M260 430 H520 M280 460 H500 M300 490 H480"/>
+  </g>
+  <!-- Taj Mahal Silhouette & Facade -->
+  <g fill="#fbfaf6" stroke="#ded8c8" stroke-width="2">
+    <!-- Left Outer Minaret -->
+    <rect x="130" y="210" width="22" height="160"/>
+    <path d="M125 210 H157 L141 170 Z"/>
+    <rect x="127" y="260" width="28" height="6"/>
+    <rect x="127" y="315" width="28" height="6"/>
+    <!-- Right Outer Minaret -->
+    <rect x="648" y="210" width="22" height="160"/>
+    <path d="M643 210 H675 L659 170 Z"/>
+    <rect x="645" y="260" width="28" height="6"/>
+    <rect x="645" y="315" width="28" height="6"/>
+    <!-- Main Center Structure -->
+    <rect x="260" y="220" width="280" height="150" rx="4"/>
+    <!-- Central Grand Arch (Iwan) -->
+    <path d="M340 370 V270 Q400 240 460 270 V370 Z" fill="#755a43"/>
+    <path d="M360 370 V290 Q400 265 440 290 V370 Z" fill="#3a2b1f"/>
+    <!-- Side Arches -->
+    <path d="M280 300 V270 Q300 260 320 270 V300 Z" fill="#a0856d"/>
+    <path d="M280 355 V325 Q300 315 320 325 V355 Z" fill="#a0856d"/>
+    <path d="M480 300 V270 Q500 260 520 270 V300 Z" fill="#a0856d"/>
+    <path d="M480 355 V325 Q500 315 520 325 V355 Z" fill="#a0856d"/>
+    <!-- Main Center Onion Dome -->
+    <path d="M335 220 C335 125 400 100 400 80 C400 100 465 125 465 220 Z" fill="#fffdf7"/>
+    <!-- Dome Finial -->
+    <path d="M400 80 V50 M396 60 H404" stroke="#c49a45" stroke-width="4"/>
+    <!-- Left Side Dome -->
+    <path d="M295 220 C295 170 325 155 325 145 C325 155 355 170 355 220 Z" fill="#f5f0e1"/>
+    <!-- Right Side Dome -->
+    <path d="M445 220 C445 170 475 155 475 145 C475 155 505 170 505 220 Z" fill="#f5f0e1"/>
+  </g>
+  <!-- Cypress Trees Silhouettes -->
+  <g fill="#2d523e">
+    <path d="M225 390 Q215 330 225 290 Q235 330 225 390 Z"/>
+    <path d="M245 400 Q235 350 245 315 Q255 350 245 400 Z"/>
+    <path d="M575 390 Q565 330 575 290 Q585 330 575 390 Z"/>
+    <path d="M555 400 Q545 350 555 315 Q565 350 555 400 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520">
+  <defs>
+    <linearGradient id="an_sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4aa3df"/>
+      <stop offset="60%" stop-color="#bce3f5"/>
+      <stop offset="100%" stop-color="#fdf4db"/>
+    </linearGradient>
+    <linearGradient id="an_sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00bcd4"/>
+      <stop offset="40%" stop-color="#0097a7"/>
+      <stop offset="100%" stop-color="#006064"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="800" height="520" fill="url(#an_sky)"/>
+  <circle cx="160" cy="110" r="48" fill="#fff5d4" opacity="0.9"/>
+  <!-- Distant Tropical Island -->
+  <path d="M420 290 Q580 230 740 285 L800 295 V340 H400 Z" fill="#2d7d6f"/>
+  <path d="M450 280 Q560 250 670 280 Z" fill="#20584e"/>
+  <!-- Turquoise Ocean -->
+  <rect y="310" width="800" height="210" fill="url(#an_sea)"/>
+  <!-- Coral Reef Gradients in Water -->
+  <ellipse cx="500" cy="380" rx="220" ry="40" fill="#26c6da" opacity="0.3"/>
+  <ellipse cx="260" cy="410" rx="180" ry="30" fill="#80deea" opacity="0.4"/>
+  <!-- White Sand Beach in Foreground -->
+  <path d="M0 430 Q240 370 540 440 T800 420 V520 H0 Z" fill="#faeed7"/>
+  <path d="M0 470 Q280 430 800 460 V520 H0 Z" fill="#ebd6b5"/>
+  <!-- Palm Tree Foreground -->
+  <g fill="#1a4d3e">
+    <path d="M720 520 Q700 360 620 220 Q610 222 626 360 Q635 480 645 520 Z" fill="#543828"/>
+    <!-- Fronds -->
+    <path d="M620 220 Q560 160 480 180 Q550 190 620 220 Z"/>
+    <path d="M620 220 Q580 220 500 250 Q560 240 620 220 Z"/>
+    <path d="M620 220 Q640 140 700 150 Q660 170 620 220 Z"/>
+    <path d="M620 220 Q680 190 750 220 Q680 220 620 220 Z"/>
+    <path d="M620 220 Q620 130 590 140 Q610 170 620 220 Z"/>
+  </g>
+  <!-- Sailboat in distance -->
+  <g transform="translate(240, 260) scale(0.7)">
+    <path d="M0 45 L35 45 L25 58 L-10 58 Z" fill="#c2410c"/>
+    <path d="M15 40 L15 5 L35 40 Z" fill="#ffffff"/>
+    <path d="M12 40 L12 12 L-5 40 Z" fill="#e2e8f0"/>
+  </g>
+</svg>

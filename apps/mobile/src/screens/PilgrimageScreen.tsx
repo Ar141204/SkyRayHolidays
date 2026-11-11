@@ -32,7 +32,7 @@ export function PilgrimageScreen({ navigation }: any) {
           <View style={s.cardBody}>
             <Text style={s.cardTitle}>Premium Umrah Package</Text>
             <Text style={s.cardMeta}>10 Days · Makkah &amp; Madinah</Text>
-            <Text style={s.priceTag}>From $2,499</Text>
+            <Text style={s.priceTag}>Price on Enquiry</Text>
 
             <View style={s.checklist}>
               <Text style={s.checkItem}>✔ 5-Star Hotel near Haram</Text>
@@ -57,7 +57,7 @@ export function PilgrimageScreen({ navigation }: any) {
           <View style={s.cardBody}>
             <Text style={s.cardTitle}>Premium Hajj Package</Text>
             <Text style={s.cardMeta}>14 Days · Complete Guidance</Text>
-            <Text style={s.priceTag}>From $4,999</Text>
+            <Text style={s.priceTag}>Price on Enquiry</Text>
 
             <View style={s.checklist}>
               <Text style={s.checkItem}>✔ Luxury Stay within Walking Distance</Text>

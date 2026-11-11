@@ -122,8 +122,7 @@ export default async function PackageDetail({
           </div>
 
           <div className="detail-price-badge">
-            <small>From</small>
-            <span className="price-amount">{p.currency || '$'}{p.priceFrom ? p.priceFrom.toLocaleString('en-IN') : '499'}</span>
+            <span className="price-amount" style={{ fontSize: '20px' }}>Price on Enquiry</span>
             <span className="meta-pills">
               <span className="pill-item"><Clock3 size={13} /> {p.duration}</span>
               <span className="pill-item"><Moon size={13} /> {p.duration.includes('Night') ? p.duration.split('/')[1]?.trim() : '4 Nights'}</span>

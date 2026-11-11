@@ -72,16 +72,7 @@ export default async function PackageGrid({
 
             <div className="package-bottom">
               <span className="package-price">
-                {p.priceFrom ? (
-                  <>
-                    <small>From</small>
-                    <strong>
-                      {p.currency || '$'}{p.priceFrom.toLocaleString('en-IN')}
-                    </strong>
-                  </>
-                ) : (
-                  'Price on enquiry'
-                )}
+                <strong>Price on Enquiry</strong>
               </span>
               <Link href={`/packages/${p.slug}`} className="view-detail-btn" aria-label={`View ${p.title}`}>
                 View Details <ArrowUpRight size={14} />

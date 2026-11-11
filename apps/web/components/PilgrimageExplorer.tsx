@@ -57,9 +57,8 @@ export default function PilgrimageExplorer() {
 
           <div className="p-action-box">
             <div className="p-price">
-              <small>Starting from</small>
-              <strong>{currentPkg.currency || '$'}{currentPkg.priceFrom?.toLocaleString('en-IN')}</strong>
-              <small>per person</small>
+              <strong>Price on Enquiry</strong>
+              <small>Customized packages based on dates &amp; hotel category</small>
             </div>
             <Link href={`/enquire?package=${currentPkg.slug}`} className="btn btn-primary">
               Enquire Now <ArrowRight size={16} />

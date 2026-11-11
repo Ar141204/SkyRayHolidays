@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520">
+  <defs>
+    <linearGradient id="mv_sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4aa7d8"/>
+      <stop offset="50%" stop-color="#a4ddf5"/>
+      <stop offset="100%" stop-color="#fdf1d2"/>
+    </linearGradient>
+    <linearGradient id="mv_lagoon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00bcd4"/>
+      <stop offset="35%" stop-color="#26c6da"/>
+      <stop offset="70%" stop-color="#0097a7"/>
+      <stop offset="100%" stop-color="#006064"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="800" height="520" fill="url(#mv_sky)"/>
+  <circle cx="670" cy="95" r="42" fill="#fff9db" opacity="0.95"/>
+  <!-- Horizon & Crystal Lagoon -->
+  <rect y="280" width="800" height="240" fill="url(#mv_lagoon)"/>
+  <!-- Sandbar Atoll in distance -->
+  <ellipse cx="640" cy="300" rx="90" ry="12" fill="#fdf6e4"/>
+  <path d="M580 300 Q620 280 650 300 Q680 275 710 300 Z" fill="#2d7d56"/>
+  <!-- Wooden Jetty Boardwalk -->
+  <path d="M0 480 L360 360 L440 360 L800 480 L760 520 L420 375 L380 375 L40 520 Z" fill="#9e734c"/>
+  <path d="M360 360 L380 375 H420 L440 360 Z" fill="#755233"/>
+  <!-- Overwater Bungalows on Stilts -->
+  <!-- Bungalow 1 Left -->
+  <g transform="translate(140, 240)">
+    <!-- Stilts -->
+    <line x1="30" y1="90" x2="30" y2="140" stroke="#5c4028" stroke-width="4"/>
+    <line x1="85" y1="90" x2="85" y2="140" stroke="#5c4028" stroke-width="4"/>
+    <line x1="140" y1="90" x2="140" y2="140" stroke="#5c4028" stroke-width="4"/>
+    <!-- Deck Platform -->
+    <rect x="15" y="80" width="140" height="12" fill="#b08259"/>
+    <!-- Villa Room -->
+    <rect x="35" y="40" width="100" height="42" fill="#e8d3b5"/>
+    <rect x="55" y="50" width="28" height="25" fill="#4aa7d8" rx="2"/>
+    <rect x="95" y="50" width="28" height="25" fill="#4aa7d8" rx="2"/>
+    <!-- Thatch Roof -->
+    <path d="M20 40 L85 5 L150 40 Z" fill="#c49b66"/>
+  </g>
+  <!-- Bungalow 2 Center -->
+  <g transform="translate(320, 215) scale(0.95)">
+    <!-- Stilts -->
+    <line x1="30" y1="90" x2="30" y2="140" stroke="#5c4028" stroke-width="4"/>
+    <line x1="85" y1="90" x2="85" y2="140" stroke="#5c4028" stroke-width="4"/>
+    <line x1="140" y1="90" x2="140" y2="140" stroke="#5c4028" stroke-width="4"/>
+    <!-- Deck Platform -->
+    <rect x="15" y="80" width="140" height="12" fill="#b08259"/>
+    <!-- Villa Room -->
+    <rect x="35" y="40" width="100" height="42" fill="#e8d3b5"/>
+    <rect x="55" y="50" width="28" height="25" fill="#4aa7d8" rx="2"/>
+    <rect x="95" y="50" width="28" height="25" fill="#4aa7d8" rx="2"/>
+    <!-- Thatch Roof -->
+    <path d="M20 40 L85 5 L150 40 Z" fill="#c49b66"/>
+  </g>
+  <!-- Bungalow 3 Right -->
+  <g transform="translate(510, 240)">
+    <!-- Stilts -->
+    <line x1="30" y1="90" x2="30" y2="140" stroke="#5c4028" stroke-width="4"/>
+    <line x1="85" y1="90" x2="85" y2="140" stroke="#5c4028" stroke-width="4"/>
+    <line x1="140" y1="90" x2="140" y2="140" stroke="#5c4028" stroke-width="4"/>
+    <!-- Deck Platform -->
+    <rect x="15" y="80" width="140" height="12" fill="#b08259"/>
+    <!-- Villa Room -->
+    <rect x="35" y="40" width="100" height="42" fill="#e8d3b5"/>
+    <rect x="55" y="50" width="28" height="25" fill="#4aa7d8" rx="2"/>
+    <rect x="95" y="50" width="28" height="25" fill="#4aa7d8" rx="2"/>
+    <!-- Thatch Roof -->
+    <path d="M20 40 L85 5 L150 40 Z" fill="#c49b66"/>
+  </g>
+  <!-- Water Shimmer -->
+  <g stroke="#80deea" stroke-width="3" opacity="0.6">
+    <path d="M60 410 H220 M480 390 H680 M240 450 H460"/>
+  </g>
+</svg>

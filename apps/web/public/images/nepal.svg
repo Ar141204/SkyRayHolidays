@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520">
+  <defs>
+    <linearGradient id="np_sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#286aa0"/>
+      <stop offset="50%" stop-color="#89bddc"/>
+      <stop offset="100%" stop-color="#f5e1cb"/>
+    </linearGradient>
+    <linearGradient id="snow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d9e9f2"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="800" height="520" fill="url(#np_sky)"/>
+  <circle cx="160" cy="115" r="46" fill="#fff5d9" opacity="0.9"/>
+  <!-- Grand Snowcapped Himalayan Peaks -->
+  <!-- Peak 1 Left -->
+  <path d="M0 320 L150 110 L300 320 Z" fill="#668799"/>
+  <path d="M150 110 L95 190 L135 180 L150 205 L175 180 L205 195 Z" fill="url(#snow)"/>
+  <!-- Peak 2 Center (Highest Everest/Annapurna) -->
+  <path d="M180 340 L380 60 L600 340 Z" fill="#4d6f82"/>
+  <path d="M380 60 L300 170 L350 155 L380 190 L420 150 L470 175 Z" fill="url(#snow)"/>
+  <!-- Peak 3 Right -->
+  <path d="M480 340 L650 120 L800 340 Z" fill="#58798c"/>
+  <path d="M650 120 L590 195 L635 185 L650 210 L680 185 L720 200 Z" fill="url(#snow)"/>
+  <!-- Midground Pine Hills -->
+  <path d="M0 340 Q220 290 440 330 T800 310 V520 H0 Z" fill="#2c574b"/>
+  <path d="M0 390 Q260 350 540 390 T800 370 V520 H0 Z" fill="#1b3d34"/>
+  <!-- Foreground Valley Ridge -->
+  <path d="M0 440 Q300 400 800 450 V520 H0 Z" fill="#102922"/>
+  <!-- Buddhist Pagoda / Stupa on Ridge -->
+  <g transform="translate(620, 360) scale(0.85)">
+    <!-- Base -->
+    <rect x="20" y="70" width="70" height="25" fill="#fdfcf5" stroke="#d4cbba"/>
+    <!-- Dome -->
+    <path d="M30 70 C30 35 80 35 80 70 Z" fill="#fdfcf5" stroke="#d4cbba"/>
+    <!-- Spire -->
+    <rect x="50" y="10" width="10" height="25" fill="#eab308"/>
+    <path d="M45 10 L55 -10 L65 10 Z" fill="#eab308"/>
+  </g>
+  <!-- Prayer Flags draped across sky -->
+  <g stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.85">
+    <path d="M40 360 Q340 390 620 380"/>
+  </g>
+  <!-- Prayer Flags Colors -->
+  <g>
+    <polygon points="120,366 140,368 135,385 115,383" fill="#3b82f6"/>
+    <polygon points="160,370 180,372 175,389 155,387" fill="#ffffff"/>
+    <polygon points="200,373 220,375 215,392 195,390" fill="#ef4444"/>
+    <polygon points="240,376 260,377 255,394 235,393" fill="#10b981"/>
+    <polygon points="280,378 300,379 295,396 275,395" fill="#f59e0b"/>
+    <polygon points="340,380 360,381 355,398 335,397" fill="#3b82f6"/>
+    <polygon points="380,381 400,381 395,398 375,398" fill="#ffffff"/>
+    <polygon points="420,381 440,380 435,397 415,398" fill="#ef4444"/>
+    <polygon points="460,380 480,379 475,396 455,397" fill="#10b981"/>
+    <polygon points="500,379 520,377 515,394 495,396" fill="#f59e0b"/>
+  </g>
+</svg>

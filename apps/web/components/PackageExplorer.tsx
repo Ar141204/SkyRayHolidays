@@ -52,12 +52,12 @@ export default function PackageExplorer() {
 
     if (sort === 'featured') {
       list.sort((a, b) => Number(!!b.featured) - Number(!!a.featured));
-    } else if (sort === 'price-low') {
-      list.sort((a, b) => (a.priceFrom ?? 999999) - (b.priceFrom ?? 999999));
-    } else if (sort === 'price-high') {
-      list.sort((a, b) => (b.priceFrom ?? 0) - (a.priceFrom ?? 0));
+    } else if (sort === 'rating') {
+      list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     } else if (sort === 'duration') {
       list.sort((a, b) => a.duration.localeCompare(b.duration));
+    } else if (sort === 'title') {
+      list.sort((a, b) => a.title.localeCompare(b.title));
     }
 
     return list;
@@ -96,9 +96,9 @@ export default function PackageExplorer() {
             className="filter-dropdown"
           >
             <option value="featured">Sort By: Featured</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
             <option value="duration">Duration</option>
+            <option value="title">Alphabetical (A - Z)</option>
           </select>
 
           <button className="btn btn-primary search-action-btn" aria-label="Apply search">
@@ -180,13 +180,7 @@ export default function PackageExplorer() {
 
                   <div className="package-bottom">
                     <span className="package-price">
-                      {p.priceFrom ? (
-                        <>
-                          <small>From</small> <strong>{p.currency || '$'}{p.priceFrom.toLocaleString('en-IN')}</strong>
-                        </>
-                      ) : (
-                        'Price on enquiry'
-                      )}
+                      <strong>Price on Enquiry</strong>
                     </span>
                     <Link href={`/packages/${p.slug}`} className="view-detail-btn" aria-label={`View ${p.title}`}>
                       View Details <ArrowUpRight size={15} />

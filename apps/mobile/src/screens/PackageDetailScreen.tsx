@@ -49,9 +49,8 @@ export function PackageDetailScreen({ route, navigation }: any) {
         </View>
 
         <View style={s.priceBox}>
-          <Text style={s.priceLabel}>From</Text>
-          <Text style={s.priceAmount}>{item.currency || '$'}{item.priceFrom || 499}</Text>
-          <Text style={s.priceSub}>per person / twin sharing</Text>
+          <Text style={s.priceAmount}>Price on Enquiry</Text>
+          <Text style={s.priceSub}>Personalized quotes based on travel dates &amp; group size</Text>
         </View>
 
         {/* Primary CTA matching Mobile Preview Screen 5 */}

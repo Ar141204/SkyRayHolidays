@@ -3,9 +3,10 @@ import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-nati
 import { BrandHeader, PrimaryButton, C } from '../components/UI';
 
 const FEATURED_PREVIEWS = [
-  { id: '1', title: 'Dubai Holiday', slug: 'dubai-holiday', duration: '5 Days', price: '$499', icon: '✈' },
-  { id: '2', title: 'Turkey Tour', slug: 'turkey-tour', duration: '7 Days', price: '$699', icon: '🏛' },
-  { id: '3', title: 'Bali Escape', slug: 'bali-escape', duration: '6 Days', price: '$599', icon: '🌴' },
+  { id: '1', title: 'Dubai Holiday', slug: 'dubai-holiday', duration: '5 Days', icon: '✈' },
+  { id: '2', title: 'Kashmir Paradise', slug: 'kashmir-paradise', duration: '6 Days', icon: '🏔' },
+  { id: '3', title: 'Kerala Backwaters', slug: 'kerala-backwaters', duration: '6 Days', icon: '🌴' },
+  { id: '4', title: 'Sri Lanka Wonder', slug: 'sri-lanka-wonder', duration: '6 Days', icon: '🏛' },
 ];
 
 export function HomeScreen({ navigation }: any) {
@@ -54,7 +55,7 @@ export function HomeScreen({ navigation }: any) {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={s.pkgTitle}>{item.title}</Text>
-              <Text style={s.pkgMeta}>{item.duration} · From {item.price}</Text>
+              <Text style={s.pkgMeta}>{item.duration} · Price on Enquiry</Text>
               <Text style={s.pkgLink}>View details →</Text>
             </View>
           </TouchableOpacity>

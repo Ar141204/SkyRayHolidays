@@ -13,12 +13,21 @@ import { sendEnquiry } from '../lib/api';
 import { C, PrimaryButton, ScreenTitle } from '../components/UI';
 
 const SAMPLE_PACKAGES = [
+  'Kashmir Paradise Experience',
+  'Kerala God’s Own Country',
+  'Golden Triangle & Royal Heritage',
+  'Andaman Island Discovery',
+  'Goa Coastal Getaway',
+  'Sri Lanka Wonder Island',
+  'Maldives Luxury Lagoon',
+  'Nepal Himalayan Splendor',
   'Dubai Holiday Package',
   'Turkey Tour',
   'Bali Escape',
   'Europe Tour',
   'Premium Hajj Package',
   'Premium Umrah Package',
+  'Customized Multi-Destination Tour',
   'Not sure yet (Help me plan)',
 ];
 

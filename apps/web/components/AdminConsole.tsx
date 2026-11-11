@@ -220,11 +220,15 @@ export default function AdminConsole() {
         setPackages(p);
       } else {
         setPackages([
-          { id: '1', title: 'Dubai Holiday', category: 'International', priceFrom: 499, currency: '$', status: 'PUBLISHED' },
-          { id: '2', title: 'Turkey Tour', category: 'International', priceFrom: 699, currency: '$', status: 'PUBLISHED' },
-          { id: '3', title: 'Bali Escape', category: 'International', priceFrom: 599, currency: '$', status: 'PUBLISHED' },
-          { id: '4', title: 'Europe Tour', category: 'International', priceFrom: 1299, currency: '$', status: 'PUBLISHED' },
-          { id: '5', title: 'Premium Hajj Package', category: 'Hajj', priceFrom: 4999, currency: '$', status: 'PUBLISHED' },
+          { id: '1', title: 'Kashmir Paradise Experience', category: 'Domestic', priceFrom: null, currency: '₹', status: 'PUBLISHED' },
+          { id: '2', title: 'Kerala God’s Own Country', category: 'Domestic', priceFrom: null, currency: '₹', status: 'PUBLISHED' },
+          { id: '3', title: 'Golden Triangle & Royal Heritage', category: 'Domestic', priceFrom: null, currency: '₹', status: 'PUBLISHED' },
+          { id: '4', title: 'Andaman Tropical Island Discovery', category: 'Domestic', priceFrom: null, currency: '₹', status: 'PUBLISHED' },
+          { id: '5', title: 'Sri Lanka Wonder Island', category: 'International', priceFrom: null, currency: '$', status: 'PUBLISHED' },
+          { id: '6', title: 'Maldives Luxury Lagoon Escape', category: 'International', priceFrom: null, currency: '$', status: 'PUBLISHED' },
+          { id: '7', title: 'Dubai Holiday Package', category: 'International', priceFrom: null, currency: '$', status: 'PUBLISHED' },
+          { id: '8', title: 'Premium Hajj Package', category: 'Hajj', priceFrom: null, currency: '$', status: 'PUBLISHED' },
+          { id: '9', title: 'Premium Umrah Package', category: 'Umrah', priceFrom: null, currency: '$', status: 'PUBLISHED' },
         ]);
       }
 
@@ -849,7 +853,7 @@ export default function AdminConsole() {
                           <small>/{pkg.slug}</small>
                         </td>
                         <td>{pkg.category || pkg.kind}</td>
-                        <td><strong>{pkg.currency || '$'}{pkg.priceFrom || 0}</strong></td>
+                        <td><strong>{pkg.priceFrom ? `${pkg.currency || '$'}${pkg.priceFrom}` : 'On Enquiry'}</strong></td>
                         <td>{pkg.duration || '5 Days'}</td>
                         <td>
                           <span className="status-pill pill-confirmed">
@@ -868,7 +872,7 @@ export default function AdminConsole() {
                                 kind: pkg.kind || 'TOUR',
                                 category: pkg.category || 'International',
                                 duration: pkg.duration || '5 Days',
-                                priceFrom: String(pkg.priceFrom || 499),
+                                priceFrom: pkg.priceFrom ? String(pkg.priceFrom) : '',
                                 currency: pkg.currency || '$',
                                 summary: pkg.summary || '',
                                 description: pkg.description || '',

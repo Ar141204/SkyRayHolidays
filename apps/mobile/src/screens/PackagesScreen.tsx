@@ -72,7 +72,7 @@ export function PackagesScreen({ navigation }: any) {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.title}>{item.title}</Text>
-                <Text style={s.meta}>{item.duration} · From {item.currency || '$'}{item.priceFrom || 499}</Text>
+                <Text style={s.meta}>{item.duration} · Price on Enquiry</Text>
                 <Text style={s.body} numberOfLines={2}>{item.summary}</Text>
                 <Text style={s.link}>View details →</Text>
               </View>

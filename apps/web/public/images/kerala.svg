@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520">
+  <defs>
+    <linearGradient id="kg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4ea8a0"/>
+      <stop offset="50%" stop-color="#a8d5b5"/>
+      <stop offset="100%" stop-color="#f5e6c8"/>
+    </linearGradient>
+    <linearGradient id="kw" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b635c"/>
+      <stop offset="100%" stop-color="#0e3c38"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="800" height="520" fill="url(#kg)"/>
+  <!-- Sun -->
+  <circle cx="640" cy="120" r="50" fill="#fff4d0" opacity="0.9"/>
+  <!-- Distant Palm Hills -->
+  <path d="M0 310 Q160 270 340 300 T720 280 T800 300 V520 H0 Z" fill="#2d6e64"/>
+  <path d="M0 340 Q200 310 460 345 T800 330 V520 H0 Z" fill="#1b4d45"/>
+  <!-- Backwaters Lagoon -->
+  <rect y="360" width="800" height="160" fill="url(#kw)"/>
+  <!-- Water ripples -->
+  <g stroke="#6bc4b5" stroke-width="3" opacity="0.4">
+    <path d="M40 390 H220 M320 410 H560 M120 440 H400 M500 460 H760"/>
+  </g>
+  <!-- Traditional Houseboat (Kettuvallam) -->
+  <g transform="translate(180, 260)">
+    <!-- Houseboat Hull -->
+    <path d="M40 130 C120 155 320 155 400 130 C430 120 410 165 370 170 C240 185 140 180 30 165 C-5 155 10 125 40 130 Z" fill="#693b1e"/>
+    <!-- Thatch Roof Body -->
+    <path d="M60 130 C90 70 330 70 370 130 Z" fill="#c49a56"/>
+    <path d="M80 125 C110 80 310 80 350 125 Z" fill="#8c6239" opacity="0.7"/>
+    <!-- Windows / Rooms -->
+    <rect x="120" y="105" width="35" height="22" rx="3" fill="#ffeaa7"/>
+    <rect x="180" y="105" width="35" height="22" rx="3" fill="#ffeaa7"/>
+    <rect x="240" y="105" width="35" height="22" rx="3" fill="#ffeaa7"/>
+    <rect x="300" y="105" width="25" height="22" rx="3" fill="#ffeaa7"/>
+    <!-- Front Canopy -->
+    <path d="M40 130 L90 100 L95 130 Z" fill="#d9ad67"/>
+  </g>
+  <!-- Coconut Palms Left Silhouette -->
+  <g fill="#102e29">
+    <path d="M-10 420 Q50 300 70 160 Q80 155 75 160 Q55 300 0 420 Z"/>
+    <!-- Palm Leaves -->
+    <path d="M70 160 Q110 110 160 140 Q115 130 70 160 Z"/>
+    <path d="M70 160 Q120 150 170 190 Q120 175 70 160 Z"/>
+    <path d="M70 160 Q50 90 20 110 Q45 115 70 160 Z"/>
+    <path d="M70 160 Q20 120 -20 150 Q20 140 70 160 Z"/>
+    <path d="M70 160 Q80 80 110 90 Q90 110 70 160 Z"/>
+  </g>
+  <!-- Overhead birds -->
+  <g stroke="#1b4d45" stroke-width="3" fill="none">
+    <path d="M380 140 Q395 125 410 140 Q425 125 440 140"/>
+    <path d="M430 115 Q442 103 454 115 Q466 103 478 115"/>
+  </g>
+</svg>
