@@ -107,10 +107,11 @@ export default function Home() {
         <div className="container pilgrim-inner">
           <div className="pilgrim-image">
             <Image
-              src="/images/makkah.svg"
+              src="/images/destinations/makkah.jpg"
               alt="Makkah Grand Mosque Kaaba View"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
+              priority
             />
           </div>
           <div className="pilgrim-copy">

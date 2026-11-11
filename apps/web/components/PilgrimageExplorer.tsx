@@ -69,8 +69,8 @@ export default function PilgrimageExplorer() {
         <div className="p-card-right">
           <div className="p-image-wrap">
             <Image
-              src="/images/makkah.svg"
-              alt="Grand Mosque and Holy Kaaba in Makkah"
+              src={currentPkg.image || '/images/destinations/makkah.jpg'}
+              alt={currentPkg.title}
               fill
               style={{ objectFit: 'cover' }}
               priority

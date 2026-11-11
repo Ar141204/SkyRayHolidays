@@ -15,7 +15,7 @@ export default function SiteFooter() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <Image src="/brand/skyray-logo.png" alt="SkyRay Holidays" width={160} height={80} style={{ objectFit: 'contain' }} />
+          <Image src="/brand/skyray-logo.png" alt="SkyRay Holidays" width={80} height={70} style={{ width: 'auto', height: '68px', objectFit: 'contain' }} />
           <p>
             Thoughtful journeys, meaningful experiences. Discover your next holiday or sacred pilgrimage with SkyRay Holidays.
           </p>

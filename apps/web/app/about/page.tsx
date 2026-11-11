@@ -40,8 +40,8 @@ export default function About() {
             <div className="plane-art-card">
               <div className="plane-tag">SkyRay Travel</div>
               <Image
-                src="/images/hero-coast.svg"
-                alt="Airplane flying towards travel destination"
+                src="/images/hero.jpg"
+                alt="Scenic holiday destination travel"
                 fill
                 style={{ objectFit: 'cover' }}
                 priority

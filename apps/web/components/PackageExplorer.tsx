@@ -145,7 +145,7 @@ export default function PackageExplorer() {
               <article className="package-card" key={p.id}>
                 <Link href={`/packages/${p.slug}`} className="package-photo">
                   <Image
-                    src={p.image || '/images/bali.svg'}
+                    src={p.image || '/images/destinations/bali.jpg'}
                     alt={p.title}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"

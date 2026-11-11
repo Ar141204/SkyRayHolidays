@@ -86,6 +86,8 @@ export function HomeScreen({ navigation }: any) {
     (navigation.getParent?.() || navigation).navigate('Enquiry', { packageName });
   };
 
+  const makkahImg = getPackageImage('premium-hajj-package');
+
   return (
     <View style={s.container}>
       <BrandHeader
@@ -271,19 +273,26 @@ export function HomeScreen({ navigation }: any) {
           activeOpacity={0.9}
           onPress={() => navigation.navigate('Hajj & Umrah')}
         >
-          <View style={s.pilgrimIconBox}>
-            <Text style={s.pilgrimIcon}>☾</Text>
+          <View style={s.pilgrimThumbFrame}>
+            <Image
+              source={makkahImg}
+              style={s.pilgrimThumb}
+              resizeMode="cover"
+            />
           </View>
 
           <View style={s.pilgrimContent}>
             <View style={s.pilgrimBadge}>
-              <Text style={s.pilgrimBadgeText}>SACRED JOURNEYS</Text>
+              <Text style={s.pilgrimBadgeText}>☾ SACRED BLESSINGS</Text>
             </View>
             <Text style={s.pilgrimTitle}>Hajj &amp; Umrah Services</Text>
             <Text style={s.pilgrimBody}>
               5-Star hotels near Haram, dedicated scholars, and complete visa care.
             </Text>
-            <Text style={s.pilgrimLink}>Explore Pilgrimage Packages →</Text>
+            <View style={s.pilgrimLinkRow}>
+              <Text style={s.pilgrimLink}>Explore Pilgrimage</Text>
+              <Text style={s.pilgrimLinkArrow}>→</Text>
+            </View>
           </View>
         </TouchableOpacity>
 
@@ -648,42 +657,46 @@ const s = StyleSheet.create({
   },
   pilgrimBanner: {
     backgroundColor: '#0f2942',
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 18,
+    padding: 14,
     marginTop: 8,
     marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    shadowColor: '#0f2942',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  pilgrimIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  pilgrimThumbFrame: {
+    width: 82,
+    height: 86,
+    borderRadius: 12,
+    overflow: 'hidden',
     marginRight: 14,
+    backgroundColor: '#1e3a5f',
   },
-  pilgrimIcon: {
-    fontSize: 24,
-    color: C.gold,
+  pilgrimThumb: {
+    width: '100%',
+    height: '100%',
   },
   pilgrimContent: {
     flex: 1,
   },
   pilgrimBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 4,
+    backgroundColor: 'rgba(245, 158, 11, 0.22)',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 6,
     marginBottom: 4,
   },
   pilgrimBadgeText: {
     color: '#fde68a',
     fontSize: 9,
     fontWeight: '800',
-    letterSpacing: 1,
+    letterSpacing: 0.8,
   },
   pilgrimTitle: {
     color: '#ffffff',
@@ -696,11 +709,21 @@ const s = StyleSheet.create({
     lineHeight: 16,
     marginVertical: 4,
   },
+  pilgrimLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
   pilgrimLink: {
     color: '#38bdf8',
     fontSize: 11.5,
     fontWeight: '800',
-    marginTop: 2,
+  },
+  pilgrimLinkArrow: {
+    color: '#38bdf8',
+    fontSize: 12,
+    fontWeight: '900',
   },
   reviewsStrip: {
     backgroundColor: '#ffffff',

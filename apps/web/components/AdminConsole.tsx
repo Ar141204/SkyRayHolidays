@@ -101,7 +101,7 @@ export default function AdminConsole() {
     eyebrow: 'WHERE EVERY TRIP BECOMES A MEMORY',
     title: 'Your Journey Begins with SkyRay Holidays',
     subtitle: 'Discover unforgettable destinations, thoughtfully planned holidays.',
-    heroImage: '/images/dubai.svg',
+    heroImage: '/images/destinations/dubai.jpg',
   });
 
   // Settings form

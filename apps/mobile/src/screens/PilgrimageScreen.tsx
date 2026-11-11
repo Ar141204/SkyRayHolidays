@@ -1,11 +1,26 @@
 import React from 'react';
-import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { C, PrimaryButton, BrandHeader, Badge } from '../components/UI';
+import { getPackageImage } from '../lib/api';
 
 export function PilgrimageScreen({ navigation }: any) {
   const navigateToEnquiry = (packageName: string) => {
     (navigation.getParent?.() || navigation).navigate('Enquiry', { packageName });
   };
+
+  const navigateToPackage = (slug: string) => {
+    try {
+      navigation.navigate('PackageDetail', { slug });
+    } catch {
+      try {
+        navigation.getParent?.()?.navigate('PackageDetail', { slug });
+      } catch (e) {
+        console.warn('Navigation error:', e);
+      }
+    }
+  };
+
+  const makkahImg = getPackageImage('premium-hajj-package');
 
   return (
     <View style={s.container}>
@@ -32,101 +47,148 @@ export function PilgrimageScreen({ navigation }: any) {
 
         {/* Featured Card: Premium Umrah Package */}
         <View style={s.card}>
-          <View style={s.cardTop}>
-            <View style={s.iconWrap}>
-              <Text style={s.iconText}>☾</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={s.badgeRow}>
-                <Badge label="BLESSED JOURNEY" variant="gold" />
-                <Text style={s.durationPill}>10 Days / 9 Nights</Text>
-              </View>
-              <Text style={s.cardTitle}>Premium Umrah Package</Text>
-              <Text style={s.cardDestination}>Makkah Al Mukarramah &amp; Madinah Al Munawwarah</Text>
-            </View>
-          </View>
-
-          {/* Key Inclusions Checklist */}
-          <View style={s.checklist}>
-            <View style={s.checkRow}>
-              <Text style={s.checkMark}>✔</Text>
-              <Text style={s.checkLabel}>5-Star Hotels directly facing Haram / walking distance</Text>
-            </View>
-            <View style={s.checkRow}>
-              <Text style={s.checkMark}>✔</Text>
-              <Text style={s.checkLabel}>VIP Private / Haramain High-Speed Train Transfers</Text>
-            </View>
-            <View style={s.checkRow}>
-              <Text style={s.checkMark}>✔</Text>
-              <Text style={s.checkLabel}>Complete Saudi eVisa / Umrah Permit Processing</Text>
-            </View>
-            <View style={s.checkRow}>
-              <Text style={s.checkMark}>✔</Text>
-              <Text style={s.checkLabel}>Guided Ziyarat to Historical Holy Sites in Makkah &amp; Madinah</Text>
-            </View>
-          </View>
-
-          <View style={s.cardFooter}>
-            <View>
-              <Text style={s.priceLabel}>Custom Quotation</Text>
-              <Text style={s.priceValue}>Price on Enquiry</Text>
-              <Text style={s.priceSub}>Based on hotel category &amp; travel month</Text>
-            </View>
-          </View>
-
-          <View style={{ marginTop: 14 }}>
-            <PrimaryButton
-              title="Enquire for Umrah Quote"
-              variant="gold"
-              onPress={() => navigateToEnquiry('Premium Umrah Package')}
+          <View style={s.imageFrame}>
+            <Image
+              source={makkahImg}
+              style={s.coverImage}
+              resizeMode="cover"
             />
+            <View style={s.imageGradientOverlay} />
+            <View style={s.floatingTopRow}>
+              <View style={[s.categoryTag, s.categoryTagGold]}>
+                <Text style={s.categoryTagText}>☾ BLESSED JOURNEY</Text>
+              </View>
+              <View style={s.ratingBadge}>
+                <Text style={s.ratingStar}>★</Text>
+                <Text style={s.ratingScore}>5.0</Text>
+              </View>
+            </View>
+            <View style={s.floatingBottomRow}>
+              <View style={s.durationPill}>
+                <Text style={s.durationText}>⏱ 10 Days / 9 Nights</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={s.cardBody}>
+            <Text style={s.cardTitle}>Premium Umrah Package</Text>
+            <Text style={s.cardDestination}>📍 Makkah Al Mukarramah &amp; Madinah Al Munawwarah</Text>
+
+            {/* Key Inclusions Checklist */}
+            <View style={s.checklist}>
+              <View style={s.checkRow}>
+                <Text style={s.checkMark}>✔</Text>
+                <Text style={s.checkLabel}>5-Star Hotels directly facing Haram / walking distance</Text>
+              </View>
+              <View style={s.checkRow}>
+                <Text style={s.checkMark}>✔</Text>
+                <Text style={s.checkLabel}>VIP Private / Haramain High-Speed Train Transfers</Text>
+              </View>
+              <View style={s.checkRow}>
+                <Text style={s.checkMark}>✔</Text>
+                <Text style={s.checkLabel}>Complete Saudi eVisa / Umrah Permit Processing</Text>
+              </View>
+              <View style={s.checkRow}>
+                <Text style={s.checkMark}>✔</Text>
+                <Text style={s.checkLabel}>Guided Ziyarat to Historical Holy Sites in Makkah &amp; Madinah</Text>
+              </View>
+            </View>
+
+            <View style={s.cardFooter}>
+              <View>
+                <Text style={s.priceLabel}>Custom Quotation</Text>
+                <Text style={s.priceValue}>Price on Enquiry</Text>
+                <Text style={s.priceSub}>Based on hotel category &amp; travel month</Text>
+              </View>
+            </View>
+
+            <View style={s.btnRow}>
+              <TouchableOpacity
+                style={s.viewDetailsBtn}
+                onPress={() => navigateToPackage('premium-umrah')}
+                activeOpacity={0.85}
+              >
+                <Text style={s.viewDetailsText}>View Details →</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={s.enquireBtn}
+                onPress={() => navigateToEnquiry('Premium Umrah Package')}
+                activeOpacity={0.85}
+              >
+                <Text style={s.enquireBtnText}>Enquire Now</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
         {/* Featured Card: Premium Hajj Package */}
-        <View style={[s.card, { marginTop: 16 }]}>
-          <View style={s.cardTop}>
-            <View style={[s.iconWrap, { backgroundColor: '#fef3c7' }]}>
-              <Text style={[s.iconText, { color: '#b45309' }]}>🕋</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={s.badgeRow}>
-                <Badge label="ANNUAL OBLIGATION" variant="gold" />
-                <Text style={s.durationPill}>14 - 21 Days</Text>
-              </View>
-              <Text style={s.cardTitle}>Premium Hajj Package</Text>
-              <Text style={s.cardDestination}>Makkah, Mina, Arafat, Muzdalifah &amp; Madinah</Text>
-            </View>
-          </View>
-
-          <View style={s.checklist}>
-            <View style={s.checkRow}>
-              <Text style={s.checkMark}>✔</Text>
-              <Text style={s.checkLabel}>Pre-allotted luxury air-conditioned tents in Mina &amp; Arafat</Text>
-            </View>
-            <View style={s.checkRow}>
-              <Text style={s.checkMark}>✔</Text>
-              <Text style={s.checkLabel}>Dedicated Islamic scholars accompanying every group ritual</Text>
-            </View>
-            <View style={s.checkRow}>
-              <Text style={s.checkMark}>✔</Text>
-              <Text style={s.checkLabel}>Full Nusuk portal registration assistance and documentation</Text>
-            </View>
-          </View>
-
-          <View style={s.cardFooter}>
-            <View>
-              <Text style={s.priceLabel}>Official Hajj Allocation</Text>
-              <Text style={s.priceValue}>Price on Enquiry</Text>
-              <Text style={s.priceSub}>Subject to Saudi Ministry Hajj allocations</Text>
-            </View>
-          </View>
-
-          <View style={{ marginTop: 14 }}>
-            <PrimaryButton
-              title="Enquire for Hajj Information"
-              onPress={() => navigateToEnquiry('Premium Hajj Package')}
+        <View style={[s.card, { marginTop: 18 }]}>
+          <View style={s.imageFrame}>
+            <Image
+              source={makkahImg}
+              style={s.coverImage}
+              resizeMode="cover"
             />
+            <View style={s.imageGradientOverlay} />
+            <View style={s.floatingTopRow}>
+              <View style={[s.categoryTag, s.categoryTagGold]}>
+                <Text style={s.categoryTagText}>🕋 ANNUAL OBLIGATION</Text>
+              </View>
+              <View style={s.ratingBadge}>
+                <Text style={s.ratingStar}>★</Text>
+                <Text style={s.ratingScore}>5.0</Text>
+              </View>
+            </View>
+            <View style={s.floatingBottomRow}>
+              <View style={s.durationPill}>
+                <Text style={s.durationText}>⏱ 14 - 21 Days</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={s.cardBody}>
+            <Text style={s.cardTitle}>Premium Hajj Package</Text>
+            <Text style={s.cardDestination}>📍 Makkah, Mina, Arafat, Muzdalifah &amp; Madinah</Text>
+
+            <View style={s.checklist}>
+              <View style={s.checkRow}>
+                <Text style={s.checkMark}>✔</Text>
+                <Text style={s.checkLabel}>Pre-allotted luxury air-conditioned tents in Mina &amp; Arafat</Text>
+              </View>
+              <View style={s.checkRow}>
+                <Text style={s.checkMark}>✔</Text>
+                <Text style={s.checkLabel}>Dedicated Islamic scholars accompanying every group ritual</Text>
+              </View>
+              <View style={s.checkRow}>
+                <Text style={s.checkMark}>✔</Text>
+                <Text style={s.checkLabel}>Full Nusuk portal registration assistance and documentation</Text>
+              </View>
+            </View>
+
+            <View style={s.cardFooter}>
+              <View>
+                <Text style={s.priceLabel}>Official Hajj Allocation</Text>
+                <Text style={s.priceValue}>Price on Enquiry</Text>
+                <Text style={s.priceSub}>Subject to Saudi Ministry Hajj allocations</Text>
+              </View>
+            </View>
+
+            <View style={s.btnRow}>
+              <TouchableOpacity
+                style={s.viewDetailsBtn}
+                onPress={() => navigateToPackage('premium-hajj-package')}
+                activeOpacity={0.85}
+              >
+                <Text style={s.viewDetailsText}>View Details →</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={s.enquireBtn}
+                onPress={() => navigateToEnquiry('Premium Hajj Package')}
+                activeOpacity={0.85}
+              >
+                <Text style={s.enquireBtnText}>Enquire Now</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -153,7 +215,7 @@ const s = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 36,
+    paddingBottom: 40,
   },
   hero: {
     backgroundColor: '#0f2942',
@@ -196,57 +258,108 @@ const s = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
     borderRadius: 18,
-    padding: 20,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
     shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    overflow: 'hidden',
   },
-  cardTop: {
-    flexDirection: 'row',
-    marginBottom: 16,
+  imageFrame: {
+    width: '100%',
+    height: 180,
+    backgroundColor: '#0f172a',
+    position: 'relative',
+    overflow: 'hidden',
   },
-  iconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: '#f0f9ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
+  coverImage: {
+    width: '100%',
+    height: '100%',
   },
-  iconText: {
-    fontSize: 24,
-    color: C.deep,
+  imageGradientOverlay: {
+    position: 'absolute',
+    inset: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.3)',
   },
-  badgeRow: {
+  floatingTopRow: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    right: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    zIndex: 2,
+  },
+  categoryTag: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  categoryTagGold: {
+    backgroundColor: 'rgba(217, 119, 6, 0.92)',
+  },
+  categoryTagText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+  },
+  ratingStar: {
+    color: '#f59e0b',
+    fontSize: 12,
+    marginRight: 3,
+  },
+  ratingScore: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  floatingBottomRow: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    zIndex: 2,
   },
   durationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+  },
+  durationText: {
+    color: '#ffffff',
     fontSize: 11,
     fontWeight: '700',
-    color: '#64748b',
-    backgroundColor: '#f8fafc',
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 6,
+  },
+  cardBody: {
+    padding: 18,
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: C.deep,
-    lineHeight: 22,
+    fontWeight: '900',
+    color: '#0f2942',
+    lineHeight: 23,
+    marginBottom: 4,
+    letterSpacing: -0.3,
   },
   cardDestination: {
-    fontSize: 12,
-    color: C.muted,
-    marginTop: 3,
+    fontSize: 12.5,
+    color: '#64748b',
+    marginBottom: 12,
+    fontWeight: '600',
   },
   checklist: {
     backgroundColor: '#f8fafc',
@@ -278,21 +391,60 @@ const s = StyleSheet.create({
     paddingTop: 12,
   },
   priceLabel: {
-    fontSize: 10,
-    color: '#94a3b8',
-    fontWeight: '700',
+    fontSize: 9.5,
+    color: '#0284c7',
+    fontWeight: '800',
     textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   priceValue: {
     fontSize: 16,
     fontWeight: '900',
-    color: C.deep,
+    color: '#0f2942',
     marginTop: 2,
   },
   priceSub: {
     fontSize: 11.5,
     color: '#64748b',
     marginTop: 2,
+  },
+  btnRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+  },
+  viewDetailsBtn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1.5,
+    borderColor: '#38bdf8',
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  viewDetailsText: {
+    color: '#0284c7',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  enquireBtn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#d97706',
+    paddingVertical: 12,
+    borderRadius: 10,
+    shadowColor: '#d97706',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  enquireBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '800',
   },
   advisoryBox: {
     backgroundColor: '#f1f5f9',
@@ -314,3 +466,4 @@ const s = StyleSheet.create({
     lineHeight: 17,
   },
 });
+

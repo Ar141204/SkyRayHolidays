@@ -19,7 +19,7 @@ async function getPackage(slug: string): Promise<PackageItem | null> {
   try {
     const r = await fetch(`${API_URL}/packages/${slug}`, { next: { revalidate: 60 } });
     if (r.ok) return await r.json();
-  } catch {}
+  } catch { }
   return demoPackages.find((x) => x.slug === slug) || null;
 }
 

@@ -179,8 +179,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   logoImage: {
-    width: 140,
-    height: 52,
+    width: 72,
+    height: 62,
   },
   headerCta: {
     flexDirection: 'row',
