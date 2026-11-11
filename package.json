@@ -1,0 +1,19 @@
+{
+  "name": "skyray-holidays-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["apps/web", "apps/api", "apps/mobile"],
+  "scripts": {
+    "dev:web": "npm --workspace @skyray/web run dev",
+    "dev:api": "npm --workspace @skyray/api run start:dev",
+    "dev:mobile": "npm --workspace @skyray/mobile run start",
+    "build:web": "npm --workspace @skyray/web run build",
+    "build:api": "npm --workspace @skyray/api run build",
+    "typecheck:web": "npm --workspace @skyray/web exec tsc -- --noEmit",
+    "typecheck:api": "npm --workspace @skyray/api exec tsc -- --noEmit",
+    "typecheck:mobile": "npm --workspace @skyray/mobile exec tsc -- --noEmit",
+    "db:generate": "npm --workspace @skyray/api run prisma:generate",
+    "db:migrate": "npm --workspace @skyray/api run prisma:migrate",
+    "db:seed": "npm --workspace @skyray/api run prisma:seed"
+  }
+}

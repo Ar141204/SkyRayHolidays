@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum Role {
+  SUPER_ADMIN
+  CONTENT_MANAGER
+  ENQUIRY_MANAGER
+  AUDITOR
+}
+enum PackageKind {
+  TOUR
+  HAJJ
+  UMRAH
+}
+enum PackageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+enum EnquiryStatus {
+  NEW
+  PENDING
+  CONTACTED
+  QUOTED
+  CONFIRMED
+  NOT_INTERESTED
+  CLOSED
+  SPAM
+}
+enum JobStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  BLOCKED
+}
+model AdminUser {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  passwordHash String
+  role Role @default(ENQUIRY_MANAGER)
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  enquiries Enquiry[]
+  auditLogs AuditLog[]
+  notes EnquiryNote[]
+}
+model Package {
+  id String @id @default(uuid())
+  slug String @unique
+  title String
+  destination String
+  kind PackageKind @default(TOUR)
+  category String?
+  duration String
+  summary String @db.Text
+  description String? @db.Text
+  priceFrom Int?
+  currency String @default("INR")
+  image String?
+  featured Boolean @default(false)
+  sortOrder Int @default(0)
+  status PackageStatus @default(DRAFT)
+  departureDates Json?
+  itinerary Json?
+  inclusions Json?
+  exclusions Json?
+  details Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  enquiries Enquiry[]
+}
+model Enquiry {
+  id String @id @default(uuid())
+  reference String @unique
+  fullName String
+  phone String
+  email String
+  members Int
+  packageId String?
+  package Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  packageNameSnapshot String?
+  preferredDate DateTime
+  days Int
+  instructions String? @db.Text
+  status EnquiryStatus @default(NEW)
+  sourcePlatform String @default("WEBSITE")
+  idempotencyKey String? @unique
+  assignedAdminId String?
+  assignedAdmin AdminUser? @relation(fields: [assignedAdminId], references: [id], onDelete: SetNull)
+  consentAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  histories EnquiryStatusHistory[]
+  notes EnquiryNote[]
+  jobs IntegrationJob[]
+  @@index([status, createdAt])
+  @@index([email])
+}
+model EnquiryStatusHistory {
+  id String @id @default(uuid())
+  enquiryId String
+  enquiry Enquiry @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  fromStatus EnquiryStatus?
+  toStatus EnquiryStatus
+  actorId String?
+  actorLabel String
+  createdAt DateTime @default(now())
+}
+model EnquiryNote {
+  id String @id @default(uuid())
+  enquiryId String
+  enquiry Enquiry @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  authorId String?
+  author AdminUser? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  note String @db.Text
+  createdAt DateTime @default(now())
+}
+model AuditLog {
+  id String @id @default(uuid())
+  actorId String?
+  actor AdminUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorLabel String
+  action String
+  entity String
+  entityId String?
+  before Json?
+  after Json?
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
+model IntegrationJob {
+  id String @id @default(uuid())
+  enquiryId String?
+  enquiry Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+  type String
+  status JobStatus @default(PENDING)
+  attempts Int @default(0)
+  lastError String? @db.Text
+  nextAttemptAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([status, nextAttemptAt])
+}
+model SiteSettings {
+  id String @id @default("global")
+  companyName String @default("SkyRay Holidays")
+  phone String?
+  whatsapp String?
+  email String?
+  address String?
+  hours String?
+  mapUrl String?
+  whatsappMessage String?
+  googleReviewsUrl String?
+  updatedAt DateTime @updatedAt
+}
+model IntegrationSecret {
+  id String @id @default(uuid())
+  provider String @unique
+  encryptedValue String @db.Text
+  updatedAt DateTime @updatedAt
+}

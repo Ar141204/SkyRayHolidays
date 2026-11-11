@@ -1,0 +1,1 @@
+import {Module} from '@nestjs/common';import {EnquiriesController} from './enquiries.controller';import {EnquiriesService} from './enquiries.service';import {EnquiryRateGuard} from '../common/rate-limit.guard';@Module({controllers:[EnquiriesController],providers:[EnquiriesService,EnquiryRateGuard],exports:[EnquiriesService]})export class EnquiriesModule{}

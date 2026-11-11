@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-skyray}
+      POSTGRES_USER: ${POSTGRES_USER:-skyray}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-long-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - skyray_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-skyray} -d ${POSTGRES_DB:-skyray}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+  api:
+    build: ./apps/api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-skyray}:${POSTGRES_PASSWORD:-change-this-long-password}@postgres:5432/${POSTGRES_DB:-skyray}?schema=public
+    ports: ["4000:4000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+  web:
+    build:
+      context: ./apps/web
+      args:
+        NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:4000/api/v1}
+    restart: unless-stopped
+    environment:
+      API_INTERNAL_URL: http://api:4000/api/v1
+      NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:4000/api/v1}
+    ports: ["3000:3000"]
+    depends_on: [api]
+volumes:
+  skyray_db:

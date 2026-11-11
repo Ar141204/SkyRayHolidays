@@ -1,0 +1,2 @@
+import {Body,Controller,Get,Headers,Post,Query} from '@nestjs/common';import {CreateEnquiryDto} from './enquiries.dto';import {UseGuards} from '@nestjs/common';import {EnquiryRateGuard} from '../common/rate-limit.guard';import {EnquiriesService} from './enquiries.service';
+@Controller('enquiries')export class EnquiriesController{constructor(private svc:EnquiriesService){} @UseGuards(EnquiryRateGuard) @Post() create(@Body() body:CreateEnquiryDto,@Headers('idempotency-key') key?:string){return this.svc.create(body,key)}}

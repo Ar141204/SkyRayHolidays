@@ -1,0 +1,1 @@
+import type {Metadata} from 'next';import AdminConsole from '@/components/AdminConsole';export const metadata:Metadata={title:'Staff dashboard',robots:{index:false,follow:false}};export default function Admin(){return <div className="admin-shell"><AdminConsole/></div>}

@@ -1,0 +1,1 @@
+import {Module} from '@nestjs/common';import {AdminController} from './admin.controller';import {AuthModule} from '../auth/auth.module';import {EnquiriesModule} from '../enquiries/enquiries.module';@Module({imports:[AuthModule,EnquiriesModule],controllers:[AdminController]})export class AdminModule{}
