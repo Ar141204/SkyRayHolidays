@@ -7,8 +7,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Linking,
+  Image,
 } from 'react-native';
-import { API, TourPackage, getFallbackPackage } from '../lib/api';
+import { API, TourPackage, getFallbackPackage, getPackageImage } from '../lib/api';
 import { C, PrimaryButton, BrandHeader, Badge } from '../components/UI';
 
 export function PackageDetailScreen({ route, navigation }: any) {
@@ -77,16 +78,27 @@ export function PackageDetailScreen({ route, navigation }: any) {
           <Text style={s.backText}>Back to all packages</Text>
         </TouchableOpacity>
 
-        {/* Hero Card */}
-        <View style={s.heroCard}>
-          <View style={s.badgeRow}>
+        {/* Visual Travel Photo Hero Frame */}
+        <View style={s.photoHeroFrame}>
+          <Image
+            source={getPackageImage(item.slug)}
+            style={s.photoHeroImg}
+            resizeMode="cover"
+          />
+          <View style={s.photoHeroOverlay} />
+          <View style={s.photoHeroTopBadge}>
             <Badge
               label={isPilgrim ? 'PILGRIMAGE' : isDomestic ? 'DOMESTIC (INDIA)' : 'INTERNATIONAL'}
               variant={isPilgrim ? 'gold' : isDomestic ? 'sky' : 'neutral'}
             />
-            <Text style={s.durationBadge}>{item.duration}</Text>
           </View>
+          <View style={s.photoHeroDuration}>
+            <Text style={s.photoHeroDurationText}>⏱ {item.duration}</Text>
+          </View>
+        </View>
 
+        {/* Hero Card */}
+        <View style={s.heroCard}>
           <Text style={s.heroTitle}>{item.title}</Text>
           <Text style={s.heroDestination}>📍 {item.destination}</Text>
 
@@ -227,6 +239,50 @@ const s = StyleSheet.create({
   backText: {
     fontSize: 13,
     color: C.skyDark,
+    fontWeight: '700',
+  },
+  photoHeroFrame: {
+    width: '100%',
+    height: 220,
+    borderRadius: 18,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#0f172a',
+    marginBottom: 14,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  photoHeroImg: {
+    width: '100%',
+    height: '100%',
+  },
+  photoHeroOverlay: {
+    position: 'absolute',
+    inset: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.2)',
+  },
+  photoHeroTopBadge: {
+    position: 'absolute',
+    top: 14,
+    left: 14,
+    zIndex: 2,
+  },
+  photoHeroDuration: {
+    position: 'absolute',
+    bottom: 14,
+    left: 14,
+    backgroundColor: 'rgba(15, 23, 42, 0.82)',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    zIndex: 2,
+  },
+  photoHeroDurationText: {
+    color: '#ffffff',
+    fontSize: 12,
     fontWeight: '700',
   },
   heroCard: {

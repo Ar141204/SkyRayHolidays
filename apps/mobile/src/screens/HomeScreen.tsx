@@ -6,8 +6,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
+  Image,
 } from 'react-native';
 import { BrandHeader, PrimaryButton, C, Badge } from '../components/UI';
+import { getPackageImage } from '../lib/api';
 
 const FEATURED_TOURS = [
   {
@@ -69,7 +71,15 @@ const FEATURED_TOURS = [
 
 export function HomeScreen({ navigation }: any) {
   const navigateToPackage = (slug: string) => {
-    (navigation.getParent?.() || navigation).navigate('PackageDetail', { slug });
+    try {
+      navigation.navigate('PackageDetail', { slug });
+    } catch {
+      try {
+        navigation.getParent?.()?.navigate('PackageDetail', { slug });
+      } catch (e) {
+        console.warn('Navigation error:', e);
+      }
+    }
   };
 
   const navigateToEnquiry = (packageName?: string) => {
@@ -180,54 +190,80 @@ export function HomeScreen({ navigation }: any) {
         </View>
 
         {/* Tour Cards */}
-        {FEATURED_TOURS.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={s.card}
-            activeOpacity={0.9}
-            onPress={() => navigateToPackage(item.slug)}
-          >
-            <View style={s.cardTop}>
-              <View style={s.cardIconBox}>
-                <Text style={s.cardIconText}>{item.icon}</Text>
+        {FEATURED_TOURS.map((item) => {
+          const cardImg = getPackageImage(item.slug);
+          return (
+            <TouchableOpacity
+              key={item.id}
+              style={s.card}
+              activeOpacity={0.92}
+              onPress={() => navigateToPackage(item.slug)}
+            >
+              <View style={s.cardImageFrame}>
+                <Image
+                  source={cardImg}
+                  style={s.cardCoverImg}
+                  resizeMode="cover"
+                />
+                <View style={s.cardOverlay} />
+                <View style={s.cardFloatingTop}>
+                  <View
+                    style={[
+                      s.categoryTag,
+                      item.category === 'Domestic' ? s.categoryTagSky : s.categoryTagNavy,
+                    ]}
+                  >
+                    <Text style={s.categoryTagText}>
+                      {item.category === 'Domestic' ? '🇮🇳 WITHIN INDIA' : '✈ INTERNATIONAL'}
+                    </Text>
+                  </View>
+                  <View style={s.ratingBadge}>
+                    <Text style={s.ratingStar}>★</Text>
+                    <Text style={s.ratingScore}>{item.rating}</Text>
+                  </View>
+                </View>
+                <View style={s.cardFloatingBottom}>
+                  <View style={s.durationPill}>
+                    <Text style={s.durationText}>⏱ {item.duration}</Text>
+                  </View>
+                </View>
               </View>
 
-              <View style={s.cardHeaderContent}>
-                <View style={s.cardMetaRow}>
-                  <Badge
-                    label={item.category.toUpperCase()}
-                    variant={item.category === 'Domestic' ? 'sky' : 'gold'}
-                  />
-                  <Text style={s.cardRating}>★ {item.rating}</Text>
-                </View>
+              <View style={s.cardInner}>
                 <Text style={s.cardTitle}>{item.title}</Text>
-                <Text style={s.cardDestination}>{item.destination}</Text>
-              </View>
-            </View>
+                <Text style={s.cardDestination}>📍 {item.destination}</Text>
 
-            {/* Inclusions Chips */}
-            <View style={s.highlightsRow}>
-              {item.highlights.map((h, i) => (
-                <View key={i} style={s.highlightChip}>
-                  <Text style={s.highlightText}>• {h}</Text>
+                {/* Inclusions Chips */}
+                <View style={s.highlightsRow}>
+                  {item.highlights.map((h, i) => (
+                    <View key={i} style={s.highlightChip}>
+                      <Text style={s.highlightText}>• {h}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
 
-            {/* Bottom Strip: Price On Enquiry & CTA */}
-            <View style={s.cardBottom}>
-              <View>
-                <Text style={s.priceLabel}>Custom Quote</Text>
-                <Text style={s.priceValue}>Price on Enquiry</Text>
-              </View>
+                {/* Bottom Strip: Price On Enquiry & Prominent View Details CTA */}
+                <View style={s.cardBottom}>
+                  <View>
+                    <Text style={s.priceLabel}>Custom Quote</Text>
+                    <Text style={s.priceValue}>Price on Enquiry</Text>
+                  </View>
 
-              <View style={s.cardActionPill}>
-                <Text style={s.cardActionText}>Details</Text>
-                <Text style={s.cardActionArrow}>→</Text>
+                  <TouchableOpacity
+                    style={s.viewDetailsBtn}
+                    onPress={() => navigateToPackage(item.slug)}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel={`View details for ${item.title}`}
+                  >
+                    <Text style={s.viewDetailsText}>View Details</Text>
+                    <Text style={s.viewDetailsArrow}>→</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          );
+        })}
 
         {/* Hajj & Umrah Dedicated Showcase Banner */}
         <TouchableOpacity
@@ -438,63 +474,119 @@ const s = StyleSheet.create({
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 14,
+    borderRadius: 18,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
     shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    overflow: 'hidden',
   },
-  cardTop: {
-    flexDirection: 'row',
+  cardImageFrame: {
+    width: '100%',
+    height: 175,
+    backgroundColor: '#0f172a',
+    position: 'relative',
+    overflow: 'hidden',
   },
-  cardIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#f0f9ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+  cardCoverImg: {
+    width: '100%',
+    height: '100%',
   },
-  cardIconText: {
-    fontSize: 24,
+  cardOverlay: {
+    position: 'absolute',
+    inset: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.22)',
   },
-  cardHeaderContent: {
-    flex: 1,
-  },
-  cardMetaRow: {
+  cardFloatingTop: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    right: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    zIndex: 2,
   },
-  cardRating: {
-    color: '#d97706',
-    fontWeight: '800',
+  categoryTag: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  categoryTagSky: {
+    backgroundColor: 'rgba(2, 132, 199, 0.9)',
+  },
+  categoryTagNavy: {
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+  },
+  categoryTagText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+  },
+  ratingStar: {
+    color: '#f59e0b',
     fontSize: 12,
+    marginRight: 3,
+  },
+  ratingScore: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  cardFloatingBottom: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    zIndex: 2,
+  },
+  durationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+  },
+  durationText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  cardInner: {
+    padding: 16,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: C.deep,
-    lineHeight: 20,
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#0f2942',
+    lineHeight: 22,
+    marginBottom: 3,
+    letterSpacing: -0.3,
   },
   cardDestination: {
-    color: C.muted,
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 12.5,
+    color: '#64748b',
+    marginBottom: 8,
+    fontWeight: '600',
   },
   highlightsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginTop: 12,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   highlightChip: {
     backgroundColor: '#f8fafc',
@@ -517,34 +609,41 @@ const s = StyleSheet.create({
     paddingTop: 12,
   },
   priceLabel: {
-    fontSize: 10,
-    color: '#94a3b8',
-    fontWeight: '700',
+    fontSize: 9.5,
+    color: '#0284c7',
+    fontWeight: '800',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
   priceValue: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: C.deep,
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#0f2942',
+    marginTop: 1,
   },
-  cardActionPill: {
+  viewDetailsBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f9ff',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    backgroundColor: '#0ea5e9',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    shadowColor: '#0ea5e9',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  cardActionText: {
-    color: C.skyDark,
-    fontSize: 12,
-    fontWeight: '800',
-    marginRight: 4,
-  },
-  cardActionArrow: {
-    color: C.skyDark,
+  viewDetailsText: {
+    color: '#ffffff',
     fontSize: 13,
+    fontWeight: '800',
+    marginRight: 6,
+    letterSpacing: 0.2,
+  },
+  viewDetailsArrow: {
+    color: '#ffffff',
+    fontSize: 14,
     fontWeight: '900',
   },
   pilgrimBanner: {

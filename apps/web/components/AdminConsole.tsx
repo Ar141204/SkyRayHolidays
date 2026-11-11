@@ -78,7 +78,7 @@ export default function AdminConsole() {
     currency: '$',
     summary: '',
     description: '',
-    image: '/images/dubai.svg',
+    image: '/images/destinations/dubai.jpg',
     inclusions: 'Flight Tickets, Hotel Stay, City Tour, Transfers',
     exclusions: 'Personal Expenses, Visa Fees',
   });
@@ -467,7 +467,7 @@ export default function AdminConsole() {
             <p>Enquiry workflows, live bookings, package publishing and content management in one centralized hub.</p>
           </div>
           <Image
-            src="/images/dubai.svg"
+            src="/images/destinations/dubai.jpg"
             alt="SkyRay Travel Operations"
             fill
             style={{ objectFit: 'cover', opacity: 0.85 }}
@@ -821,7 +821,7 @@ export default function AdminConsole() {
                     currency: '$',
                     summary: '',
                     description: '',
-                    image: '/images/dubai.svg',
+                    image: '/images/destinations/dubai.jpg',
                     inclusions: 'Flight Tickets, Hotel Stay, City Tour, Transfers',
                     exclusions: 'Personal Expenses, Visa Fees',
                   });
@@ -876,7 +876,7 @@ export default function AdminConsole() {
                                 currency: pkg.currency || '$',
                                 summary: pkg.summary || '',
                                 description: pkg.description || '',
-                                image: pkg.image || '/images/dubai.svg',
+                                image: pkg.image || '/images/destinations/dubai.jpg',
                                 inclusions: Array.isArray(pkg.inclusions) ? pkg.inclusions.join(', ') : 'Flight Tickets, Hotel Stay',
                                 exclusions: Array.isArray(pkg.exclusions) ? pkg.exclusions.join(', ') : 'Personal Expenses',
                               });
@@ -924,7 +924,7 @@ export default function AdminConsole() {
                 <div className="hero-img-col">
                   <div className="img-frame">
                     <Image
-                      src={heroForm.heroImage || '/images/dubai.svg'}
+                      src={heroForm.heroImage || '/images/destinations/dubai.jpg'}
                       alt="Hero Banner Preview"
                       fill
                       style={{ objectFit: 'cover' }}
@@ -1131,7 +1131,7 @@ export default function AdminConsole() {
                     <input
                       value={packageFormData.image}
                       onChange={(e) => setPackageFormData({ ...packageFormData, image: e.target.value })}
-                      placeholder="/images/dubai.svg"
+                      placeholder="/images/destinations/dubai.jpg"
                     />
                   </label>
                 </div>

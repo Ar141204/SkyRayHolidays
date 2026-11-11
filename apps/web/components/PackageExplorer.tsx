@@ -180,6 +180,7 @@ export default function PackageExplorer() {
 
                   <div className="package-bottom">
                     <span className="package-price">
+                      <small>Custom Quote</small>
                       <strong>Price on Enquiry</strong>
                     </span>
                     <Link href={`/packages/${p.slug}`} className="view-detail-btn" aria-label={`View ${p.title}`}>

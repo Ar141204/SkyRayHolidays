@@ -3,6 +3,32 @@ import { Platform } from 'react-native';
 const defaultHost = Platform.OS === 'android' ? 'http://10.0.2.2:4000/api/v1' : 'http://localhost:4000/api/v1';
 export const API = process.env.EXPO_PUBLIC_API_URL || defaultHost;
 
+// Local High-Resolution Photography Assets
+export const DESTINATION_IMAGES: Record<string, any> = {
+  'kashmir-paradise': require('../../assets/destinations/kashmir.jpg'),
+  'kerala-backwaters': require('../../assets/destinations/kerala.jpg'),
+  'golden-triangle-tour': require('../../assets/destinations/golden-triangle.jpg'),
+  'andaman-escape': require('../../assets/destinations/andaman.jpg'),
+  'goa-coastal-escape': require('../../assets/destinations/goa.jpg'),
+  'sri-lanka-wonder': require('../../assets/destinations/srilanka.jpg'),
+  'maldives-resort-escape': require('../../assets/destinations/maldives.jpg'),
+  'nepal-himalayan-splendor': require('../../assets/destinations/nepal.jpg'),
+  'dubai-holiday': require('../../assets/destinations/dubai.jpg'),
+  'turkey-tour': require('../../assets/destinations/turkey.jpg'),
+  'bali-escape': require('../../assets/destinations/bali.jpg'),
+  'europe-tour': require('../../assets/destinations/europe.jpg'),
+  'premium-hajj-package': require('../../assets/destinations/makkah.jpg'),
+  'classic-umrah-package': require('../../assets/destinations/makkah.jpg'),
+  'premium-umrah': require('../../assets/destinations/makkah.jpg'),
+};
+
+export function getPackageImage(slug?: string) {
+  if (slug && DESTINATION_IMAGES[slug]) {
+    return DESTINATION_IMAGES[slug];
+  }
+  return DESTINATION_IMAGES['dubai-holiday'];
+}
+
 export type TourPackage = {
   id: string;
   slug: string;

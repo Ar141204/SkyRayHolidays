@@ -56,11 +56,11 @@ export default async function PackageDetail({
   const itinerary = Array.isArray(p.itinerary) ? p.itinerary : [];
   const dates = Array.isArray(p.departureDates) ? p.departureDates : [];
 
-  const mainImage = p.image || '/images/dubai.svg';
+  const mainImage = p.image || '/images/destinations/dubai.jpg';
   const thumbnails = [
     mainImage,
-    p.kind === 'HAJJ' || p.kind === 'UMRAH' ? '/images/makkah.svg' : '/images/bali.svg',
-    '/images/hero-coast.svg',
+    p.kind === 'HAJJ' || p.kind === 'UMRAH' ? '/images/destinations/makkah.jpg' : '/images/destinations/maldives.jpg',
+    '/images/destinations/kashmir.jpg',
   ];
 
   return (
