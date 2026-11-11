@@ -3,7 +3,7 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { Text } from 'react-native';
+import { Text, Platform, View } from 'react-native';
 
 import { HomeScreen } from './src/screens/HomeScreen';
 import { PackagesScreen } from './src/screens/PackagesScreen';
@@ -27,29 +27,57 @@ function Tabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#35A9E0',
-        tabBarInactiveTintColor: '#8193A0',
+        tabBarActiveTintColor: '#0ea5e9',
+        tabBarInactiveTintColor: '#64748b',
         tabBarStyle: {
-          height: 64,
+          height: Platform.OS === 'ios' ? 84 : 64,
           paddingTop: 8,
-          paddingBottom: 8,
-          borderTopColor: '#E5EDF1',
-          backgroundColor: '#FFFFFF',
+          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          borderTopWidth: 1,
+          borderTopColor: '#f1f5f9',
+          backgroundColor: '#ffffff',
+          shadowColor: '#0f172a',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.03,
+          shadowRadius: 8,
+          elevation: 4,
         },
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '700' },
-        tabBarIcon: ({ color }) => (
-          <Text style={{ color, fontSize: 18 }}>
-            {
-              ({
-                Home: '⌂',
-                Packages: '✈',
-                'Hajj & Umrah': '☾',
-                Contact: '✉',
-                Reviews: '★',
-              } as any)[route.name] || '•'
-            }
-          </Text>
-        ),
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '700',
+          marginTop: 2,
+        },
+        tabBarIcon: ({ color, focused }) => {
+          const icons: Record<string, string> = {
+            Home: '🏠',
+            Packages: '✈',
+            'Hajj & Umrah': '☾',
+            Contact: '📞',
+            Reviews: '★',
+          };
+
+          return (
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 2,
+                paddingHorizontal: 8,
+                borderRadius: 12,
+                backgroundColor: focused ? 'rgba(14, 165, 233, 0.08)' : 'transparent',
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: focused ? '#0ea5e9' : color,
+                }}
+              >
+                {icons[route.name] || '•'}
+              </Text>
+            </View>
+          );
+        },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -68,31 +96,38 @@ export default function App() {
         ...DefaultTheme,
         colors: {
           ...DefaultTheme.colors,
-          primary: '#35A9E0',
-          background: '#FFFFFF',
-          card: '#FFFFFF',
-          text: '#202B36',
-          border: '#E5EDF1',
+          primary: '#0ea5e9',
+          background: '#f8fafc',
+          card: '#ffffff',
+          text: '#0f172a',
+          border: '#e2e8f0',
         },
       }}
     >
       <StatusBar style="dark" />
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: '#ffffff' },
+          headerShadowVisible: false,
+          headerTintColor: '#17496B',
+          headerTitleStyle: { fontWeight: '800', fontSize: 16 },
+        }}
+      >
         <Stack.Screen name="Tabs" component={Tabs} options={{ headerShown: false }} />
         <Stack.Screen
           name="Enquiry"
           component={EnquiryScreen}
-          options={{ title: 'Send an Enquiry', headerTintColor: '#17496B' }}
+          options={{ title: 'Request Custom Quote' }}
         />
         <Stack.Screen
           name="PackageDetail"
           component={PackageDetailScreen}
-          options={{ title: 'Package Details', headerTintColor: '#17496B' }}
+          options={{ title: 'Itinerary Details' }}
         />
         <Stack.Screen
           name="About"
           component={AboutScreen}
-          options={{ title: 'About Us', headerTintColor: '#17496B' }}
+          options={{ title: 'About SkyRay Holidays' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

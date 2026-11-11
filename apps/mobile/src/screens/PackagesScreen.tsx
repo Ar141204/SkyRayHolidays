@@ -1,13 +1,27 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  TextInput,
+} from 'react-native';
 import { getPackages, TourPackage } from '../lib/api';
-import { C, ScreenTitle } from '../components/UI';
+import { C, BrandHeader, Badge } from '../components/UI';
 
-const CATEGORIES = ['All', 'International', 'Domestic'];
+const CATEGORIES = [
+  { id: 'All', label: 'All Packages' },
+  { id: 'Domestic', label: '🇮🇳 Within India' },
+  { id: 'International', label: '✈ International' },
+  { id: 'Pilgrimage', label: '☾ Pilgrimage' },
+];
 
 export function PackagesScreen({ navigation }: any) {
   const [items, setItems] = useState<TourPackage[]>([]);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -19,67 +33,148 @@ export function PackagesScreen({ navigation }: any) {
   }, []);
 
   const filtered = useMemo(() => {
-    if (activeCategory === 'All') return items;
-    return items.filter(
-      (p) =>
-        (p.category && p.category.toLowerCase() === activeCategory.toLowerCase()) ||
-        (activeCategory === 'International' && p.kind === 'TOUR' && p.category !== 'Domestic') ||
-        (activeCategory === 'Domestic' && p.category === 'Domestic'),
-    );
-  }, [items, activeCategory]);
+    return items.filter((p) => {
+      // Category filter
+      const matchesCategory =
+        activeCategory === 'All' ||
+        (activeCategory === 'Domestic' && (p.category === 'Domestic' || p.destination.includes('India') || p.slug.includes('kashmir') || p.slug.includes('kerala') || p.slug.includes('golden-triangle') || p.slug.includes('andaman') || p.slug.includes('goa'))) ||
+        (activeCategory === 'International' && (p.category === 'International' || (!p.category && p.kind === 'TOUR'))) ||
+        (activeCategory === 'Pilgrimage' && (p.kind === 'HAJJ' || p.kind === 'UMRAH' || p.category === 'Pilgrimage'));
+
+      // Search filter
+      const matchesSearch =
+        !searchQuery.trim() ||
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.summary.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [items, activeCategory, searchQuery]);
+
+  const navigateToPackage = (slug: string) => {
+    (navigation.getParent?.() || navigation).navigate('PackageDetail', { slug });
+  };
 
   return (
-    <View style={s.page}>
-      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-        <ScreenTitle
-          eyebrow="Find your escape"
-          title="Packages"
-          body="Explore our carefully curated holiday and pilgrimage itineraries."
-        />
+    <View style={s.container}>
+      <BrandHeader
+        subtitle="Curated Travel Packages"
+        onContactPress={() => navigation.navigate('Contact')}
+      />
 
-        {/* Category Filter Pills matching Mobile Preview Screen 3 */}
+      <View style={s.filterHeader}>
+        {/* Search Input Field */}
+        <View style={s.searchBar}>
+          <Text style={s.searchIcon}>🔍</Text>
+          <TextInput
+            style={s.searchInput}
+            placeholder="Search destinations (e.g. Kashmir, Dubai, Kerala)..."
+            placeholderTextColor="#94a3b8"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            clearButtonMode="while-editing"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')} style={s.clearBtn}>
+              <Text style={s.clearText}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Category Pills Strip */}
         <View style={s.pillsRow}>
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
-              key={cat}
-              style={[s.pill, activeCategory === cat && s.activePill]}
-              onPress={() => setActiveCategory(cat)}
+              key={cat.id}
+              style={[s.pill, activeCategory === cat.id && s.activePill]}
+              onPress={() => setActiveCategory(cat.id)}
+              activeOpacity={0.8}
             >
-              <Text style={[s.pillText, activeCategory === cat && s.activePillText]}>{cat}</Text>
+              <Text style={[s.pillText, activeCategory === cat.id && s.activePillText]}>
+                {cat.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
       {loading ? (
-        <ActivityIndicator color={C.sky} style={{ marginTop: 40 }} />
+        <View style={s.centerBox}>
+          <ActivityIndicator color={C.sky} size="large" />
+          <Text style={s.loadingText}>Loading tour packages...</Text>
+        </View>
       ) : error && filtered.length === 0 ? (
-        <Text style={s.empty}>{error}. Check your API connection.</Text>
+        <View style={s.centerBox}>
+          <Text style={s.empty}>{error}. Check your connection.</Text>
+        </View>
       ) : (
         <FlatList
           data={filtered}
           keyExtractor={(x) => x.id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={s.card}
-              onPress={() => (navigation.getParent?.() || navigation).navigate('PackageDetail', { slug: item.slug })}
-            >
-              <View style={s.art}>
-                <Text style={{ fontSize: 28 }}>
-                  {item.kind === 'HAJJ' || item.kind === 'UMRAH' ? '☾' : '✈'}
-                </Text>
-              </View>
-              <View style={{ flex: 1 }}>
+          contentContainerStyle={s.listContent}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => {
+            const isDomestic =
+              item.category === 'Domestic' ||
+              item.destination.includes('India') ||
+              item.slug.includes('kashmir') ||
+              item.slug.includes('kerala') ||
+              item.slug.includes('andaman');
+
+            const isPilgrim = item.kind === 'HAJJ' || item.kind === 'UMRAH';
+
+            return (
+              <TouchableOpacity
+                style={s.card}
+                activeOpacity={0.9}
+                onPress={() => navigateToPackage(item.slug)}
+              >
+                <View style={s.cardTopRow}>
+                  <Badge
+                    label={isPilgrim ? 'PILGRIMAGE' : isDomestic ? 'DOMESTIC (INDIA)' : 'INTERNATIONAL'}
+                    variant={isPilgrim ? 'gold' : isDomestic ? 'sky' : 'neutral'}
+                  />
+                  <Text style={s.durationPill}>{item.duration}</Text>
+                </View>
+
                 <Text style={s.title}>{item.title}</Text>
-                <Text style={s.meta}>{item.duration} · Price on Enquiry</Text>
-                <Text style={s.body} numberOfLines={2}>{item.summary}</Text>
-                <Text style={s.link}>View details →</Text>
-              </View>
-            </TouchableOpacity>
-          )}
+                <Text style={s.destination}>📍 {item.destination}</Text>
+
+                <Text style={s.summary} numberOfLines={2}>
+                  {item.summary}
+                </Text>
+
+                <View style={s.cardFooter}>
+                  <View>
+                    <Text style={s.priceLabel}>Custom Itinerary</Text>
+                    <Text style={s.priceValue}>Price on Enquiry</Text>
+                  </View>
+
+                  <View style={s.viewBtn}>
+                    <Text style={s.viewBtnText}>View Itinerary →</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          }}
           ListEmptyComponent={
-            <Text style={s.empty}>No packages found in this category.</Text>
+            <View style={s.emptyContainer}>
+              <Text style={s.emptyIcon}>✈</Text>
+              <Text style={s.emptyTitle}>No packages found</Text>
+              <Text style={s.emptyBody}>
+                Try adjusting your search query or switching categories.
+              </Text>
+              <TouchableOpacity
+                style={s.resetBtn}
+                onPress={() => {
+                  setActiveCategory('All');
+                  setSearchQuery('');
+                }}
+              >
+                <Text style={s.resetBtnText}>Reset Filters</Text>
+              </TouchableOpacity>
+            </View>
           }
         />
       )}
@@ -88,40 +183,204 @@ export function PackagesScreen({ navigation }: any) {
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#fff' },
-  pillsRow: { flexDirection: 'row', gap: 8, marginTop: 12, marginBottom: 8 },
-  pill: {
-    paddingVertical: 7,
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  filterHeader: {
+    backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: '#F0F6F9',
-    borderWidth: 1,
-    borderColor: '#E1EDF3',
+    paddingTop: 12,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
   },
-  activePill: { backgroundColor: C.sky, borderColor: C.sky },
-  pillText: { fontSize: 12, fontWeight: '700', color: C.deep },
-  activePillText: { color: '#fff' },
-  card: {
-    borderWidth: 1,
-    borderColor: C.line,
-    borderRadius: 8,
-    marginBottom: 12,
+  searchBar: {
     flexDirection: 'row',
-    padding: 12,
-    gap: 13,
-    backgroundColor: '#FAFDFE',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 42,
+    marginBottom: 10,
   },
-  art: {
-    width: 72,
-    height: 85,
+  searchIcon: {
+    fontSize: 14,
+    marginRight: 8,
+    color: '#64748b',
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: C.deep,
+    paddingVertical: 0,
+  },
+  clearBtn: {
+    padding: 4,
+  },
+  clearText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    fontWeight: '700',
+  },
+  pillsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  pill: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  activePill: {
+    backgroundColor: '#e0f2fe',
+    borderColor: '#38bdf8',
+  },
+  pillText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#64748b',
+  },
+  activePillText: {
+    color: '#0369a1',
+    fontWeight: '800',
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 36,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  durationPill: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748b',
+    backgroundColor: '#f8fafc',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
     borderRadius: 6,
-    backgroundColor: C.pale,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: C.deep,
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+  destination: {
+    fontSize: 12,
+    color: C.muted,
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  summary: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#475569',
+    marginBottom: 14,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
+  },
+  priceLabel: {
+    fontSize: 10,
+    color: '#94a3b8',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  priceValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: C.deep,
+  },
+  viewBtn: {
+    backgroundColor: '#f0f9ff',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  viewBtnText: {
+    color: C.skyDark,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  centerBox: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 24,
   },
-  title: { fontSize: 15, fontWeight: '900', color: C.deep },
-  meta: { fontSize: 11, color: C.sky, marginVertical: 3, fontWeight: '800' },
-  body: { fontSize: 11, color: C.muted, lineHeight: 16 },
-  link: { fontSize: 11, color: C.sky, fontWeight: '900', marginTop: 6 },
-  empty: { padding: 25, color: C.muted, fontSize: 13, textAlign: 'center' },
+  loadingText: {
+    marginTop: 12,
+    color: C.muted,
+    fontSize: 13,
+  },
+  empty: {
+    color: C.muted,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 48,
+    paddingHorizontal: 24,
+  },
+  emptyIcon: {
+    fontSize: 36,
+    color: '#cbd5e1',
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: C.deep,
+    marginBottom: 6,
+  },
+  emptyBody: {
+    fontSize: 13,
+    color: C.muted,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 18,
+  },
+  resetBtn: {
+    backgroundColor: C.sky,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  resetBtnText: {
+    color: '#ffffff',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
 });

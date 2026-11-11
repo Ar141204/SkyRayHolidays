@@ -6,9 +6,8 @@ import {
   StyleSheet,
   Linking,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
-import { C, ScreenTitle } from '../components/UI';
+import { C, BrandHeader, PrimaryButton, Badge } from '../components/UI';
 import { API } from '../lib/api';
 
 const DEFAULT_PHONE = '+91 98765 43210';
@@ -18,34 +17,80 @@ const DEFAULT_ADDRESS = '123 Travel Street, Chennai, TN 600001';
 
 export function AboutScreen() {
   return (
-    <ScrollView style={s.page} contentContainerStyle={s.content}>
-      <ScreenTitle
-        eyebrow="A little about us"
-        title="About SkyRay Holidays"
-        body="Your Trusted Travel Partner. We believe travel is more than reaching a place — it's an experience that connects you to new cultures, beautiful places and lasting memories."
-      />
+    <View style={s.container}>
+      <BrandHeader subtitle="About SkyRay Holidays" />
 
-      <View style={s.card}>
-        <Text style={s.heading}>Our Mission</Text>
-        <Text style={s.body}>
-          To make travel accessible, enriching and memorable for everyone through thoughtful planning and transparent service.
-        </Text>
+      <ScrollView
+        style={s.scrollView}
+        contentContainerStyle={s.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={s.aboutHero}>
+          <View style={s.kickerBadge}>
+            <Text style={s.kickerText}>YOUR TRUSTED TRAVEL PARTNER</Text>
+          </View>
+          <Text style={s.aboutTitle}>About SkyRay Holidays</Text>
+          <Text style={s.aboutBody}>
+            We believe travel is more than reaching a destination — it is an enriching experience that connects you with new cultures, creates cherished family memories, and offers spiritual renewal.
+          </Text>
+        </View>
 
-        <Text style={s.heading}>Our Vision</Text>
-        <Text style={s.body}>
-          To be a leading global travel brand recognized for exceptional customer care and trustworthy pilgrimage services.
-        </Text>
+        {/* 4 Trust Metrics */}
+        <View style={s.statsGrid}>
+          <View style={s.statCard}>
+            <Text style={s.statNum}>1,200+</Text>
+            <Text style={s.statLabel}>Happy Travelers</Text>
+          </View>
+          <View style={s.statCard}>
+            <Text style={s.statNum}>50+</Text>
+            <Text style={s.statLabel}>Curated Packages</Text>
+          </View>
+          <View style={s.statCard}>
+            <Text style={s.statNum}>4.8 ★</Text>
+            <Text style={s.statLabel}>Google Rating</Text>
+          </View>
+          <View style={s.statCard}>
+            <Text style={s.statNum}>24/7</Text>
+            <Text style={s.statLabel}>Travel Support</Text>
+          </View>
+        </View>
 
-        <Text style={s.heading}>Why Choose Us</Text>
-        <Text style={s.body}>
-          Unmatched service, care and trust. We confirm all details upfront and provide 24/7 travel assistance.
-        </Text>
-      </View>
-    </ScrollView>
+        {/* Three Core Pillars */}
+        <View style={s.pillarCard}>
+          <View style={s.pillarHeader}>
+            <Text style={s.pillarIcon}>🎯</Text>
+            <Text style={s.pillarTitle}>Our Mission</Text>
+          </View>
+          <Text style={s.pillarBody}>
+            To make travel accessible, enjoyable, and effortless for every traveler through thoughtful planning, transparent pricing, and personalized itineraries.
+          </Text>
+        </View>
+
+        <View style={s.pillarCard}>
+          <View style={s.pillarHeader}>
+            <Text style={s.pillarIcon}>🌟</Text>
+            <Text style={s.pillarTitle}>Our Vision</Text>
+          </View>
+          <Text style={s.pillarBody}>
+            To be the most trusted global travel and pilgrimage facilitator, celebrated for unwavering reliability, customer warmth, and spiritual integrity.
+          </Text>
+        </View>
+
+        <View style={s.pillarCard}>
+          <View style={s.pillarHeader}>
+            <Text style={s.pillarIcon}>🛡</Text>
+            <Text style={s.pillarTitle}>Why Choose Us</Text>
+          </View>
+          <Text style={s.pillarBody}>
+            Handpicked 4-star and 5-star hotels, verified private chauffeurs, on-ground tour guides, transparent custom quotes, and dedicated 24/7 concierge support.
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
-// SCREEN 7: Contact Screen matching Mobile Preview Screen 7
+// SCREEN 7: Contact Screen
 export function ContactScreen() {
   const [data, setData] = useState<any>({
     phone: DEFAULT_PHONE,
@@ -70,239 +115,485 @@ export function ContactScreen() {
   const whatsappNumber = (data.whatsapp || DEFAULT_WHATSAPP).replace(/\D/g, '');
 
   return (
-    <ScrollView style={s.page} contentContainerStyle={s.content}>
-      <ScreenTitle
-        eyebrow="We're here to help"
-        title="Contact"
-        body="Reach the SkyRay Holidays team through phone, email or direct WhatsApp chat."
-      />
+    <View style={s.container}>
+      <BrandHeader subtitle="Reach Out to Our Travel Team" />
 
-      <View style={s.contactCard}>
-        {/* Phone */}
-        <TouchableOpacity
-          style={s.contactRow}
-          onPress={() => openUrl(`tel:${data.phone || DEFAULT_PHONE}`)}
-        >
-          <View style={s.contactIconWrap}><Text style={s.iconGlyph}>📞</Text></View>
-          <View>
-            <Text style={s.contactLabel}>Phone Number</Text>
-            <Text style={s.contactVal}>{data.phone || DEFAULT_PHONE}</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Email */}
-        <TouchableOpacity
-          style={s.contactRow}
-          onPress={() => openUrl(`mailto:${data.email || DEFAULT_EMAIL}`)}
-        >
-          <View style={s.contactIconWrap}><Text style={s.iconGlyph}>✉</Text></View>
-          <View>
-            <Text style={s.contactLabel}>Email Address</Text>
-            <Text style={s.contactVal}>{data.email || DEFAULT_EMAIL}</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Address */}
-        <View style={s.contactRow}>
-          <View style={s.contactIconWrap}><Text style={s.iconGlyph}>📍</Text></View>
-          <View style={{ flex: 1 }}>
-            <Text style={s.contactLabel}>Office Address</Text>
-            <Text style={s.contactVal}>{data.address || DEFAULT_ADDRESS}</Text>
-          </View>
+      <ScrollView
+        style={s.scrollView}
+        contentContainerStyle={s.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={s.contactHero}>
+          <Text style={s.eyebrow}>WE ARE HERE TO HELP</Text>
+          <Text style={s.contactHeroTitle}>Get in Touch</Text>
+          <Text style={s.contactHeroBody}>
+            Have questions about a destination or want a customized quote? Speak directly with our friendly travel specialists.
+          </Text>
         </View>
 
-        {/* Big Green WhatsApp Button matching Mobile Preview Screen 7 */}
+        {/* WhatsApp Direct Hero Card */}
         <TouchableOpacity
-          style={s.whatsAppBtn}
+          style={s.whatsappHeroCard}
+          activeOpacity={0.9}
           onPress={() =>
             openUrl(
               `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-                'Hello SkyRay Holidays! I would like to inquire about a travel package.',
+                'Hello SkyRay Holidays! I would like to enquire about your tour packages.',
               )}`,
             )
           }
         >
-          <Text style={s.whatsAppBtnText}>💬  Chat on WhatsApp</Text>
+          <View style={s.waIconCircle}>
+            <Text style={s.waIconLarge}>💬</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.waCardTitle}>Chat Directly on WhatsApp</Text>
+            <Text style={s.waCardSub}>Fastest replies for quotations &amp; inquiries</Text>
+          </View>
+          <Text style={s.waArrow}>→</Text>
         </TouchableOpacity>
 
-        {/* Map Preview Graphic */}
-        <View style={s.mapBox}>
-          <Text style={{ fontSize: 32 }}>🗺</Text>
-          <Text style={s.mapTitle}>SkyRay Holidays Office</Text>
-          <Text style={s.mapSub}>Chennai, Tamil Nadu, India</Text>
+        {/* Contact Methods */}
+        <View style={s.contactListCard}>
+          {/* Phone */}
+          <TouchableOpacity
+            style={s.contactItem}
+            activeOpacity={0.7}
+            onPress={() => openUrl(`tel:${data.phone || DEFAULT_PHONE}`)}
+          >
+            <View style={s.contactIconBox}><Text style={s.contactIconGlyph}>📞</Text></View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.contactFieldLabel}>Call Customer Desk</Text>
+              <Text style={s.contactFieldVal}>{data.phone || DEFAULT_PHONE}</Text>
+            </View>
+            <Text style={s.itemArrow}>›</Text>
+          </TouchableOpacity>
+
+          {/* Email */}
+          <TouchableOpacity
+            style={s.contactItem}
+            activeOpacity={0.7}
+            onPress={() => openUrl(`mailto:${data.email || DEFAULT_EMAIL}`)}
+          >
+            <View style={s.contactIconBox}><Text style={s.contactIconGlyph}>✉</Text></View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.contactFieldLabel}>Email Address</Text>
+              <Text style={s.contactFieldVal}>{data.email || DEFAULT_EMAIL}</Text>
+            </View>
+            <Text style={s.itemArrow}>›</Text>
+          </TouchableOpacity>
+
+          {/* Office Address */}
+          <TouchableOpacity
+            style={[s.contactItem, { borderBottomWidth: 0 }]}
+            activeOpacity={0.7}
+            onPress={() => openUrl('https://maps.google.com/?q=Chennai+TN+India')}
+          >
+            <View style={s.contactIconBox}><Text style={s.contactIconGlyph}>📍</Text></View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.contactFieldLabel}>Head Office</Text>
+              <Text style={s.contactFieldVal}>{data.address || DEFAULT_ADDRESS}</Text>
+              <Text style={s.hoursText}>Mon - Sat: 9:00 AM - 7:00 PM IST</Text>
+            </View>
+            <Text style={s.itemArrow}>›</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
-// SCREEN 8: Google Reviews Screen matching Mobile Preview Screen 8
+// SCREEN 8: Google Reviews Screen
 export function ReviewsScreen() {
   const reviews = [
     {
       id: '1',
-      author: 'Priya Sharma',
+      name: 'Priya Sharma',
+      trip: 'Kashmir Paradise Experience',
       rating: 5,
-      date: '2 weeks ago',
-      text: 'Amazing experience! The Dubai trip was perfectly organized from airport pickup to desert safari. Our family loved every minute.',
+      date: 'October 2026',
+      comment:
+        'Our family trip to Kashmir was absolutely unforgettable! The houseboat in Dal Lake was spotless, and our driver was courteous and knowledgeable throughout Pahalgam and Gulmarg.',
     },
     {
       id: '2',
-      author: 'Mohammed Farooq',
+      name: 'Mohammed Farooq',
+      trip: 'Premium Umrah Package',
       rating: 5,
-      date: '1 month ago',
-      text: 'Our Umrah journey was truly peaceful. 5-star hotels were within a 3-minute walk to Haram as promised. Highly recommend their guidance team.',
+      date: 'September 2026',
+      comment:
+        'Alhamdulillah, SkyRay Holidays took care of every single detail. Our hotel was literally 2 minutes from the Haram in Makkah, and the Haramain train transfers made travel effortless.',
     },
     {
       id: '3',
-      author: 'Ananya & Rohit Verma',
+      name: 'Rajesh & Sneha',
+      trip: 'Kerala Backwaters Getaway',
       rating: 5,
-      date: '1 month ago',
-      text: 'Booked the Bali honeymoon package with SkyRay. The private pool villa and Nusa Penida tour were breathtaking. 10/10 service!',
+      date: 'August 2026',
+      comment:
+        'The Alleppey houseboat experience was pure bliss! From the authentic Kerala meals to the serene sunset cruise in Munnar, everything exceeded our expectations.',
     },
     {
       id: '4',
-      author: 'Karthik Raja',
-      rating: 4.8,
-      date: '2 months ago',
-      text: 'Very professional agency. Prompt replies on WhatsApp, clear documentation, and great hotel choices in Istanbul.',
+      name: 'Arun Kumar',
+      trip: 'Dubai Holiday Package',
+      rating: 5,
+      date: 'July 2026',
+      comment:
+        'Seamless desert safari, premium Marina dinner cruise, and great hotel stay. The itinerary was perfectly paced with no rush. Highly recommend SkyRay Holidays!',
     },
   ];
 
   return (
-    <ScrollView style={s.page} contentContainerStyle={s.content}>
-      <ScreenTitle
-        eyebrow="Traveller Feedback"
-        title="Google Reviews"
-        body="Authentic reviews and ratings from travellers who explored the world with SkyRay."
-      />
+    <View style={s.container}>
+      <BrandHeader subtitle="Traveler Testimonials" />
 
-      {/* Prominent Rating Card matching Mobile Preview Screen 8 */}
-      <View style={s.ratingHeroCard}>
-        <Text style={s.bigScore}>4.8</Text>
-        <Text style={s.starString}>★★★★★</Text>
-        <Text style={s.reviewsCountLabel}>(1.2K Reviews)</Text>
-      </View>
+      <ScrollView
+        style={s.scrollView}
+        contentContainerStyle={s.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Rating Hero Card */}
+        <View style={s.ratingHeroCard}>
+          <Text style={s.ratingHeroBig}>4.8</Text>
+          <Text style={s.ratingHeroStars}>★★★★★</Text>
+          <Text style={s.ratingHeroTitle}>Rated 4.8 / 5 on Google</Text>
+          <Text style={s.ratingHeroSub}>
+            Based on 1,200+ verified customer reviews across domestic &amp; international tours.
+          </Text>
+        </View>
 
-      {/* Customer Review List matching Mobile Preview Screen 8 */}
-      <View style={s.reviewsList}>
+        <Text style={s.reviewsSectionTitle}>Customer Testimonials</Text>
+
+        {/* Review Cards */}
         {reviews.map((r) => (
           <View key={r.id} style={s.reviewCard}>
-            <View style={s.reviewCardHead}>
-              <View style={s.avatar}>
-                <Text style={s.avatarText}>{r.author.charAt(0)}</Text>
+            <View style={s.reviewCardHeader}>
+              <View style={s.avatarCircle}>
+                <Text style={s.avatarInitial}>{r.name.charAt(0)}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.reviewerName}>{r.author}</Text>
-                <Text style={s.reviewDate}>{r.date}</Text>
+                <Text style={s.reviewerName}>{r.name}</Text>
+                <Text style={s.tripName}>{r.trip} · {r.date}</Text>
               </View>
-              <Text style={s.cardStars}>{'★'.repeat(Math.round(r.rating))}</Text>
+              <Text style={s.cardStars}>{'★'.repeat(r.rating)}</Text>
             </View>
-            <Text style={s.reviewText}>{r.text}</Text>
+            <Text style={s.reviewComment}>{r.comment}</Text>
           </View>
         ))}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#fff' },
-  content: { padding: 20 },
-  card: { padding: 18, borderWidth: 1, borderColor: C.line, borderRadius: 8, marginTop: 12 },
-  heading: { fontSize: 16, fontWeight: '900', color: C.deep, marginTop: 14, marginBottom: 4 },
-  body: { fontSize: 12, color: C.muted, lineHeight: 20 },
-
-  // Contact styles
-  contactCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: C.line,
-    padding: 18,
-    marginTop: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
   },
-  contactRow: {
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 36,
+  },
+  aboutHero: {
+    backgroundColor: C.deep,
+    borderRadius: 20,
+    padding: 22,
+    marginBottom: 20,
+    shadowColor: C.deep,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  kickerBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  kickerText: {
+    color: '#93c5fd',
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+  },
+  aboutTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#ffffff',
+    lineHeight: 28,
+  },
+  aboutBody: {
+    color: '#e2e8f0',
+    fontSize: 13,
+    lineHeight: 20,
+    marginTop: 8,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    padding: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  statNum: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: C.deep,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: C.muted,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  pillarCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  pillarHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F4F7',
+    marginBottom: 8,
   },
-  contactIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: C.pale,
-    alignItems: 'center',
-    justifyContent: 'center',
+  pillarIcon: {
+    fontSize: 18,
+    marginRight: 10,
   },
-  iconGlyph: { fontSize: 18 },
-  contactLabel: { fontSize: 10, color: C.muted, fontWeight: '700' },
-  contactVal: { fontSize: 13, color: C.deep, fontWeight: '800', marginTop: 2 },
-  whatsAppBtn: {
+  pillarTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: C.deep,
+  },
+  pillarBody: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: '#475569',
+  },
+  contactHero: {
+    marginBottom: 18,
+  },
+  eyebrow: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    color: C.skyDark,
+    marginBottom: 4,
+  },
+  contactHeroTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: C.deep,
+    lineHeight: 30,
+  },
+  contactHeroBody: {
+    fontSize: 13,
+    color: C.muted,
+    lineHeight: 19,
+    marginTop: 6,
+  },
+  whatsappHeroCard: {
     backgroundColor: '#25D366',
-    borderRadius: 8,
-    paddingVertical: 14,
+    borderRadius: 18,
+    padding: 18,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 18,
+    marginBottom: 18,
     shadowColor: '#25D366',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 3,
   },
-  whatsAppBtnText: { color: '#fff', fontSize: 14, fontWeight: '900' },
-  mapBox: {
-    marginTop: 18,
-    height: 120,
-    backgroundColor: '#EEF6FA',
-    borderRadius: 8,
+  waIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#D4E8F2',
+    marginRight: 12,
   },
-  mapTitle: { fontSize: 13, fontWeight: '900', color: C.deep, marginTop: 4 },
-  mapSub: { fontSize: 10, color: C.muted },
-
-  // Reviews styles matching Preview Screen 8
-  ratingHeroCard: {
-    backgroundColor: '#FAFDFE',
+  waIconLarge: {
+    fontSize: 22,
+  },
+  waCardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
+  waCardSub: {
+    fontSize: 11.5,
+    color: '#ffffff',
+    opacity: 0.9,
+    marginTop: 2,
+  },
+  waArrow: {
+    fontSize: 22,
+    color: '#ffffff',
+    fontWeight: '800',
+  },
+  contactListCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#E1EDF3',
-    borderRadius: 12,
+    borderColor: '#f1f5f9',
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  contactIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    backgroundColor: '#f0f9ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  contactIconGlyph: {
+    fontSize: 18,
+  },
+  contactFieldLabel: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  contactFieldVal: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: C.deep,
+    marginTop: 2,
+  },
+  hoursText: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  itemArrow: {
+    fontSize: 20,
+    color: '#94a3b8',
+    fontWeight: '700',
+  },
+  ratingHeroCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
     padding: 24,
     alignItems: 'center',
-    marginTop: 10,
-  },
-  bigScore: { fontSize: 48, fontWeight: '900', color: C.deep },
-  starString: { fontSize: 24, color: '#F59E0B', marginVertical: 4 },
-  reviewsCountLabel: { fontSize: 12, color: C.muted, fontWeight: '700' },
-  reviewsList: { marginTop: 16, gap: 12 },
-  reviewCard: {
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: C.line,
-    borderRadius: 8,
-    padding: 14,
-    backgroundColor: '#fff',
+    borderColor: '#f1f5f9',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  reviewCardHead: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
-  avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: C.sky,
+  ratingHeroBig: {
+    fontSize: 44,
+    fontWeight: '900',
+    color: C.deep,
+    lineHeight: 48,
+  },
+  ratingHeroStars: {
+    fontSize: 18,
+    color: '#d97706',
+    marginVertical: 4,
+  },
+  ratingHeroTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: C.deep,
+    marginTop: 2,
+  },
+  ratingHeroSub: {
+    fontSize: 12.5,
+    color: C.muted,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  reviewsSectionTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: C.deep,
+    marginBottom: 12,
+  },
+  reviewCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  reviewCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  avatarCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#e0f2fe',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 10,
   },
-  avatarText: { color: '#fff', fontWeight: '900', fontSize: 13 },
-  reviewerName: { fontSize: 13, fontWeight: '800', color: C.deep },
-  reviewDate: { fontSize: 10, color: C.muted },
-  cardStars: { fontSize: 13, color: '#F59E0B' },
-  reviewText: { fontSize: 12, color: '#445663', lineHeight: 18 },
+  avatarInitial: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0369a1',
+  },
+  reviewerName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: C.deep,
+  },
+  tripName: {
+    fontSize: 11,
+    color: C.muted,
+    marginTop: 1,
+  },
+  cardStars: {
+    color: '#d97706',
+    fontSize: 12,
+  },
+  reviewComment: {
+    fontSize: 13,
+    color: '#334155',
+    lineHeight: 19,
+  },
 });
