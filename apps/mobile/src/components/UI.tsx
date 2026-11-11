@@ -43,7 +43,7 @@ export function BrandHeader({
     if (onContactPress) {
       onContactPress();
     } else {
-      Linking.openURL('https://wa.me/919876543210?text=Hello%20SkyRay%20Holidays!').catch(() => {});
+      Linking.openURL('https://wa.me/919876543210?text=Hello%20SkyRay%20Holidays!').catch(() => { });
     }
   };
 
