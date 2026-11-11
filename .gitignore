@@ -8,4 +8,5 @@ coverage
 dist
 build
 .DS_Store
+*.tsbuildinfo
 apps/api/prisma/*.db

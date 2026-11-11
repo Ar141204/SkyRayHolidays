@@ -21,7 +21,7 @@ export function usePublicSettings() {
   useEffect(() => {
     fetch(`${API_URL}/settings/public`)
       .then((r) => (r.ok ? r.json() : {}))
-      .then((data) => {
+      .then((data: any) => {
         if (data && (data.phone || data.email || data.whatsapp)) {
           setSettings((prev) => ({ ...prev, ...data }));
         }

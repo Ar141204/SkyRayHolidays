@@ -57,8 +57,8 @@ export function ContactScreen() {
   useEffect(() => {
     fetch(`${API}/settings/public`)
       .then((r) => (r.ok ? r.json() : {}))
-      .then((res) => {
-        if (res.phone || res.email) setData(res);
+      .then((res: any) => {
+        if (res && (res.phone || res.email)) setData(res);
       })
       .catch(() => {});
   }, []);

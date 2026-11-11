@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, TooManyRequestsException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class EnquiryRateGuard implements CanActivate {
@@ -23,7 +23,10 @@ export class EnquiryRateGuard implements CanActivate {
     }
 
     if (current.count >= this.maxAttempts) {
-      throw new TooManyRequestsException('Too many enquiry attempts. Please try again later.');
+      throw new HttpException(
+        'Too many enquiry attempts. Please try again later.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     current.count++;

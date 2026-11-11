@@ -1,8 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, TooManyRequestsException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+
+const attempts = new Map<string, { count: number; reset: number }>();
 
 @Injectable()
 export class LoginRateGuard implements CanActivate {
-  private static attempts = new Map<string, { count: number; reset: number }>();
   private readonly maxEntries = 5000;
   private readonly windowMs = 15 * 60 * 1000; // 15 minutes
   private readonly maxIpAttempts = 50; // Allow multiple staff from same office IP
@@ -10,7 +11,7 @@ export class LoginRateGuard implements CanActivate {
 
   static recordSuccess(email?: string) {
     if (email) {
-      LoginRateGuard.attempts.delete(`email:${email.toLowerCase().trim()}`);
+      attempts.delete(`email:${email.toLowerCase().trim()}`);
     }
   }
 
@@ -25,13 +26,16 @@ export class LoginRateGuard implements CanActivate {
 
     // 1. Check IP rate limit
     const ipKey = `ip:${ip}`;
-    let ipRecord = LoginRateGuard.attempts.get(ipKey);
+    let ipRecord = attempts.get(ipKey);
     if (!ipRecord || ipRecord.reset < now) {
       ipRecord = { count: 1, reset: now + this.windowMs };
-      LoginRateGuard.attempts.set(ipKey, ipRecord);
+      attempts.set(ipKey, ipRecord);
     } else {
       if (ipRecord.count >= this.maxIpAttempts) {
-        throw new TooManyRequestsException('Too many sign-in attempts from this location. Try again in 15 minutes.');
+        throw new HttpException(
+          'Too many sign-in attempts from this location. Try again in 15 minutes.',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
       }
       ipRecord.count++;
     }
@@ -39,13 +43,16 @@ export class LoginRateGuard implements CanActivate {
     // 2. Check Account rate limit if email provided
     if (email) {
       const emailKey = `email:${email}`;
-      let emailRecord = LoginRateGuard.attempts.get(emailKey);
+      let emailRecord = attempts.get(emailKey);
       if (!emailRecord || emailRecord.reset < now) {
         emailRecord = { count: 1, reset: now + this.windowMs };
-        LoginRateGuard.attempts.set(emailKey, emailRecord);
+        attempts.set(emailKey, emailRecord);
       } else {
         if (emailRecord.count >= this.maxAccountAttempts) {
-          throw new TooManyRequestsException('Too many failed sign-in attempts for this account. Try again in 15 minutes.');
+          throw new HttpException(
+            'Too many failed sign-in attempts for this account. Try again in 15 minutes.',
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
         }
         emailRecord.count++;
       }
@@ -55,17 +62,17 @@ export class LoginRateGuard implements CanActivate {
   }
 
   private cleanup(now: number) {
-    if (LoginRateGuard.attempts.size > this.maxEntries) {
-      for (const [key, value] of LoginRateGuard.attempts.entries()) {
+    if (attempts.size > this.maxEntries) {
+      for (const [key, value] of attempts.entries()) {
         if (value.reset < now) {
-          LoginRateGuard.attempts.delete(key);
+          attempts.delete(key);
         }
       }
-      if (LoginRateGuard.attempts.size > this.maxEntries) {
-        const excess = LoginRateGuard.attempts.size - this.maxEntries;
+      if (attempts.size > this.maxEntries) {
+        const excess = attempts.size - this.maxEntries;
         let dropped = 0;
-        for (const key of LoginRateGuard.attempts.keys()) {
-          LoginRateGuard.attempts.delete(key);
+        for (const key of attempts.keys()) {
+          attempts.delete(key);
           dropped++;
           if (dropped >= excess) break;
         }

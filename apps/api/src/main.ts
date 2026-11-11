@@ -9,6 +9,7 @@ dotenv.config();
 import 'reflect-metadata';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -22,7 +23,7 @@ async function bootstrap() {
     console.warn('⚠️ NOTICE: COOKIE_SECURE is false or unset. Set COOKIE_SECURE=true when serving over HTTPS.');
   }
 
-  const app = await NestFactory.create(AppModule, { cors: false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: false });
 
   if (process.env.TRUST_PROXY === 'true') {
     app.set('trust proxy', 1);
