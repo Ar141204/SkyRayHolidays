@@ -86,7 +86,7 @@ export function HomeScreen({ navigation }: any) {
     (navigation.getParent?.() || navigation).navigate('Enquiry', { packageName });
   };
 
-  const makkahImg = getPackageImage('premium-hajj-package');
+  const meccaImg = getPackageImage('premium-hajj-package');
 
   return (
     <View style={s.container}>
@@ -275,7 +275,7 @@ export function HomeScreen({ navigation }: any) {
         >
           <View style={s.pilgrimThumbFrame}>
             <Image
-              source={makkahImg}
+              source={meccaImg}
               style={s.pilgrimThumb}
               resizeMode="cover"
             />

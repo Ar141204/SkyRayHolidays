@@ -20,7 +20,8 @@ export function PilgrimageScreen({ navigation }: any) {
     }
   };
 
-  const makkahImg = getPackageImage('premium-hajj-package');
+  const meccaImg = getPackageImage('premium-hajj-package');
+  const madinahImg = getPackageImage('premium-umrah');
 
   return (
     <View style={s.container}>
@@ -49,7 +50,7 @@ export function PilgrimageScreen({ navigation }: any) {
         <View style={s.card}>
           <View style={s.imageFrame}>
             <Image
-              source={makkahImg}
+              source={madinahImg}
               style={s.coverImage}
               resizeMode="cover"
             />
@@ -125,7 +126,7 @@ export function PilgrimageScreen({ navigation }: any) {
         <View style={[s.card, { marginTop: 18 }]}>
           <View style={s.imageFrame}>
             <Image
-              source={makkahImg}
+              source={meccaImg}
               style={s.coverImage}
               resizeMode="cover"
             />

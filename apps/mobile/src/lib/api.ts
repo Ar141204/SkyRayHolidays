@@ -17,9 +17,9 @@ export const DESTINATION_IMAGES: Record<string, any> = {
   'turkey-tour': require('../../assets/destinations/turkey.jpg'),
   'bali-escape': require('../../assets/destinations/bali.jpg'),
   'europe-tour': require('../../assets/destinations/europe.jpg'),
-  'premium-hajj-package': require('../../assets/destinations/makkah.jpg'),
-  'classic-umrah-package': require('../../assets/destinations/makkah.jpg'),
-  'premium-umrah': require('../../assets/destinations/makkah.jpg'),
+  'premium-hajj-package': require('../../assets/destinations/mecca.jpg'),
+  'classic-umrah-package': require('../../assets/destinations/madinah.jpg'),
+  'premium-umrah': require('../../assets/destinations/madinah.jpg'),
 };
 
 export function getPackageImage(slug?: string) {
@@ -221,6 +221,7 @@ export const FALLBACK_PACKAGES: TourPackage[] = [
     duration: '14 Days',
     summary: 'Complete guidance and 5-star accommodations near the Haram for your sacred journey.',
     description: 'Experience a peaceful and fully guided pilgrimage with luxury hotel accommodations walking distance from Haram, dedicated scholars, and full logistics support.',
+    image: '/images/destinations/mecca.jpg',
     inclusions: ['5-Star Hotel near Haram', 'VIP Transport', 'Full-board Buffet Meals', 'Experienced Religious Guidance'],
     exclusions: ['Emergency Medical Insurance'],
   },
@@ -234,6 +235,7 @@ export const FALLBACK_PACKAGES: TourPackage[] = [
     duration: '10 Days',
     summary: 'A serene and comfortable Umrah experience with deluxe hotels close to the holy mosques.',
     description: 'Deluxe Umrah package tailored for families and individuals with Kaaba view options, direct flights, and comprehensive ground arrangements.',
+    image: '/images/destinations/madinah.jpg',
     inclusions: ['Direct Return Flights', 'Luxury 5-Star Hotel Stay', 'Visa Processing Assistance', 'Private Chauffeur Transfers'],
     exclusions: ['Personal Expenses'],
   },

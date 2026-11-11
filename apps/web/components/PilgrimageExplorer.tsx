@@ -69,7 +69,7 @@ export default function PilgrimageExplorer() {
         <div className="p-card-right">
           <div className="p-image-wrap">
             <Image
-              src={currentPkg.image || '/images/destinations/makkah.jpg'}
+              src={currentPkg.image || '/images/destinations/mecca.jpg'}
               alt={currentPkg.title}
               fill
               style={{ objectFit: 'cover' }}
