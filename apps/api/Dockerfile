@@ -16,4 +16,4 @@ COPY --from=build /app/prisma ./prisma
 COPY package*.json ./
 EXPOSE 4000
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "for i in 1 2 3 4 5; do npx prisma migrate deploy && break || sleep 2; done; node dist/main.js"]

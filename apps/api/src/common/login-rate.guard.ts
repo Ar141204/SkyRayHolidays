@@ -10,7 +10,7 @@ export class LoginRateGuard implements CanActivate {
 
   static recordSuccess(email?: string) {
     if (email) {
-      this.attempts.delete(`email:${email.toLowerCase().trim()}`);
+      LoginRateGuard.attempts.delete(`email:${email.toLowerCase().trim()}`);
     }
   }
 
