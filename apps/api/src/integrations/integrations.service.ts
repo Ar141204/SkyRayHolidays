@@ -116,7 +116,7 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
     const transporter = nodemailer.createTransport({
       host: SMTP_HOST,
       port: Number(SMTP_PORT || 587),
-      secure: SMTP_SECURE === 'true',
+      secure: SMTP_SECURE === 'true' || Number(SMTP_PORT) === 465,
       pool: true,
       maxConnections: 3,
       maxMessages: 100,
