@@ -291,7 +291,10 @@ async function main() {
       passwordHash: await bcrypt.hash(password, 12),
       role: 'SUPER_ADMIN',
     },
-    update: {},
+    update: {
+      passwordHash: await bcrypt.hash(password, 12),
+      active: true,
+    },
   });
   console.log(`Provisioned super admin: ${email}`);
 }

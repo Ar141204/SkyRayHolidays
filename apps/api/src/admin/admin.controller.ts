@@ -3,6 +3,7 @@ import {
   ConflictException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -73,6 +74,18 @@ export class AdminController {
   @Patch('enquiries/:id/assign')
   assign(@Param('id') id: string, @Body() body: any, @Req() req: Request) {
     return this.enquiries.assign(id, body.assignedAdminId, (req as any).user);
+  }
+
+  @Roles('SUPER_ADMIN', 'ENQUIRY_MANAGER')
+  @Delete('enquiries/:id')
+  deleteEnquiry(@Param('id') id: string, @Req() req: Request) {
+    return this.enquiries.delete(id, (req as any).user);
+  }
+
+  @Roles('SUPER_ADMIN')
+  @Delete('enquiries')
+  deleteAllEnquiries(@Req() req: Request) {
+    return this.enquiries.deleteAll((req as any).user);
   }
 
   @Roles('SUPER_ADMIN', 'ENQUIRY_MANAGER', 'AUDITOR')

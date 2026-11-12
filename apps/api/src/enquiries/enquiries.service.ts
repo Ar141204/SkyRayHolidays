@@ -208,4 +208,39 @@ export class EnquiriesService {
 
     return e;
   }
+
+  async delete(id: string, user: any) {
+    const old = await this.db.enquiry.findUnique({ where: { id } });
+    if (!old) throw new NotFoundException('Enquiry not found');
+    await this.db.integrationJob.deleteMany({ where: { enquiryId: id } });
+    await this.db.enquiry.delete({ where: { id } });
+    await this.db.auditLog.create({
+      data: {
+        actorId: user.id,
+        actorLabel: user.email,
+        action: 'ENQUIRY_DELETED',
+        entity: 'Enquiry',
+        entityId: id,
+        before: { reference: old.reference, fullName: old.fullName },
+      },
+    });
+    return { success: true, message: 'Enquiry deleted successfully' };
+  }
+
+  async deleteAll(user: any) {
+    await this.db.integrationJob.deleteMany({});
+    await this.db.enquiryStatusHistory.deleteMany({});
+    await this.db.enquiryNote.deleteMany({});
+    const res = await this.db.enquiry.deleteMany({});
+    await this.db.auditLog.create({
+      data: {
+        actorId: user.id,
+        actorLabel: user.email,
+        action: 'ALL_ENQUIRIES_DELETED',
+        entity: 'Enquiry',
+        before: { count: res.count },
+      },
+    });
+    return { success: true, count: res.count };
+  }
 }

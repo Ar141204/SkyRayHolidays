@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import {
   Plane,
@@ -24,6 +24,20 @@ import {
   SlidersHorizontal,
   Copy,
   Check,
+  Trash2,
+  Upload,
+  Image as ImageIcon,
+  Phone,
+  Mail,
+  MessageSquare,
+  Calendar,
+  MapPin,
+  ExternalLink,
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  Filter,
+  Sparkles,
 } from 'lucide-react';
 import { API_URL, contactDefaults } from '@/lib/config';
 
@@ -40,6 +54,7 @@ type Enquiry = {
   members: number;
   days?: number;
   instructions?: string;
+  sourcePlatform?: string;
   assignedAdmin?: { id: string; name: string } | null;
   notes?: { id: string; note: string; createdAt: string }[];
 };
@@ -47,7 +62,7 @@ type Enquiry = {
 export default function AdminConsole() {
   const [token, setToken] = useState('');
   const [user, setUser] = useState<any>(null);
-  const [email, setEmail] = useState('owner@example.com');
+  const [email, setEmail] = useState('syedrahamathullah@skyrayholidays.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [tab, setTab] = useState<'Dashboard' | 'Enquiries' | 'Packages' | 'Content' | 'Settings'>('Dashboard');
@@ -55,21 +70,27 @@ export default function AdminConsole() {
   // Data states
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>({ total: 1248, new: 96, pending: 74, contacted: 612 });
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>({ total: 0, new: 0, pending: 0, contacted: 0, quoted: 0, confirmed: 0 });
   const [staff, setStaff] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Filtering states
   const [enquiryStatusFilter, setEnquiryStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedPkgId, setCopiedPkgId] = useState<string | null>(null);
 
+  // File upload input refs
+  const packageFileInputRef = useRef<HTMLInputElement | null>(null);
+  const heroFileInputRef = useRef<HTMLInputElement | null>(null);
+
   function copyPackageQuote(pkg: any) {
-    const inclusions = Array.isArray(pkg.inclusions) ? pkg.inclusions.join('\n• ') : pkg.inclusions || 'Hotel accommodation, private sightseeing, transfers';
-    const text = `*${pkg.title}* - SkyRay Holidays\n` +
+    const inclusions = Array.isArray(pkg.inclusions)
+      ? pkg.inclusions.join('\n• ')
+      : pkg.inclusions || 'Hotel accommodation, private sightseeing, transfers';
+    const text =
+      `*${pkg.title}* - SkyRay Holidays\n` +
       `📍 Destination: ${pkg.destination || 'Custom'}\n` +
       `⏱ Duration: ${pkg.duration || '5 Days'}\n` +
       `💰 Quotation: ${pkg.priceFrom ? `${pkg.currency || '$'}${pkg.priceFrom} per person` : 'Custom Quote on Enquiry'}\n\n` +
@@ -96,6 +117,8 @@ export default function AdminConsole() {
     duration: '5 Days / 4 Nights',
     priceFrom: '499',
     currency: '$',
+    status: 'PUBLISHED',
+    featured: false,
     summary: '',
     description: '',
     image: '/images/destinations/dubai.jpg',
@@ -107,15 +130,11 @@ export default function AdminConsole() {
   const [selectedEnquiryForNote, setSelectedEnquiryForNote] = useState<Enquiry | null>(null);
   const [noteText, setNoteText] = useState('');
 
-  const [showStaffModal, setShowStaffModal] = useState(false);
-  const [staffFormData, setStaffFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'ENQUIRY_MANAGER',
-  });
+  // Enquiry Details Modal
+  const [showEnquiryDetailsModal, setShowEnquiryDetailsModal] = useState(false);
+  const [activeEnquiry, setActiveEnquiry] = useState<Enquiry | null>(null);
 
-  // Content Management State (Screen 5 in preview)
+  // Content Management State
   const [contentTab, setContentTab] = useState<'Home' | 'About' | 'Contact' | 'Footer'>('Home');
   const [heroForm, setHeroForm] = useState({
     eyebrow: 'WHERE EVERY TRIP BECOMES A MEMORY',
@@ -128,9 +147,11 @@ export default function AdminConsole() {
   const [settingsForm, setSettingsForm] = useState({
     companyName: 'SkyRay Holidays',
     phone: contactDefaults.phone,
+    phoneSecondary: contactDefaults.phoneSecondary || '+966 57 549 0602',
     whatsapp: contactDefaults.whatsapp,
+    whatsappSecondary: contactDefaults.whatsappSecondary || '+966 57 549 0602',
     email: contactDefaults.email,
-    address: contactDefaults.address,
+    address: contactDefaults.address || 'No 3/1, 2nd floor, Appavu street, Ellis road, Mount Road, Chennai - 600002',
     hours: contactDefaults.hours,
     mapUrl: contactDefaults.mapUrl,
     whatsappMessage: contactDefaults.whatsappMessage,
@@ -152,108 +173,65 @@ export default function AdminConsole() {
     return d;
   }
 
+  // Load live data from Supabase backend
   async function loadData() {
     setBusy(true);
     try {
+      // 1. Dashboard stats
       const s = await request('/admin/dashboard').catch(() => ({
-        total: 1248,
-        new: 96,
-        pending: 74,
-        contacted: 612,
-        quoted: 240,
-        confirmed: 226,
+        total: 0,
+        new: 0,
+        pending: 0,
+        contacted: 0,
+        quoted: 0,
+        confirmed: 0,
       }));
-      setStats(s);
+      setStats({
+        total: s.total ?? 0,
+        new: s.new ?? 0,
+        pending: s.pending ?? 0,
+        contacted: s.contacted ?? 0,
+        quoted: s.quoted ?? 0,
+        confirmed: s.confirmed ?? 0,
+      });
 
+      // 2. Enquiries: Clean empty state if database has no enquiries (NO mock rows!)
       const e = await request('/admin/enquiries').catch(() => ({ items: [] }));
       const fetchedEnquiries = Array.isArray(e.items) ? e.items : Array.isArray(e) ? e : [];
-      if (fetchedEnquiries.length > 0) {
-        setEnquiries(fetchedEnquiries);
-      } else {
-        // Sample rows matching Preview Screen 3
-        setEnquiries([
-          {
-            id: 'enq-1',
-            reference: 'SRH202601',
-            fullName: 'Rahman Khan',
-            email: 'rahman.k@example.com',
-            phone: '+91 98401 23456',
-            packageNameSnapshot: 'Dubai Holiday',
-            status: 'NEW',
-            preferredDate: '2026-12-15',
-            createdAt: '2026-11-10T10:00:00Z',
-            members: 2,
-          },
-          {
-            id: 'enq-2',
-            reference: 'SRH202602',
-            fullName: 'Ayesha Banu',
-            email: 'ayesha.b@example.com',
-            phone: '+91 97910 88765',
-            packageNameSnapshot: 'Umrah Package',
-            status: 'PENDING',
-            preferredDate: '2026-12-25',
-            createdAt: '2026-11-09T14:30:00Z',
-            members: 4,
-          },
-          {
-            id: 'enq-3',
-            reference: 'SRH202603',
-            fullName: 'Vikram Singh',
-            email: 'vikram.s@example.com',
-            phone: '+91 99400 11223',
-            packageNameSnapshot: 'Turkey Tour',
-            status: 'CONTACTED',
-            preferredDate: '2027-01-10',
-            createdAt: '2026-11-08T09:15:00Z',
-            members: 2,
-          },
-          {
-            id: 'enq-4',
-            reference: 'SRH202604',
-            fullName: 'Fatima Zahra',
-            email: 'fatima.z@example.com',
-            phone: '+91 98840 55443',
-            packageNameSnapshot: 'Premium Hajj Package',
-            status: 'QUOTED',
-            preferredDate: '2027-05-20',
-            createdAt: '2026-11-07T16:20:00Z',
-            members: 3,
-          },
-          {
-            id: 'enq-5',
-            reference: 'SRH202605',
-            fullName: 'David Miller',
-            email: 'david.m@example.com',
-            phone: '+1 415 555 2671',
-            packageNameSnapshot: 'Bali Escape',
-            status: 'CONFIRMED',
-            preferredDate: '2027-02-14',
-            createdAt: '2026-11-06T11:45:00Z',
-            members: 2,
-          },
-        ]);
-      }
+      setEnquiries(fetchedEnquiries);
 
+      // 3. Packages from Supabase
       const p = await request('/admin/packages').catch(() => []);
       if (Array.isArray(p) && p.length > 0) {
         setPackages(p);
       } else {
-        setPackages([
-          { id: '1', title: 'Kashmir Paradise Experience', category: 'Domestic', priceFrom: null, currency: '₹', status: 'PUBLISHED' },
-          { id: '2', title: 'Kerala God’s Own Country', category: 'Domestic', priceFrom: null, currency: '₹', status: 'PUBLISHED' },
-          { id: '3', title: 'Golden Triangle & Royal Heritage', category: 'Domestic', priceFrom: null, currency: '₹', status: 'PUBLISHED' },
-          { id: '4', title: 'Andaman Tropical Island Discovery', category: 'Domestic', priceFrom: null, currency: '₹', status: 'PUBLISHED' },
-          { id: '5', title: 'Sri Lanka Wonder Island', category: 'International', priceFrom: null, currency: '$', status: 'PUBLISHED' },
-          { id: '6', title: 'Maldives Luxury Lagoon Escape', category: 'International', priceFrom: null, currency: '$', status: 'PUBLISHED' },
-          { id: '7', title: 'Dubai Holiday Package', category: 'International', priceFrom: null, currency: '$', status: 'PUBLISHED' },
-          { id: '8', title: 'Premium Hajj Package', category: 'Hajj', priceFrom: null, currency: '$', status: 'PUBLISHED' },
-          { id: '9', title: 'Premium Umrah Package', category: 'Umrah', priceFrom: null, currency: '$', status: 'PUBLISHED' },
-        ]);
+        // Fallback fetch from public packages endpoint
+        const pub = await request('/packages').catch(() => []);
+        if (Array.isArray(pub) && pub.length > 0) {
+          setPackages(pub);
+        }
       }
 
+      // 4. Staff directory
       const st = await request('/admin/staff-directory').catch(() => []);
       setStaff(Array.isArray(st) ? st : []);
+
+      // 5. Site Settings
+      const setts = await request('/settings/public').catch(() => null);
+      if (setts) {
+        setSettingsForm((prev) => ({
+          ...prev,
+          companyName: setts.companyName || prev.companyName,
+          phone: setts.phone || prev.phone,
+          whatsapp: setts.whatsapp || prev.whatsapp,
+          email: setts.email || prev.email,
+          address: setts.address || prev.address,
+          hours: setts.hours || prev.hours,
+          mapUrl: setts.mapUrl || prev.mapUrl,
+          whatsappMessage: setts.whatsappMessage || prev.whatsappMessage,
+          googleReviewsUrl: setts.googleReviewsUrl || prev.googleReviewsUrl,
+        }));
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -288,9 +266,7 @@ export default function AdminConsole() {
       setUser(d.user);
       setPassword('');
     } catch (err: any) {
-      // Demo login fallback if server isn't running database yet
-      setUser({ id: 'admin-1', name: 'SkyRay Owner', email, role: 'SUPER_ADMIN' });
-      setToken('demo-admin-token');
+      setError(err.message || 'Invalid credentials. Please verify your email and password.');
     }
   }
 
@@ -302,15 +278,58 @@ export default function AdminConsole() {
     setUser(null);
   }
 
-  // Status changer
+  // Enquiry Status updater
   async function updateStatus(id: string, newStatus: string) {
     try {
       await request(`/admin/enquiries/${id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status: newStatus }),
       });
-    } catch {}
-    setEnquiries((prev) => prev.map((e) => (e.id === id ? { ...e, status: newStatus } : e)));
+      setEnquiries((prev) => prev.map((e) => (e.id === id ? { ...e, status: newStatus } : e)));
+      if (activeEnquiry?.id === id) {
+        setActiveEnquiry((prev) => (prev ? { ...prev, status: newStatus } : null));
+      }
+    } catch (err: any) {
+      alert(`Could not update status: ${err.message}`);
+    }
+  }
+
+  // Delete a single enquiry
+  async function deleteEnquiry(id: string, reference?: string) {
+    const promptMsg = reference
+      ? `Are you sure you want to delete enquiry ${reference}? This will permanently remove it from Supabase.`
+      : 'Are you sure you want to delete this enquiry?';
+    if (!confirm(promptMsg)) return;
+
+    try {
+      await request(`/admin/enquiries/${id}`, { method: 'DELETE' });
+      setEnquiries((prev) => prev.filter((e) => e.id !== id));
+      setStats((prev: any) => ({ ...prev, total: Math.max(0, (prev.total || 1) - 1) }));
+      if (activeEnquiry?.id === id) {
+        setShowEnquiryDetailsModal(false);
+        setActiveEnquiry(null);
+      }
+      setSavedMsg('Enquiry deleted successfully.');
+      setTimeout(() => setSavedMsg(''), 3000);
+    } catch (err: any) {
+      alert(`Failed to delete enquiry: ${err.message}`);
+    }
+  }
+
+  // Clear all enquiries
+  async function clearAllEnquiries() {
+    if (!confirm('Are you sure you want to remove ALL enquiries from the admin panel and Supabase database? This cannot be undone.')) {
+      return;
+    }
+    try {
+      await request('/admin/enquiries', { method: 'DELETE' });
+      setEnquiries([]);
+      setStats({ total: 0, new: 0, pending: 0, contacted: 0, quoted: 0, confirmed: 0 });
+      setSavedMsg('All enquiries cleared successfully.');
+      setTimeout(() => setSavedMsg(''), 3000);
+    } catch (err: any) {
+      alert(`Failed to clear enquiries: ${err.message}`);
+    }
   }
 
   // Assign staff
@@ -320,11 +339,13 @@ export default function AdminConsole() {
         method: 'PATCH',
         body: JSON.stringify({ assignedAdminId: staffId || null }),
       });
+      const assignedUser = staff.find((s) => s.id === staffId);
+      setEnquiries((prev) =>
+        prev.map((e) =>
+          e.id === id ? { ...e, assignedAdmin: assignedUser ? { id: staffId, name: assignedUser.name } : null } : e,
+        ),
+      );
     } catch {}
-    const assignedUser = staff.find((s) => s.id === staffId);
-    setEnquiries((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, assignedAdmin: assignedUser ? { id: staffId, name: assignedUser.name } : null } : e)),
-    );
   }
 
   // Save Note
@@ -335,10 +356,116 @@ export default function AdminConsole() {
         method: 'POST',
         body: JSON.stringify({ note: noteText.trim() }),
       });
-    } catch {}
-    setShowNoteModal(false);
-    setNoteText('');
-    setSelectedEnquiryForNote(null);
+      setShowNoteModal(false);
+      setNoteText('');
+      setSelectedEnquiryForNote(null);
+      loadData();
+    } catch (err: any) {
+      alert(`Failed to save note: ${err.message}`);
+    }
+  }
+
+  // Device File Upload handler (Packages)
+  async function handlePackageImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert('File size exceeds 8MB limit. Please choose a smaller image.');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          setPackageFormData((prev) => ({ ...prev, image: data.url }));
+          setSavedMsg('Image uploaded successfully from device!');
+          setTimeout(() => setSavedMsg(''), 3000);
+          return;
+        }
+      }
+
+      // Fallback: Read as Base64 Data URL so upload never fails for the user
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) {
+          setPackageFormData((prev) => ({ ...prev, image: dataUrl }));
+          setSavedMsg('Image loaded from device!');
+          setTimeout(() => setSavedMsg(''), 3000);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      // Local fallback
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) {
+          setPackageFormData((prev) => ({ ...prev, image: dataUrl }));
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  // Device File Upload handler (Hero Section)
+  async function handleHeroImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          setHeroForm((prev) => ({ ...prev, heroImage: data.url }));
+          setSavedMsg('Hero image uploaded successfully!');
+          setTimeout(() => setSavedMsg(''), 3000);
+          return;
+        }
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) {
+          setHeroForm((prev) => ({ ...prev, heroImage: dataUrl }));
+          setSavedMsg('Hero image loaded from device!');
+          setTimeout(() => setSavedMsg(''), 3000);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) setHeroForm((prev) => ({ ...prev, heroImage: dataUrl }));
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingImage(false);
+    }
   }
 
   // Package Save (Add/Edit)
@@ -354,36 +481,58 @@ export default function AdminConsole() {
         kind: packageFormData.kind,
         category: packageFormData.category,
         duration: packageFormData.duration.trim(),
-        priceFrom: Number(packageFormData.priceFrom) || 0,
+        priceFrom: packageFormData.priceFrom === '' ? null : Number(packageFormData.priceFrom),
         currency: packageFormData.currency,
+        status: packageFormData.status,
+        featured: !!packageFormData.featured,
         summary: packageFormData.summary.trim(),
         description: packageFormData.description.trim(),
         image: packageFormData.image,
-        inclusions: packageFormData.inclusions.split(',').map((s) => s.trim()).filter(Boolean),
-        exclusions: packageFormData.exclusions.split(',').map((s) => s.trim()).filter(Boolean),
+        inclusions: typeof packageFormData.inclusions === 'string'
+          ? packageFormData.inclusions.split(',').map((s) => s.trim()).filter(Boolean)
+          : packageFormData.inclusions,
+        exclusions: typeof packageFormData.exclusions === 'string'
+          ? packageFormData.exclusions.split(',').map((s) => s.trim()).filter(Boolean)
+          : packageFormData.exclusions,
       };
 
       if (editingPackage) {
-        await request(`/packages/${editingPackage.id}`, {
+        const updated = await request(`/packages/${editingPackage.id}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
-        }).catch(() => {});
-        setPackages((prev) => prev.map((p) => (p.id === editingPackage.id ? { ...p, ...payload } : p)));
+        });
+        setPackages((prev) => prev.map((p) => (p.id === editingPackage.id ? { ...p, ...payload, ...updated } : p)));
+        setSavedMsg(`Package "${payload.title}" updated successfully!`);
       } else {
         const created = await request('/packages', {
           method: 'POST',
           body: JSON.stringify(payload),
-        }).catch(() => ({ ...payload, id: `pkg-${Date.now()}`, status: 'PUBLISHED' }));
+        });
         setPackages((prev) => [created, ...prev]);
+        setSavedMsg(`Package "${payload.title}" created successfully!`);
       }
 
       setShowPackageModal(false);
       setEditingPackage(null);
       setError('');
+      setTimeout(() => setSavedMsg(''), 4000);
     } catch (err: any) {
-      setError('');
-      setShowPackageModal(false);
-      setEditingPackage(null);
+      alert(`Could not save package: ${err.message}`);
+    }
+  }
+
+  // Delete Package
+  async function deletePackage(id: string, title?: string) {
+    if (!confirm(`Are you sure you want to delete package "${title || 'this package'}"? This will remove it from the catalog.`)) {
+      return;
+    }
+    try {
+      await request(`/packages/${id}`, { method: 'DELETE' });
+      setPackages((prev) => prev.filter((p) => p.id !== id));
+      setSavedMsg('Package deleted successfully.');
+      setTimeout(() => setSavedMsg(''), 3000);
+    } catch (err: any) {
+      alert(`Failed to delete package: ${err.message}`);
     }
   }
 
@@ -424,7 +573,7 @@ export default function AdminConsole() {
     });
   }, [enquiries, enquiryStatusFilter, searchQuery]);
 
-  // SCREEN 1: Admin Login Page matching Preview Screen 1
+  // SCREEN 1: Admin Login Page
   if (!token) {
     return (
       <div className="admin-login-layout">
@@ -448,7 +597,7 @@ export default function AdminConsole() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@skyrayholidays.com"
+                  placeholder="syedrahamathullah@skyrayholidays.com"
                 />
               </label>
 
@@ -482,7 +631,7 @@ export default function AdminConsole() {
           </div>
         </div>
 
-        {/* Right Side: Destination Art matching Preview Screen 1 */}
+        {/* Right Side: Destination Art */}
         <div className="admin-login-right">
           <div className="login-art-content">
             <span className="art-eyebrow">OPERATIONS &amp; CONTROL</span>
@@ -501,7 +650,7 @@ export default function AdminConsole() {
     );
   }
 
-  // Main Dashboard View matching Preview Screens 2, 3, 4, 5
+  // Main Dashboard View
   return (
     <div className="admin-console-app">
       {/* Sidebar Navigation */}
@@ -531,7 +680,7 @@ export default function AdminConsole() {
 
         <div className="sidebar-footer">
           <div className="staff-info">
-            <span className="staff-name">{user?.name || 'Admin User'}</span>
+            <span className="staff-name">{user?.name || 'Syed Rahamathullah'}</span>
             <small>{user?.role || 'SUPER_ADMIN'}</small>
           </div>
           <button onClick={handleLogout} className="logout-btn" title="Sign out">
@@ -554,61 +703,81 @@ export default function AdminConsole() {
               <RefreshCw size={16} className={busy ? 'spin' : ''} />
             </button>
             <div className="live-status-pill">
-              <span className="dot-green"></span> Live Connected
+              <span className="dot-green"></span> Live Supabase Connected
             </div>
           </div>
         </header>
 
         {error && <div className="form-error">{error}</div>}
+        {savedMsg && (
+          <div
+            style={{
+              padding: '12px 18px',
+              backgroundColor: '#ecfdf5',
+              border: '1px solid #a7f3d0',
+              borderRadius: '8px',
+              color: '#065f46',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+            }}
+          >
+            <CheckCircle2 size={16} color="#10b981" />
+            {savedMsg}
+          </div>
+        )}
 
         {/* =========================================================================
-            SCREEN 2: DASHBOARD VIEW matching Preview Screen 2
+            SCREEN 2: DASHBOARD VIEW
            ========================================================================= */}
         {tab === 'Dashboard' && (
           <div className="dashboard-content-screen">
-            {/* 4 Top Metric Cards matching Preview Screen 2 */}
+            {/* 4 Top Metric Cards */}
             <div className="dashboard-stats-row">
               <div className="stat-card blue-card">
                 <span className="s-label">Total Enquiries</span>
-                <strong className="s-val">{stats.total || 1248}</strong>
+                <strong className="s-val">{stats.total ?? 0}</strong>
                 <span className="s-growth">All-time customer requests</span>
               </div>
 
               <div className="stat-card sky-card">
                 <span className="s-label">New</span>
-                <strong className="s-val">{stats.new || 96}</strong>
+                <strong className="s-val">{stats.new ?? 0}</strong>
                 <span className="s-growth">Awaiting initial review</span>
               </div>
 
               <div className="stat-card orange-card">
                 <span className="s-label">Pending</span>
-                <strong className="s-val">{stats.pending || 74}</strong>
+                <strong className="s-val">{stats.pending ?? 0}</strong>
                 <span className="s-growth">In progress follow-ups</span>
               </div>
 
               <div className="stat-card green-card">
                 <span className="s-label">Contacted</span>
-                <strong className="s-val">{stats.contacted || 612}</strong>
+                <strong className="s-val">{stats.contacted ?? 0}</strong>
                 <span className="s-growth">Customers reached</span>
               </div>
             </div>
 
-            {/* Visual Overview & Distribution Charts matching Preview Screen 2 */}
+            {/* Visual Overview & Distribution Charts */}
             <div className="dashboard-charts-grid">
               <div className="chart-panel">
                 <div className="panel-header">
                   <h3>Enquiry Overview</h3>
-                  <span className="badge-pill">Weekly Trends</span>
+                  <span className="badge-pill">Live Trends</span>
                 </div>
                 <div className="mock-chart-container">
                   <div className="mock-line-chart">
-                    <div className="chart-bar" style={{ height: '45%' }}><span>Mon</span></div>
-                    <div className="chart-bar" style={{ height: '65%' }}><span>Tue</span></div>
-                    <div className="chart-bar" style={{ height: '55%' }}><span>Wed</span></div>
-                    <div className="chart-bar" style={{ height: '85%' }}><span>Thu</span></div>
-                    <div className="chart-bar" style={{ height: '70%' }}><span>Fri</span></div>
-                    <div className="chart-bar active" style={{ height: '95%' }}><span>Sat</span></div>
-                    <div className="chart-bar" style={{ height: '80%' }}><span>Sun</span></div>
+                    <div className="chart-bar" style={{ height: enquiries.length ? '45%' : '10%' }}><span>Mon</span></div>
+                    <div className="chart-bar" style={{ height: enquiries.length ? '65%' : '15%' }}><span>Tue</span></div>
+                    <div className="chart-bar" style={{ height: enquiries.length ? '55%' : '12%' }}><span>Wed</span></div>
+                    <div className="chart-bar" style={{ height: enquiries.length ? '85%' : '18%' }}><span>Thu</span></div>
+                    <div className="chart-bar" style={{ height: enquiries.length ? '70%' : '10%' }}><span>Fri</span></div>
+                    <div className="chart-bar active" style={{ height: enquiries.length ? '95%' : '20%' }}><span>Sat</span></div>
+                    <div className="chart-bar" style={{ height: enquiries.length ? '80%' : '14%' }}><span>Sun</span></div>
                   </div>
                 </div>
               </div>
@@ -621,16 +790,16 @@ export default function AdminConsole() {
                 <div className="donut-summary-wrap">
                   <div className="donut-graphic">
                     <div className="donut-center">
-                      <strong>1,248</strong>
+                      <strong>{stats.total ?? 0}</strong>
                       <small>Total</small>
                     </div>
                   </div>
                   <div className="donut-legend">
-                    <div><span className="dot dot-blue"></span> Contacted: <strong>612</strong></div>
-                    <div><span className="dot dot-sky"></span> Quoted: <strong>240</strong></div>
-                    <div><span className="dot dot-orange"></span> Pending: <strong>74</strong></div>
-                    <div><span className="dot dot-green"></span> Confirmed: <strong>226</strong></div>
-                    <div><span className="dot dot-yellow"></span> New: <strong>96</strong></div>
+                    <div><span className="dot dot-blue"></span> Contacted: <strong>{stats.contacted ?? 0}</strong></div>
+                    <div><span className="dot dot-sky"></span> Quoted: <strong>{stats.quoted ?? 0}</strong></div>
+                    <div><span className="dot dot-orange"></span> Pending: <strong>{stats.pending ?? 0}</strong></div>
+                    <div><span className="dot dot-green"></span> Confirmed: <strong>{stats.confirmed ?? 0}</strong></div>
+                    <div><span className="dot dot-yellow"></span> New: <strong>{stats.new ?? 0}</strong></div>
                   </div>
                 </div>
               </div>
@@ -676,15 +845,22 @@ export default function AdminConsole() {
                           <button
                             className="btn btn-ghost small"
                             onClick={() => {
-                              setSelectedEnquiryForNote(row);
-                              setShowNoteModal(true);
+                              setActiveEnquiry(row);
+                              setShowEnquiryDetailsModal(true);
                             }}
                           >
-                            Add Note
+                            <Eye size={13} style={{ marginRight: 4 }} /> View
                           </button>
                         </td>
                       </tr>
                     ))}
+                    {enquiries.length === 0 && (
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '36px 18px', color: '#64748b' }}>
+                          No enquiries received yet. Submissions from the website or mobile app will appear here.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -693,11 +869,11 @@ export default function AdminConsole() {
         )}
 
         {/* =========================================================================
-            SCREEN 3: ENQUIRY MANAGEMENT matching Preview Screen 3
+            SCREEN 3: ENQUIRY MANAGEMENT
            ========================================================================= */}
         {tab === 'Enquiries' && (
           <div className="enquiries-management-screen">
-            {/* Filter Tabs matching Preview Screen 3 */}
+            {/* Filter Tabs */}
             <div className="enquiry-filter-tabs">
               {['ALL', 'NEW', 'PENDING', 'CONTACTED', 'QUOTED', 'CONFIRMED'].map((st) => (
                 <button
@@ -710,24 +886,36 @@ export default function AdminConsole() {
               ))}
             </div>
 
-            {/* Search Bar & Export Actions */}
+            {/* Search Bar & Actions */}
             <div className="table-toolbar">
               <div className="search-box">
                 <Search size={16} />
                 <input
                   type="text"
-                  placeholder="Search enquiries by name, ref, or email..."
+                  placeholder="Search enquiries by name, ref, email, phone..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
 
-              <button className="btn btn-outline small" onClick={exportCsv}>
-                <Download size={14} /> Export CSV
-              </button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                {enquiries.length > 0 && (
+                  <button
+                    className="btn btn-outline small"
+                    onClick={clearAllEnquiries}
+                    style={{ color: '#dc2626', borderColor: '#fca5a5' }}
+                    title="Remove all test enquiries from database"
+                  >
+                    <Trash2 size={13} /> Clear All Test Enquiries
+                  </button>
+                )}
+                <button className="btn btn-outline small" onClick={exportCsv}>
+                  <Download size={14} /> Export CSV
+                </button>
+              </div>
             </div>
 
-            {/* Enquiries Table matching Preview Screen 3 */}
+            {/* Enquiries Table */}
             <div className="admin-card-panel no-padding">
               <div className="table-responsive">
                 <table className="admin-clean-table">
@@ -735,7 +923,7 @@ export default function AdminConsole() {
                     <tr>
                       <th>Ref &amp; Date</th>
                       <th>Customer Name</th>
-                      <th>Contact</th>
+                      <th>Contact Details</th>
                       <th>Package</th>
                       <th>Travel Date</th>
                       <th>Status</th>
@@ -750,9 +938,39 @@ export default function AdminConsole() {
                           <strong>{enq.reference}</strong>
                           <small>{new Date(enq.createdAt).toLocaleDateString()}</small>
                         </td>
-                        <td><strong>{enq.fullName}</strong></td>
                         <td>
-                          <div>{enq.phone}</div>
+                          <button
+                            onClick={() => {
+                              setActiveEnquiry(enq);
+                              setShowEnquiryDetailsModal(true);
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: 0,
+                              color: '#0284c7',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              textDecoration: 'underline',
+                            }}
+                          >
+                            {enq.fullName}
+                          </button>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>{enq.phone}</span>
+                            <a
+                              href={`https://wa.me/${enq.phone.replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              title="Chat on WhatsApp"
+                              style={{ color: '#16a34a' }}
+                            >
+                              <MessageSquare size={13} />
+                            </a>
+                          </div>
                           <small>{enq.email}</small>
                         </td>
                         <td>{enq.packageNameSnapshot || 'Custom Tour'}</td>
@@ -781,23 +999,49 @@ export default function AdminConsole() {
                           </select>
                         </td>
                         <td>
-                          <button
-                            className="action-icon-btn"
-                            title="Add Note"
-                            onClick={() => {
-                              setSelectedEnquiryForNote(enq);
-                              setShowNoteModal(true);
-                            }}
-                          >
-                            <FileText size={15} />
-                          </button>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                              className="action-icon-btn"
+                              title="View Full Details"
+                              onClick={() => {
+                                setActiveEnquiry(enq);
+                                setShowEnquiryDetailsModal(true);
+                              }}
+                            >
+                              <Eye size={14} />
+                            </button>
+                            <button
+                              className="action-icon-btn"
+                              title="Add Note"
+                              onClick={() => {
+                                setSelectedEnquiryForNote(enq);
+                                setShowNoteModal(true);
+                              }}
+                            >
+                              <FileText size={14} />
+                            </button>
+                            <button
+                              className="action-icon-btn"
+                              title="Delete Enquiry"
+                              onClick={() => deleteEnquiry(enq.id, enq.reference)}
+                              style={{ color: '#dc2626' }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
                     {filteredEnquiries.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="empty-table-cell">
-                          No matching enquiries found.
+                        <td colSpan={8} style={{ textAlign: 'center', padding: '60px 24px' }}>
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                            <Inbox size={46} color="#94a6b2" />
+                            <h4 style={{ margin: 0, color: '#17496b', fontSize: '17px' }}>No enquiries found</h4>
+                            <p style={{ margin: 0, color: '#64748b', fontSize: '13px', maxWidth: '380px' }}>
+                              Customer enquiries submitted through the website or mobile app will appear here automatically.
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -808,25 +1052,20 @@ export default function AdminConsole() {
               {/* Pagination controls */}
               <div className="table-pagination">
                 <span>Showing {filteredEnquiries.length} enquiries</span>
-                <div className="pagination-pills">
-                  <button className="active">1</button>
-                  <button>2</button>
-                  <button>3</button>
-                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* =========================================================================
-            SCREEN 4: PACKAGE MANAGEMENT matching Preview Screen 4
+            SCREEN 4: PACKAGE MANAGEMENT
            ========================================================================= */}
         {tab === 'Packages' && (
           <div className="packages-management-screen">
             <div className="table-toolbar">
               <div>
                 <h2>Tour Packages Catalogue</h2>
-                <p>Manage destinations, pricing, inclusions and publication status.</p>
+                <p>Manage destinations, pricing, inclusions, device image uploads, and publication status.</p>
               </div>
 
               <button
@@ -842,6 +1081,8 @@ export default function AdminConsole() {
                     duration: '5 Days / 4 Nights',
                     priceFrom: '499',
                     currency: '$',
+                    status: 'PUBLISHED',
+                    featured: false,
                     summary: '',
                     description: '',
                     image: '/images/destinations/dubai.jpg',
@@ -860,10 +1101,12 @@ export default function AdminConsole() {
                 <table className="admin-clean-table">
                   <thead>
                     <tr>
+                      <th style={{ width: '60px' }}>Image</th>
                       <th>Package Title</th>
                       <th>Category</th>
                       <th>Price</th>
                       <th>Duration</th>
+                      <th>Featured</th>
                       <th>Status</th>
                       <th>Actions</th>
                     </tr>
@@ -872,6 +1115,32 @@ export default function AdminConsole() {
                     {packages.map((pkg) => (
                       <tr key={pkg.id}>
                         <td>
+                          <div
+                            style={{
+                              width: '48px',
+                              height: '34px',
+                              borderRadius: '6px',
+                              overflow: 'hidden',
+                              position: 'relative',
+                              backgroundColor: '#e2e8f0',
+                            }}
+                          >
+                            {pkg.image ? (
+                              <Image
+                                src={pkg.image}
+                                alt={pkg.title}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                unoptimized={pkg.image.startsWith('data:') || pkg.image.startsWith('/uploads')}
+                              />
+                            ) : (
+                              <div style={{ display: 'grid', placeItems: 'center', height: '100%' }}>
+                                <ImageIcon size={14} color="#94a6b2" />
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td>
                           <strong>{pkg.title}</strong>
                           <small>/{pkg.slug}</small>
                         </td>
@@ -879,7 +1148,24 @@ export default function AdminConsole() {
                         <td><strong>{pkg.priceFrom ? `${pkg.currency || '$'}${pkg.priceFrom}` : 'On Enquiry'}</strong></td>
                         <td>{pkg.duration || '5 Days'}</td>
                         <td>
-                          <span className="status-pill pill-confirmed">
+                          {pkg.featured ? (
+                            <span style={{ color: '#f59e0b', fontSize: '11px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                              <Sparkles size={12} /> Yes
+                            </span>
+                          ) : (
+                            <span style={{ color: '#94a6b2', fontSize: '11px' }}>No</span>
+                          )}
+                        </td>
+                        <td>
+                          <span
+                            className={`status-pill ${
+                              pkg.status === 'PUBLISHED'
+                                ? 'pill-confirmed'
+                                : pkg.status === 'DRAFT'
+                                ? 'pill-pending'
+                                : 'pill-closed'
+                            }`}
+                          >
                             {pkg.status || 'PUBLISHED'}
                           </span>
                         </td>
@@ -899,7 +1185,7 @@ export default function AdminConsole() {
                               ) : (
                                 <>
                                   <Copy size={13} />
-                                  <span>Copy Quote</span>
+                                  <span>Quote</span>
                                 </>
                               )}
                             </button>
@@ -908,24 +1194,34 @@ export default function AdminConsole() {
                               onClick={() => {
                                 setEditingPackage(pkg);
                                 setPackageFormData({
-                                  title: pkg.title,
-                                  slug: pkg.slug,
-                                  destination: pkg.destination || 'Destination',
+                                  title: pkg.title || '',
+                                  slug: pkg.slug || '',
+                                  destination: pkg.destination || '',
                                   kind: pkg.kind || 'TOUR',
                                   category: pkg.category || 'International',
                                   duration: pkg.duration || '5 Days',
                                   priceFrom: pkg.priceFrom ? String(pkg.priceFrom) : '',
                                   currency: pkg.currency || '$',
+                                  status: pkg.status || 'PUBLISHED',
+                                  featured: !!pkg.featured,
                                   summary: pkg.summary || '',
                                   description: pkg.description || '',
                                   image: pkg.image || '/images/destinations/dubai.jpg',
-                                  inclusions: Array.isArray(pkg.inclusions) ? pkg.inclusions.join(', ') : 'Flight Tickets, Hotel Stay',
-                                  exclusions: Array.isArray(pkg.exclusions) ? pkg.exclusions.join(', ') : 'Personal Expenses',
+                                  inclusions: Array.isArray(pkg.inclusions) ? pkg.inclusions.join(', ') : pkg.inclusions || '',
+                                  exclusions: Array.isArray(pkg.exclusions) ? pkg.exclusions.join(', ') : pkg.exclusions || '',
                                 });
                                 setShowPackageModal(true);
                               }}
                             >
                               <Edit2 size={13} /> Edit
+                            </button>
+                            <button
+                              className="action-icon-btn"
+                              title="Delete package"
+                              onClick={() => deletePackage(pkg.id, pkg.title)}
+                              style={{ color: '#dc2626' }}
+                            >
+                              <Trash2 size={14} />
                             </button>
                           </div>
                         </td>
@@ -939,11 +1235,10 @@ export default function AdminConsole() {
         )}
 
         {/* =========================================================================
-            SCREEN 5: CONTENT MANAGEMENT matching Preview Screen 5
+            SCREEN 5: CONTENT MANAGEMENT
            ========================================================================= */}
         {tab === 'Content' && (
           <div className="content-management-screen">
-            {/* Sub-tabs matching Preview Screen 5 */}
             <div className="enquiry-filter-tabs">
               {(['Home', 'About', 'Contact', 'Footer'] as const).map((cTab) => (
                 <button
@@ -956,7 +1251,7 @@ export default function AdminConsole() {
               ))}
             </div>
 
-            {/* Hero Section Editor matching Preview Screen 5 */}
+            {/* Hero Section Editor */}
             <div className="admin-card-panel">
               <div className="panel-header">
                 <h3>Hero Section</h3>
@@ -971,17 +1266,41 @@ export default function AdminConsole() {
                       alt="Hero Banner Preview"
                       fill
                       style={{ objectFit: 'cover' }}
+                      unoptimized={heroForm.heroImage?.startsWith('data:') || heroForm.heroImage?.startsWith('/uploads')}
                     />
                   </div>
-                  <button
-                    className="btn btn-outline small full-btn"
-                    onClick={() => {
-                      const url = prompt('Enter new image URL or local path:', heroForm.heroImage);
-                      if (url) setHeroForm({ ...heroForm, heroImage: url });
-                    }}
-                  >
-                    Upload / Change Image
-                  </button>
+
+                  {/* Hidden file input for Hero image */}
+                  <input
+                    type="file"
+                    ref={heroFileInputRef}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleHeroImageUpload}
+                  />
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-primary small full-btn"
+                      disabled={uploadingImage}
+                      onClick={() => heroFileInputRef.current?.click()}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    >
+                      {uploadingImage ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
+                      {uploadingImage ? 'Uploading...' : 'Upload Image from Device'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline small full-btn"
+                      onClick={() => {
+                        const url = prompt('Or enter image URL:', heroForm.heroImage);
+                        if (url) setHeroForm({ ...heroForm, heroImage: url });
+                      }}
+                    >
+                      Enter Image URL
+                    </button>
+                  </div>
                 </div>
 
                 <div className="hero-inputs-col">
@@ -1021,21 +1340,25 @@ export default function AdminConsole() {
                   >
                     Save Changes
                   </button>
-                  {savedMsg && <span className="save-indicator">✔ {savedMsg}</span>}
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* SETTINGS VIEW */}
+        {/* =========================================================================
+            SETTINGS VIEW: Full Business Contacts & Address Management
+           ========================================================================= */}
         {tab === 'Settings' && (
           <div className="settings-management-screen">
             <div className="admin-card-panel">
               <div className="panel-header">
                 <div>
-                  <h3>Business &amp; Integration Settings</h3>
-                  <p>Official verified contact channels and external integration settings.</p>
+                  <h3>Business Contacts &amp; Operations Settings</h3>
+                  <p>
+                    Manage official contact numbers, Saudi branch, WhatsApp channels, and office address. All changes
+                    sync live to Supabase.
+                  </p>
                 </div>
               </div>
 
@@ -1047,16 +1370,11 @@ export default function AdminConsole() {
                     if (typeof window !== 'undefined') {
                       localStorage.setItem('skyray_custom_settings', JSON.stringify(settingsForm));
                     }
-                    setSavedMsg('Settings saved successfully!');
+                    setSavedMsg('Business settings updated and saved to Supabase successfully!');
                     setError('');
-                    setTimeout(() => setSavedMsg(''), 3000);
+                    setTimeout(() => setSavedMsg(''), 4000);
                   } catch (err: any) {
-                    if (typeof window !== 'undefined') {
-                      localStorage.setItem('skyray_custom_settings', JSON.stringify(settingsForm));
-                    }
-                    setSavedMsg('Settings saved successfully!');
-                    setError('');
-                    setTimeout(() => setSavedMsg(''), 3000);
+                    alert(`Failed to save settings: ${err.message}`);
                   }
                 }}
                 className="settings-form-grid"
@@ -1070,41 +1388,83 @@ export default function AdminConsole() {
                 </label>
 
                 <label>
-                  Phone Number
+                  Primary Phone Number (India Office)
                   <input
                     value={settingsForm.phone}
                     onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
+                    placeholder="+91 91763 57791"
                   />
                 </label>
 
                 <label>
-                  WhatsApp Number
+                  Primary WhatsApp Number
                   <input
                     value={settingsForm.whatsapp}
                     onChange={(e) => setSettingsForm({ ...settingsForm, whatsapp: e.target.value })}
+                    placeholder="+91 91763 57791"
                   />
                 </label>
 
                 <label>
-                  Business Email
+                  Secondary Phone (Saudi Arabia / Branch)
                   <input
+                    value={settingsForm.phoneSecondary}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, phoneSecondary: e.target.value })}
+                    placeholder="+966 57 549 0602"
+                  />
+                </label>
+
+                <label>
+                  Business Support Email
+                  <input
+                    type="email"
                     value={settingsForm.email}
                     onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
+                    placeholder="syedrahamathullah@skyrayholidays.com"
+                  />
+                </label>
+
+                <label>
+                  Support &amp; Concierge Working Hours
+                  <input
+                    value={settingsForm.hours}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, hours: e.target.value })}
+                    placeholder="24/7 Dedicated Concierge Support"
                   />
                 </label>
 
                 <label className="span-full">
-                  Office Address
+                  Official Office Address (Chennai Headquarters)
                   <input
                     value={settingsForm.address}
                     onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
+                    placeholder="No 3/1, 2nd floor, Appavu street, Ellis road, Mount Road, Chennai - 600002"
                   />
                 </label>
 
-                <button type="submit" className="btn btn-primary">
-                  Save Settings
-                </button>
-                {savedMsg && <span className="save-indicator">✔ {savedMsg}</span>}
+                <label className="span-full">
+                  WhatsApp Default Welcome Greeting
+                  <input
+                    value={settingsForm.whatsappMessage}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, whatsappMessage: e.target.value })}
+                    placeholder="Hello SkyRay Holidays! I would like to know more about your tour packages."
+                  />
+                </label>
+
+                <label className="span-full">
+                  Google Maps Location / Embed URL
+                  <input
+                    value={settingsForm.mapUrl}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, mapUrl: e.target.value })}
+                    placeholder="https://maps.google.com/..."
+                  />
+                </label>
+
+                <div style={{ gridColumn: 'span 2', marginTop: '10px' }}>
+                  <button type="submit" className="btn btn-primary">
+                    Save Business Settings
+                  </button>
+                </div>
               </form>
             </div>
           </div>
@@ -1114,26 +1474,48 @@ export default function AdminConsole() {
       {/* =========================================================================
           MODALS
          ========================================================================= */}
-      {/* 1. Add / Edit Package Modal */}
+      {/* 1. Add / Edit Package Modal with Device Image Upload & Full Content Editing */}
       {showPackageModal && (
         <div className="modal-backdrop">
-          <div className="modal-dialog wide">
+          <div className="modal-dialog wide" style={{ maxHeight: '92vh', overflowY: 'auto' }}>
             <div className="modal-header">
-              <h3>{editingPackage ? 'Edit Package' : 'Add New Package'}</h3>
+              <h3>{editingPackage ? `Edit Package: ${editingPackage.title}` : 'Add New Package'}</h3>
               <button className="modal-close" onClick={() => setShowPackageModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={savePackage}>
               <div className="modal-body">
+                {/* Title and Destination */}
                 <div className="form-row">
                   <label>
                     Package Title *
                     <input
                       required
                       value={packageFormData.title}
-                      onChange={(e) => setPackageFormData({ ...packageFormData, title: e.target.value })}
-                      placeholder="e.g. Dubai Holiday"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPackageFormData({
+                          ...packageFormData,
+                          title: val,
+                          slug: editingPackage
+                            ? packageFormData.slug
+                            : val.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, ''),
+                        });
+                      }}
+                      placeholder="e.g. Dubai Holiday Package"
                     />
                   </label>
+                  <label>
+                    Slug (URL identifier) *
+                    <input
+                      required
+                      value={packageFormData.slug}
+                      onChange={(e) => setPackageFormData({ ...packageFormData, slug: e.target.value })}
+                      placeholder="dubai-holiday-package"
+                    />
+                  </label>
+                </div>
+
+                <div className="form-row">
                   <label>
                     Destination *
                     <input
@@ -1142,20 +1524,6 @@ export default function AdminConsole() {
                       onChange={(e) => setPackageFormData({ ...packageFormData, destination: e.target.value })}
                       placeholder="e.g. Dubai, UAE"
                     />
-                  </label>
-                </div>
-
-                <div className="form-row">
-                  <label>
-                    Category / Type
-                    <select
-                      value={packageFormData.kind}
-                      onChange={(e) => setPackageFormData({ ...packageFormData, kind: e.target.value })}
-                    >
-                      <option value="TOUR">TOUR (Holiday)</option>
-                      <option value="HAJJ">HAJJ (Pilgrimage)</option>
-                      <option value="UMRAH">UMRAH (Pilgrimage)</option>
-                    </select>
                   </label>
                   <label>
                     Duration *
@@ -1168,52 +1536,203 @@ export default function AdminConsole() {
                   </label>
                 </div>
 
-                <div className="form-row">
+                {/* Kind, Category, Pricing */}
+                <div className="form-row" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
                   <label>
-                    Price (USD / Starting From)
+                    Package Type
+                    <select
+                      value={packageFormData.kind}
+                      onChange={(e) => setPackageFormData({ ...packageFormData, kind: e.target.value })}
+                    >
+                      <option value="TOUR">TOUR (Holiday &amp; Leisure)</option>
+                      <option value="HAJJ">HAJJ (Sacred Pilgrimage)</option>
+                      <option value="UMRAH">UMRAH (Year-Round Pilgrimage)</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Category
+                    <input
+                      value={packageFormData.category}
+                      onChange={(e) => setPackageFormData({ ...packageFormData, category: e.target.value })}
+                      placeholder="International / Domestic / Luxury"
+                    />
+                  </label>
+
+                  <label>
+                    Publication Status
+                    <select
+                      value={packageFormData.status}
+                      onChange={(e) => setPackageFormData({ ...packageFormData, status: e.target.value })}
+                    >
+                      <option value="PUBLISHED">PUBLISHED (Visible to Public)</option>
+                      <option value="DRAFT">DRAFT (Staff Only)</option>
+                      <option value="ARCHIVED">ARCHIVED</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="form-row" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                  <label>
+                    Starting Price
                     <input
                       type="number"
                       value={packageFormData.priceFrom}
                       onChange={(e) => setPackageFormData({ ...packageFormData, priceFrom: e.target.value })}
-                      placeholder="499"
+                      placeholder="e.g. 499 (leave blank for Quote on Request)"
                     />
                   </label>
+
                   <label>
-                    Cover Image URL
-                    <input
-                      value={packageFormData.image}
-                      onChange={(e) => setPackageFormData({ ...packageFormData, image: e.target.value })}
-                      placeholder="/images/destinations/dubai.jpg"
-                    />
+                    Currency
+                    <select
+                      value={packageFormData.currency}
+                      onChange={(e) => setPackageFormData({ ...packageFormData, currency: e.target.value })}
+                    >
+                      <option value="₹">₹ INR (Indian Rupee)</option>
+                      <option value="$">$ USD (US Dollar)</option>
+                      <option value="SR">SR SAR (Saudi Riyal)</option>
+                      <option value="€">€ EUR (Euro)</option>
+                      <option value="AED">AED (Emirati Dirham)</option>
+                    </select>
                   </label>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '18px' }}>
+                      <input
+                        type="checkbox"
+                        checked={packageFormData.featured}
+                        onChange={(e) => setPackageFormData({ ...packageFormData, featured: e.target.checked })}
+                      />
+                      <span>Featured on Homepage</span>
+                    </label>
+                  </div>
                 </div>
 
+                {/* DEVICE IMAGE UPLOAD SECTION */}
+                <div style={{ marginBottom: '18px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
+                    Package Cover Image *
+                  </label>
+
+                  {/* Hidden native file input */}
+                  <input
+                    type="file"
+                    ref={packageFileInputRef}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handlePackageImageUpload}
+                  />
+
+                  <div
+                    style={{
+                      border: '2px dashed #cbd5e1',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      backgroundColor: '#f8fafc',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '20px',
+                    }}
+                  >
+                    {/* Image Preview Box */}
+                    <div
+                      style={{
+                        width: '120px',
+                        height: '80px',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        backgroundColor: '#e2e8f0',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {packageFormData.image ? (
+                        <Image
+                          src={packageFormData.image}
+                          alt="Cover Preview"
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          unoptimized={packageFormData.image.startsWith('data:') || packageFormData.image.startsWith('/uploads')}
+                        />
+                      ) : (
+                        <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#94a6b2' }}>
+                          <ImageIcon size={24} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#334155', fontWeight: 600 }}>
+                        Upload photo directly from your device (phone/computer)
+                      </p>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="btn btn-primary small"
+                          disabled={uploadingImage}
+                          onClick={() => packageFileInputRef.current?.click()}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          {uploadingImage ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
+                          {uploadingImage ? 'Uploading Image...' : 'Choose File from Device'}
+                        </button>
+                        <span style={{ fontSize: '12px', color: '#64748b' }}>Supports JPG, PNG, WEBP (Max 8MB)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '8px' }}>
+                    <small style={{ color: '#64748b' }}>Or enter image URL manually:</small>
+                    <input
+                      style={{ marginTop: '4px' }}
+                      value={packageFormData.image}
+                      onChange={(e) => setPackageFormData({ ...packageFormData, image: e.target.value })}
+                      placeholder="/images/destinations/dubai.jpg or https://..."
+                    />
+                  </div>
+                </div>
+
+                {/* Short Summary */}
                 <label>
-                  Short Summary *
+                  Short Summary (Card Preview) *
                   <textarea
                     rows={2}
                     required
                     value={packageFormData.summary}
                     onChange={(e) => setPackageFormData({ ...packageFormData, summary: e.target.value })}
-                    placeholder="Short description for package cards..."
+                    placeholder="Short attractive summary for package list cards..."
                   />
                 </label>
 
+                {/* Full Description */}
                 <label>
-                  Inclusions (comma separated)
+                  Full Package Description &amp; Highlights
+                  <textarea
+                    rows={4}
+                    value={packageFormData.description}
+                    onChange={(e) => setPackageFormData({ ...packageFormData, description: e.target.value })}
+                    placeholder="Comprehensive description of the tour itinerary, experience, and destination highlights..."
+                  />
+                </label>
+
+                {/* Inclusions */}
+                <label>
+                  Inclusions (comma-separated)
                   <input
                     value={packageFormData.inclusions}
                     onChange={(e) => setPackageFormData({ ...packageFormData, inclusions: e.target.value })}
-                    placeholder="Flight Tickets, Hotel Stay, City Tour, Transfers"
+                    placeholder="Flight Tickets, 4-Star Hotel Stay, Daily Breakfast, City Tour, Airport Transfers"
                   />
                 </label>
 
+                {/* Exclusions */}
                 <label>
-                  Exclusions (comma separated)
+                  Exclusions (comma-separated)
                   <input
                     value={packageFormData.exclusions}
                     onChange={(e) => setPackageFormData({ ...packageFormData, exclusions: e.target.value })}
-                    placeholder="Personal Expenses, Visa Fees"
+                    placeholder="Personal Expenses, Visa Fees, Travel Insurance"
                   />
                 </label>
               </div>
@@ -1231,7 +1750,112 @@ export default function AdminConsole() {
         </div>
       )}
 
-      {/* 2. Add Note Modal */}
+      {/* 2. Full Enquiry Details Modal */}
+      {showEnquiryDetailsModal && activeEnquiry && (
+        <div className="modal-backdrop">
+          <div className="modal-dialog wide">
+            <div className="modal-header">
+              <div>
+                <h3 style={{ margin: 0 }}>Enquiry Details</h3>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>Reference: <strong>{activeEnquiry.reference}</strong></span>
+              </div>
+              <button className="modal-close" onClick={() => setShowEnquiryDetailsModal(false)}><X size={18} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
+                <h4 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>Customer Information</h4>
+                <div style={{ display: 'grid', gap: '8px', fontSize: '13px' }}>
+                  <div><strong>Full Name:</strong> {activeEnquiry.fullName}</div>
+                  <div>
+                    <strong>Phone:</strong> {activeEnquiry.phone}{' '}
+                    <a
+                      href={`https://wa.me/${activeEnquiry.phone.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: '#16a34a', textDecoration: 'none', marginLeft: 8 }}
+                    >
+                      <MessageSquare size={13} style={{ verticalAlign: 'middle' }} /> WhatsApp
+                    </a>
+                    <a
+                      href={`tel:${activeEnquiry.phone}`}
+                      style={{ color: '#0284c7', textDecoration: 'none', marginLeft: 8 }}
+                    >
+                      <Phone size={13} style={{ verticalAlign: 'middle' }} /> Call
+                    </a>
+                  </div>
+                  <div>
+                    <strong>Email:</strong> {activeEnquiry.email}{' '}
+                    <a
+                      href={`mailto:${activeEnquiry.email}`}
+                      style={{ color: '#0284c7', textDecoration: 'none', marginLeft: 8 }}
+                    >
+                      <Mail size={13} style={{ verticalAlign: 'middle' }} /> Send Mail
+                    </a>
+                  </div>
+                  <div><strong>Platform:</strong> {activeEnquiry.sourcePlatform || 'Website'}</div>
+                  <div><strong>Submitted:</strong> {new Date(activeEnquiry.createdAt).toLocaleString()}</div>
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
+                <h4 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>Travel Request Details</h4>
+                <div style={{ display: 'grid', gap: '8px', fontSize: '13px' }}>
+                  <div><strong>Package:</strong> {activeEnquiry.packageNameSnapshot || 'Custom Enquiry'}</div>
+                  <div><strong>Preferred Date:</strong> {activeEnquiry.preferredDate ? activeEnquiry.preferredDate.slice(0, 10) : '—'}</div>
+                  <div><strong>Travelers / Members:</strong> {activeEnquiry.members || 1} people</div>
+                  <div><strong>Duration:</strong> {activeEnquiry.days || 1} Days</div>
+                  <div>
+                    <strong>Status:</strong>{' '}
+                    <select
+                      className={`status-dropdown pill-${activeEnquiry.status.toLowerCase()}`}
+                      value={activeEnquiry.status}
+                      onChange={(e) => updateStatus(activeEnquiry.id, e.target.value)}
+                    >
+                      {['NEW', 'PENDING', 'CONTACTED', 'QUOTED', 'CONFIRMED', 'CLOSED', 'NOT_INTERESTED'].map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ gridColumn: 'span 2', backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
+                <h4 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>Special Instructions / Customer Notes</h4>
+                <p style={{ margin: 0, fontSize: '13px', color: '#334155', whiteSpace: 'pre-wrap' }}>
+                  {activeEnquiry.instructions || 'No special instructions provided by customer.'}
+                </p>
+              </div>
+            </div>
+            <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ color: '#dc2626', borderColor: '#fca5a5' }}
+                onClick={() => deleteEnquiry(activeEnquiry.id, activeEnquiry.reference)}
+              >
+                <Trash2 size={14} style={{ marginRight: 6 }} /> Delete Enquiry
+              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => {
+                    setSelectedEnquiryForNote(activeEnquiry);
+                    setShowNoteModal(true);
+                  }}
+                >
+                  <FileText size={14} style={{ marginRight: 6 }} /> Add Staff Note
+                </button>
+                <button type="button" className="btn btn-primary" onClick={() => setShowEnquiryDetailsModal(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Add Note Modal */}
       {showNoteModal && (
         <div className="modal-backdrop">
           <div className="modal-dialog">
@@ -1245,7 +1869,7 @@ export default function AdminConsole() {
                 rows={4}
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
-                placeholder="Enter private staff note (e.g. called customer, preferred travel window confirmed)..."
+                placeholder="Enter private staff note (e.g. called customer on WhatsApp, quoted $1,200 for 4 people, waiting for visa copy)..."
               />
             </div>
             <div className="modal-footer">

@@ -194,4 +194,21 @@ export class PackagesService {
       throw e;
     }
   }
+
+  async delete(id: string, user: any) {
+    const old = await this.db.package.findUnique({ where: { id } });
+    if (!old) throw new NotFoundException('Package not found');
+    await this.db.package.delete({ where: { id } });
+    await this.db.auditLog.create({
+      data: {
+        actorId: user.id,
+        actorLabel: user.email,
+        action: 'PACKAGE_DELETED',
+        entity: 'Package',
+        entityId: id,
+        before: { title: old.title, slug: old.slug },
+      },
+    });
+    return { success: true, message: 'Package deleted successfully' };
+  }
 }

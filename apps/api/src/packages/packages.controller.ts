@@ -1,2 +1,52 @@
-import {Body,Controller,Get,Param,Post,Patch,Query,UseGuards,Req} from '@nestjs/common';import {PackagesService} from './packages.service';import {AuthGuard,Roles,RolesGuard} from '../common/auth.guard';import {Request} from 'express';
-@Controller('packages') export class PackagesController{constructor(private svc:PackagesService){} @Get() list(@Query('kind') kind?:string){return this.svc.list(kind)} @Get(':slug') get(@Param('slug') slug:string){return this.svc.get(slug)} @UseGuards(AuthGuard,RolesGuard) @Roles('SUPER_ADMIN','CONTENT_MANAGER') @Post() create(@Body() body:any,@Req() req:Request){return this.svc.create(body,(req as any).user)} @UseGuards(AuthGuard,RolesGuard) @Roles('SUPER_ADMIN','CONTENT_MANAGER') @Patch(':id') update(@Param('id') id:string,@Body() body:any,@Req() req:Request){return this.svc.update(id,body,(req as any).user)}}
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Query,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
+import { PackagesService } from './packages.service';
+import { AuthGuard, Roles, RolesGuard } from '../common/auth.guard';
+import { Request } from 'express';
+
+@Controller('packages')
+export class PackagesController {
+  constructor(private svc: PackagesService) {}
+
+  @Get()
+  list(@Query('kind') kind?: string) {
+    return this.svc.list(kind);
+  }
+
+  @Get(':slug')
+  get(@Param('slug') slug: string) {
+    return this.svc.get(slug);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN', 'CONTENT_MANAGER')
+  @Post()
+  create(@Body() body: any, @Req() req: Request) {
+    return this.svc.create(body, (req as any).user);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN', 'CONTENT_MANAGER')
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() body: any, @Req() req: Request) {
+    return this.svc.update(id, body, (req as any).user);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN', 'CONTENT_MANAGER')
+  @Delete(':id')
+  delete(@Param('id') id: string, @Req() req: Request) {
+    return this.svc.delete(id, (req as any).user);
+  }
+}
+
