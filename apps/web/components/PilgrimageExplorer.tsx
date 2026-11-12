@@ -64,9 +64,16 @@ export default function PilgrimageExplorer() {
       </div>
 
       {/* Grid of Pilgrimage Cards (Economy and Premium) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(520px, 1fr))', gap: '28px' }}>
         {filteredPackages.map((pkg) => {
           const isPremium = pkg.category?.toLowerCase() === 'premium' || pkg.title.toLowerCase().includes('premium');
+          const meccaImg =
+            pkg.meccaImage ||
+            (isPremium ? '/images/destinations/makkah-night.jpg' : '/images/destinations/makkah-kaaba.jpg');
+          const madinahImg =
+            pkg.madinahImage ||
+            (isPremium ? '/images/destinations/madinah-green-dome.jpg' : '/images/destinations/madinah-courtyard.jpg');
+
           return (
             <div
               key={pkg.id || pkg.slug}
@@ -74,7 +81,11 @@ export default function PilgrimageExplorer() {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                border: isPremium ? '2px solid #bae6fd' : '1px solid #e2e8f0',
+                border: isPremium ? '2px solid #38bdf8' : '1px solid #e2e8f0',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                background: '#ffffff',
+                boxShadow: isPremium ? '0 10px 30px rgba(2, 132, 199, 0.12)' : '0 6px 20px rgba(15, 23, 42, 0.05)',
                 position: 'relative',
               }}
             >
@@ -88,60 +99,163 @@ export default function PilgrimageExplorer() {
                     color: '#ffffff',
                     fontSize: '11px',
                     fontWeight: 800,
-                    padding: '4px 10px',
+                    padding: '5px 12px',
                     borderRadius: '20px',
-                    zIndex: 2,
+                    zIndex: 3,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
+                    gap: '5px',
+                    boxShadow: '0 4px 12px rgba(217, 119, 6, 0.3)',
                   }}
                 >
-                  <Sparkles size={12} /> 5-STAR LUXURY
+                  <Sparkles size={13} /> 5-STAR LUXURY
                 </div>
               )}
 
-              <div className="p-card-left" style={{ flex: 1 }}>
-                <div className="p-eyebrow" style={{ color: isPremium ? '#0284c7' : '#059669' }}>
+              {/* Dual Holy Cities Image Showcase */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  height: '220px',
+                  position: 'relative',
+                  backgroundColor: '#0f172a',
+                  gap: '2px',
+                }}
+              >
+                {/* Mecca Image Container */}
+                <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+                  <Image
+                    src={meccaImg}
+                    alt="Makkah al-Mukarramah"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 300px"
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.7) 100%)',
+                    }}
+                  />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: '10px',
+                      left: '12px',
+                      color: '#ffffff',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      background: 'rgba(15,23,42,0.82)',
+                      padding: '4px 9px',
+                      borderRadius: '6px',
+                      backdropFilter: 'blur(4px)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    🕋 Makkah {pkg.details?.makkahNights ? `(${pkg.details.makkahNights})` : ''}
+                  </span>
+                </div>
+
+                {/* Madina Image Container */}
+                <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+                  <Image
+                    src={madinahImg}
+                    alt="Al-Madinah al-Munawwarah"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 300px"
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.7) 100%)',
+                    }}
+                  />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: '10px',
+                      right: '12px',
+                      color: '#ffffff',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      background: 'rgba(15,23,42,0.82)',
+                      padding: '4px 9px',
+                      borderRadius: '6px',
+                      backdropFilter: 'blur(4px)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    🕌 Madinah {pkg.details?.madinahNights ? `(${pkg.details.madinahNights})` : ''}
+                  </span>
+                </div>
+              </div>
+
+              {/* Package Content & Inclusions */}
+              <div className="p-card-left" style={{ flex: 1, padding: '24px' }}>
+                <div className="p-eyebrow" style={{ color: isPremium ? '#0284c7' : '#059669', fontWeight: 800 }}>
                   {pkg.category?.toUpperCase() || (isPremium ? 'PREMIUM TIER' : 'ECONOMY TIER')} &bull; {activeTab}
                 </div>
-                <h2>{pkg.title}</h2>
-                <div className="p-meta">
-                  <span className="p-duration"><Clock3 size={15} /> {pkg.duration}</span>
-                  <span className="p-rating">
+                <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#17496b', margin: '8px 0 10px' }}>
+                  {pkg.title}
+                </h2>
+                <div className="p-meta" style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '14px' }}>
+                  <span className="p-duration" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
+                    <Clock3 size={15} color="#0284c7" /> {pkg.duration}
+                  </span>
+                  <span className="p-rating" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
                     <Star size={14} fill="#f59e0b" color="#f59e0b" /> {pkg.rating?.toFixed(1) || '4.9'} ({pkg.reviewCount || 150}+ Verified Pilgrims)
                   </span>
                 </div>
-                <p className="p-summary">{pkg.summary}</p>
+                <p className="p-summary" style={{ fontSize: '13.5px', color: '#475569', lineHeight: 1.6, marginBottom: '18px' }}>
+                  {pkg.summary}
+                </p>
 
-                <div className="p-checklist">
-                  <h4>Package Inclusions &amp; Standards:</h4>
-                  <ul>
+                <div className="p-checklist" style={{ marginBottom: '20px' }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: 800, color: '#17496b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>
+                    Package Inclusions &amp; Standards:
+                  </h4>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '8px' }}>
                     {pkg.inclusions?.map((inc, i) => (
-                      <li key={i}>
-                        <CheckCircle2 size={18} className="p-check-icon" style={{ color: isPremium ? '#0284c7' : '#10b981' }} />
+                      <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#334155' }}>
+                        <CheckCircle2 size={16} className="p-check-icon" style={{ color: isPremium ? '#0284c7' : '#10b981', flexShrink: 0 }} />
                         {inc}
                       </li>
                     )) || (
                       <>
-                        <li><CheckCircle2 size={18} className="p-check-icon" /> Air-conditioned hotels &amp; transfers</li>
-                        <li><CheckCircle2 size={18} className="p-check-icon" /> Religious scholar guidance</li>
-                        <li><CheckCircle2 size={18} className="p-check-icon" /> Complete visa &amp; Nusuk support</li>
+                        <li style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#334155' }}>
+                          <CheckCircle2 size={16} className="p-check-icon" style={{ color: '#0284c7' }} /> Air-conditioned hotels &amp; transfers
+                        </li>
+                        <li style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#334155' }}>
+                          <CheckCircle2 size={16} className="p-check-icon" style={{ color: '#0284c7' }} /> Religious scholar guidance
+                        </li>
                       </>
                     )}
                   </ul>
                 </div>
 
-                <div className="p-action-box" style={{ marginTop: 'auto', paddingTop: '16px' }}>
+                <div className="p-action-box" style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
                   <div className="p-price">
-                    <strong>Custom Itinerary Quote</strong>
-                    <small>Options available for Quad, Triple, Double &amp; Single sharing</small>
+                    <strong style={{ fontSize: '15px', color: '#17496b', display: 'block' }}>Custom Itinerary Quote</strong>
+                    <small style={{ fontSize: '11px', color: '#64748b' }}>Options for Quad, Triple, Double &amp; Single</small>
                   </div>
                   <Link
                     href={`/enquire?package=${pkg.slug}&tier=${isPremium ? 'premium' : 'economy'}`}
                     className="btn btn-primary"
                     style={{
-                      backgroundColor: isPremium ? '#0284c7' : '#059669',
-                      borderColor: isPremium ? '#0284c7' : '#059669',
+                      background: '#0284c7',
+                      color: '#ffffff',
+                      border: '1px solid #0284c7',
+                      fontWeight: 800,
+                      borderRadius: '8px',
+                      padding: '11px 18px',
                     }}
                   >
                     Enquire for {isPremium ? 'Premium' : 'Economy'} <ArrowRight size={16} />

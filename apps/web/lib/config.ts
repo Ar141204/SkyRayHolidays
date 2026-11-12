@@ -12,8 +12,7 @@ export const contactDefaults = {
   address: '',
   hours: '24/7 Dedicated Concierge Support',
   mapUrl: '',
-  googleReviewsUrl:
-    'https://www.google.com/maps/place/Skyray+Holidays/@10.9734181,79.365918,17z/data=!3m1!4b1!4m6!3m5!1s0x3baacd18aac8de19:0xfb5f36c0944a08a8!8m2!3d10.9734181!4d79.3684929!16s%2Fg%2F11y8hlpcs0?entry=ttu&g_ep=EgoyMDI2MTEwOS4wIKXMDSoASAFQAw%3D%3D',
+  googleReviewsUrl: 'https://maps.app.goo.gl/mzoUCar9aFRcQumW8',
   whatsappMessage: 'Hello SkyRay Holidays! I would like to know more about your tour packages.',
 };
 
@@ -29,6 +28,8 @@ export type PackageItem = {
   priceFrom?: number | null;
   currency?: string;
   image?: string;
+  meccaImage?: string;
+  madinahImage?: string;
   rating?: number;
   reviewCount?: number;
   featured?: boolean;
@@ -435,7 +436,9 @@ export const demoPackages: PackageItem[] = [
     description: 'Perform your sacred fifth pillar of Islam with peace of mind. Includes clean, compliant 3-star and 4-star hotel stays with dedicated shuttle services, full-board meals during Mina and Arafat rituals, and continuous assistance from certified religious guides.',
     priceFrom: null,
     currency: '$',
-    image: '/images/destinations/mecca.jpg',
+    image: '/images/destinations/makkah-kaaba.jpg',
+    meccaImage: '/images/destinations/makkah-kaaba.jpg',
+    madinahImage: '/images/destinations/madinah-courtyard.jpg',
     rating: 4.8,
     reviewCount: 145,
     featured: true,
@@ -461,7 +464,9 @@ export const demoPackages: PackageItem[] = [
     description: 'Experience a peaceful and fully guided pilgrimage with luxury hotel accommodations walking distance from Haram, dedicated scholars, air-conditioned transport, VIP Haramain high-speed train, and full logistics support.',
     priceFrom: null,
     currency: '$',
-    image: '/images/destinations/mecca.jpg',
+    image: '/images/destinations/makkah-night.jpg',
+    meccaImage: '/images/destinations/makkah-night.jpg',
+    madinahImage: '/images/destinations/madinah-green-dome.jpg',
     rating: 5.0,
     reviewCount: 210,
     featured: true,
@@ -489,7 +494,9 @@ export const demoPackages: PackageItem[] = [
     description: 'An exceptional value Umrah experience designed for families and groups. Stay in verified, quality hotels with direct shuttle access to the Haram, guided Ziyarat to historical locations, and dedicated Saudi eVisa processing.',
     priceFrom: null,
     currency: '$',
-    image: '/images/destinations/madinah.jpg',
+    image: '/images/destinations/madinah-courtyard.jpg',
+    meccaImage: '/images/destinations/makkah-kaaba.jpg',
+    madinahImage: '/images/destinations/madinah-courtyard.jpg',
     rating: 4.8,
     reviewCount: 198,
     featured: true,
@@ -514,7 +521,9 @@ export const demoPackages: PackageItem[] = [
     description: 'Deluxe Umrah package tailored for families and individuals seeking luxury. Enjoy premium rooms with Kaaba view options, direct flights, VIP Haramain high-speed train, private SUV chauffeur, and 24/7 dedicated concierge.',
     priceFrom: null,
     currency: '$',
-    image: '/images/destinations/madinah.jpg',
+    image: '/images/destinations/madinah-green-dome.jpg',
+    meccaImage: '/images/destinations/makkah-night.jpg',
+    madinahImage: '/images/destinations/madinah-green-dome.jpg',
     rating: 4.9,
     reviewCount: 320,
     featured: true,

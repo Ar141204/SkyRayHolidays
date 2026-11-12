@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
 
@@ -16,10 +16,37 @@ const links = [
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const pathname = usePathname();
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Never hide header when mobile drawer is open
+      if (open) return;
+
+      if (currentScrollY <= 40) {
+        // At the top of page, always show
+        setHidden(false);
+      } else if (currentScrollY > lastScrollY.current && currentScrollY > 90) {
+        // Scrolling down past threshold -> hide navbar
+        setHidden(true);
+      } else if (currentScrollY < lastScrollY.current) {
+        // Scrolling up -> reveal navbar
+        setHidden(false);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [open]);
 
   return (
-    <header className="site-header">
+    <header className={`site-header ${hidden ? 'header-hidden' : ''}`}>
       <div className="nav-wrap">
         {/* Left Corner: Extra Large Brand Logo */}
         <Link href="/" className="brand" aria-label="SkyRay Holidays Home">
@@ -52,16 +79,16 @@ export default function SiteHeader() {
             );
           })}
           <div className="mobile-menu-actions">
-            <Link className="btn btn-primary" href="/enquire" onClick={() => setOpen(false)}>
-              Enquire Now <ArrowUpRight size={16} />
+            <Link className="btn btn-primary nav-cta" href="/enquire" onClick={() => setOpen(false)}>
+              Enquire Now <ArrowUpRight size={17} />
             </Link>
           </div>
         </nav>
 
-        {/* Right Corner: Enquiry Button & Mobile Toggle */}
+        {/* Right Corner: Solid Sky-Blue Enquiry Button & Mobile Toggle */}
         <div className="nav-actions">
           <Link className="btn btn-primary nav-cta" href="/enquire">
-            Enquire Now <ArrowUpRight size={16} />
+            Enquire Now <ArrowUpRight size={17} />
           </Link>
           <button
             className="menu-toggle"

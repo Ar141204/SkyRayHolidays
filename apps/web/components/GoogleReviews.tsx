@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { API_URL } from '@/lib/config';
-import { Star } from 'lucide-react';
+import { Star, CheckCircle, ExternalLink } from 'lucide-react';
 
 type Reviews = {
   available?: boolean;
@@ -14,16 +14,26 @@ type Reviews = {
   message?: string;
 };
 
-const DEFAULT_REVIEWS = [
+const GOOGLE_MAPS_REVIEWS_URL = 'https://maps.app.goo.gl/mzoUCar9aFRcQumW8';
+
+const ORIGINAL_GOOGLE_REVIEWS = [
   {
-    author: 'Priya Sharma',
+    author: 'Riyaz Ahamed',
     rating: 5,
-    text: 'Amazing experience! The Dubai trip was perfectly organized from airport pickup to desert safari. Our family loved every minute.',
+    text: 'Great service, quick response, knowledge in immigration services.',
+    publishTime: 'Verified Google Review',
   },
   {
-    author: 'Mohammed Farooq',
+    author: 'Mohamed Thasin',
     rating: 5,
-    text: 'Our Umrah journey was truly peaceful. 5-star hotels were within a 3-minute walk to Haram as promised. Highly recommend their guidance team.',
+    text: 'Excellent customer services and Kind personal care to customers.',
+    publishTime: 'Verified Google Review',
+  },
+  {
+    author: 'Abdul Rasheed',
+    rating: 5,
+    text: 'He was very patient and guided me annd responded to all my queries.',
+    publishTime: 'Verified Google Review',
   },
 ];
 
@@ -39,41 +49,92 @@ export default function GoogleReviews() {
       .catch(() => {});
   }, []);
 
-  const rating = data?.rating || 4.8;
-  const reviewCount = data?.reviewCount || 1200;
-  const reviewsList = data?.reviews && data.reviews.length > 0 ? data.reviews.slice(0, 2) : DEFAULT_REVIEWS;
+  const rating = data?.rating || 4.9;
+  const reviewCount = data?.reviewCount || 34;
+  const reviewsList =
+    data?.reviews && data.reviews.length > 0 ? data.reviews : ORIGINAL_GOOGLE_REVIEWS;
+  const gmapsUrl = data?.url || GOOGLE_MAPS_REVIEWS_URL;
 
   return (
-    <div className="review-placeholder">
-      <div className="google-g">G</div>
-      <strong>Google Reviews</strong>
-      <div className="review-rating">
-        <span>{Number(rating).toFixed(1)}</span>
-        <span>
-          {Array.from({ length: 5 }, (_, i) => (
-            <Star key={i} size={15} fill="#f59e0b" color="#f59e0b" />
-          ))}
-        </span>
-        <small>({reviewCount >= 1000 ? `${(reviewCount / 1000).toFixed(1)}K` : reviewCount} reviews)</small>
+    <div className="review-placeholder" style={{ borderRadius: '14px', border: '1px solid #dce8ee' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="google-g" style={{ margin: 0, fontSize: '30px' }}>G</div>
+          <div>
+            <strong style={{ fontSize: '18px', color: '#17496b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Skyray Holidays
+              <CheckCircle size={15} color="#10b981" />
+            </strong>
+            <span style={{ fontSize: '11px', color: '#64748b' }}>Google Business Profile</span>
+          </div>
+        </div>
+
+        <a
+          href={gmapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="live-status-pill"
+          style={{ textDecoration: 'none', cursor: 'pointer' }}
+        >
+          <span className="dot-green"></span>
+          <span>Verified on Google</span>
+        </a>
       </div>
 
-      {reviewsList.map((r, i) => (
-        <div className="google-review" key={i}>
-          <b>{r.author || 'Verified Traveller'}</b>
-          <div className="stars">{'★'.repeat(Math.round(r.rating || 5))}</div>
-          <p>{r.text || ''}</p>
+      <div className="review-rating" style={{ margin: '14px 0 18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ fontSize: '26px', fontWeight: 800, color: '#17496b' }}>{Number(rating).toFixed(1)}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ display: 'flex', gap: '2px' }}>
+            {Array.from({ length: 5 }, (_, i) => (
+              <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />
+            ))}
+          </span>
+          <small style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+            {reviewCount} Google reviews (5.0 Star Rating)
+          </small>
         </div>
-      ))}
+      </div>
 
-      {data?.url ? (
-        <a className="text-link" href={data.url} target="_blank" rel="noreferrer" style={{ marginTop: '12px' }}>
-          Read all reviews on Google ↗
-        </a>
-      ) : (
-        <span className="live-status-pill" style={{ marginTop: '12px' }}>
-          <span className="dot-green"></span> 4.8 / 5 Rating on Google
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {reviewsList.slice(0, 3).map((r, i) => (
+          <div
+            className="google-review"
+            key={i}
+            style={{
+              background: '#f8fbfe',
+              padding: '12px 14px',
+              borderRadius: '8px',
+              border: '1px solid #eaf2f6',
+              marginTop: 0,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <b style={{ fontSize: '13px', color: '#17496b' }}>{r.author || 'Verified Traveller'}</b>
+              <div className="stars" style={{ color: '#f59e0b', fontSize: '12px' }}>
+                {'★'.repeat(Math.round(r.rating || 5))}
+              </div>
+            </div>
+            <p style={{ fontSize: '12.5px', color: '#334155', margin: '4px 0 0', lineHeight: 1.5, fontStyle: 'italic' }}>
+              &ldquo;{r.text}&rdquo;
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: '18px', paddingTop: '14px', borderTop: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+          Melacavery, Kumbakonam, Tamil Nadu
         </span>
-      )}
+        <a
+          className="text-link"
+          href={gmapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ fontSize: '13px', fontWeight: 800, color: '#0284c7', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+        >
+          View all reviews on Google Maps <ExternalLink size={14} />
+        </a>
+      </div>
     </div>
   );
 }

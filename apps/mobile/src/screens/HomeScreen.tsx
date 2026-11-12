@@ -12,8 +12,7 @@ import { BrandHeader, C } from '../components/UI';
 import { getPackageImage, SPECIALIZED_DESTINATIONS } from '../lib/api';
 import { Ionicons } from '@expo/vector-icons';
 
-const GOOGLE_REVIEWS_URL =
-  'https://www.google.com/maps/place/Skyray+Holidays/@10.9734181,79.365918,17z/data=!3m1!4b1!4m6!3m5!1s0x3baacd18aac8de19:0xfb5f36c0944a08a8!8m2!3d10.9734181!4d79.3684929!16s%2Fg%2F11y8hlpcs0?entry=ttu&g_ep=EgoyMDI2MTEwOS4wIKXMDSoASAFQAw%3D%3D';
+const GOOGLE_REVIEWS_URL = 'https://maps.app.goo.gl/mzoUCar9aFRcQumW8';
 
 export function HomeScreen({ navigation }: any) {
   const navigateToEnquiry = (packageName?: string) => {
@@ -230,9 +229,9 @@ export function HomeScreen({ navigation }: any) {
             </View>
           </View>
 
-          <Text style={s.reviewsTitle}>5.0 Star Rated Travel Agency</Text>
+          <Text style={s.reviewsTitle}>4.9 ★ Rating on Google Maps (34 Reviews)</Text>
           <Text style={s.reviewsBody}>
-            Loved by travelers for transparent pricing, seamless logistics, and 24/7 personalized care.
+            &ldquo;Great service, quick response, knowledge in immigration services.&rdquo; &mdash; Verified Google Review
           </Text>
 
           <View style={s.reviewsLinkRow}>
