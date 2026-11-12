@@ -8,7 +8,10 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith('/admin');
+  const isAdmin =
+    pathname?.startsWith('/syedrahamathullah@portal-1614') ||
+    pathname?.startsWith('/admin') ||
+    pathname?.includes('portal');
 
   if (isAdmin) {
     return <main className="admin-wrapper">{children}</main>;
