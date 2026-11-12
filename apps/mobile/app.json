@@ -21,6 +21,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#17496B"
       }
-    }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-status-bar"
+    ]
   }
 }
