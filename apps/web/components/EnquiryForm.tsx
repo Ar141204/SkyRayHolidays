@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { API_URL, demoPackages } from '@/lib/config';
-import { CheckCircle2, LoaderCircle, Send, ArrowRight } from 'lucide-react';
+import { CheckCircle2, LoaderCircle, Send, ArrowRight, MessageCircle } from 'lucide-react';
 
 const initial = {
   fullName: '',
@@ -25,6 +25,7 @@ export default function EnquiryForm() {
   const [packages, setPackages] = useState<any[]>([]);
   const [state, setState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [reference, setReference] = useState('');
+  const [submittedData, setSubmittedData] = useState<any>(null);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -75,7 +76,9 @@ export default function EnquiryForm() {
         throw new Error(data.message || 'Unable to submit enquiry. Please check your details and try again.');
       }
 
-      setReference(data.reference || data.enquiryReference || `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`);
+      const finalRef = data.reference || data.enquiryReference || `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`;
+      setReference(finalRef);
+      setSubmittedData({ ...form, reference: finalRef, packageTitle: pkg?.title || form.packageSlug });
       setState('success');
       idempotencyKey.current = null;
       setForm(initial);
@@ -87,6 +90,7 @@ export default function EnquiryForm() {
       } else {
         const fallbackRef = `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`;
         setReference(fallbackRef);
+        setSubmittedData({ ...form, reference: fallbackRef });
         setState('success');
       }
     }
@@ -114,8 +118,45 @@ export default function EnquiryForm() {
           </div>
 
           <p className="reference-note">
-            A confirmation has been logged. Please keep this reference number for future communication.
+            A confirmation has been logged to your email and our travel desk.
           </p>
+
+          {/* Instant WhatsApp Forward Action */}
+          <div style={{ margin: '18px 0 14px 0', width: '100%' }}>
+            <a
+              href={`https://wa.me/919176357791?text=${encodeURIComponent(
+                `Hello SkyRay Holidays! I just submitted an enquiry on your website.\n` +
+                `• Reference: ${reference}\n` +
+                `• Name: ${submittedData?.fullName || form.fullName}\n` +
+                `• Phone: ${submittedData?.phone || form.phone}\n` +
+                `• Package: ${submittedData?.packageTitle || 'Custom Holiday'}\n` +
+                `• Travel Date: ${submittedData?.preferredDate || ''}\n` +
+                `• Travelers: ${submittedData?.members || 2} people\n` +
+                (submittedData?.instructions ? `• Notes: ${submittedData.instructions}\n` : '') +
+                `Please provide quotation and itinerary details.`
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-primary"
+              style={{
+                backgroundColor: '#25D366',
+                borderColor: '#25D366',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                color: '#ffffff',
+                width: '100%',
+                fontWeight: 700,
+                padding: '12px 18px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+              }}
+            >
+              <MessageCircle size={18} />
+              Forward to WhatsApp for Instant Quote
+            </a>
+          </div>
 
           <div className="confirmation-actions">
             <Link href="/" className="btn btn-primary">

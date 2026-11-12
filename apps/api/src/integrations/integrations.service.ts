@@ -137,7 +137,10 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
     const e = await this.getEnquiry(job.enquiryId);
     if (!e) throw new Error('Enquiry record not found');
 
-    const to = job.type === 'COMPANY_EMAIL' ? ENQUIRY_NOTIFICATION_EMAIL : e.email;
+    const to =
+      job.type === 'COMPANY_EMAIL'
+        ? ENQUIRY_NOTIFICATION_EMAIL || process.env.SEED_ADMIN_EMAIL || 'syedrahamathullah@skyrayholidays.com'
+        : e.email;
     if (!to) throw new Error('Email recipient is not configured');
 
     const subject =

@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  Linking,
 } from 'react-native';
 import { sendEnquiry } from '../lib/api';
 import { C, PrimaryButton, BrandHeader } from '../components/UI';
@@ -73,18 +74,60 @@ export function EnquiryScreen({ route, navigation }: any) {
         },
         key,
       );
+      const ref = res?.reference || `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`;
       idempotencyKey.current = null;
+
       Alert.alert(
         'Enquiry Received!',
-        `Thank you ${data.fullName}! Your enquiry reference is ${res.reference || 'SRH202601'}. Our travel team will contact you shortly with a personalized quote.`,
-        [{ text: 'OK', onPress: () => navigation?.goBack?.() }],
+        `Thank you ${data.fullName}! Your enquiry reference is ${ref}.\n\nWould you like to forward these details to our WhatsApp desk for an instant quotation?`,
+        [
+          {
+            text: 'Forward to WhatsApp',
+            onPress: () => {
+              const text = encodeURIComponent(
+                `Hello SkyRay Holidays! I just submitted an enquiry on the mobile app.\n` +
+                `• Reference: ${ref}\n` +
+                `• Name: ${data.fullName}\n` +
+                `• Phone: ${data.phone}\n` +
+                `• Package: ${data.packageName}\n` +
+                `• Travel Date: ${data.preferredDate}\n` +
+                `• Travelers: ${data.members} people\n` +
+                (data.instructions ? `• Notes: ${data.instructions}\n` : '') +
+                `Please provide quotation and itinerary details.`
+              );
+              Linking.openURL(`https://wa.me/919176357791?text=${text}`).catch(() => {});
+              navigation?.goBack?.();
+            },
+          },
+          { text: 'Done', onPress: () => navigation?.goBack?.() },
+        ],
       );
     } catch {
-      // Offline fallback
+      const fallbackRef = `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`;
       Alert.alert(
         'Enquiry Received!',
-        `Thank you ${data.fullName}! Your reference is SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}. Our team will contact you shortly with your customized quote.`,
-        [{ text: 'OK', onPress: () => navigation?.goBack?.() }],
+        `Thank you ${data.fullName}! Your reference is ${fallbackRef}.\n\nWould you like to forward these details to our WhatsApp desk for an instant quotation?`,
+        [
+          {
+            text: 'Forward to WhatsApp',
+            onPress: () => {
+              const text = encodeURIComponent(
+                `Hello SkyRay Holidays! I just submitted an enquiry on the mobile app.\n` +
+                `• Reference: ${fallbackRef}\n` +
+                `• Name: ${data.fullName}\n` +
+                `• Phone: ${data.phone}\n` +
+                `• Package: ${data.packageName}\n` +
+                `• Travel Date: ${data.preferredDate}\n` +
+                `• Travelers: ${data.members} people\n` +
+                (data.instructions ? `• Notes: ${data.instructions}\n` : '') +
+                `Please provide quotation and itinerary details.`
+              );
+              Linking.openURL(`https://wa.me/919176357791?text=${text}`).catch(() => {});
+              navigation?.goBack?.();
+            },
+          },
+          { text: 'Done', onPress: () => navigation?.goBack?.() },
+        ],
       );
     } finally {
       setBusy(false);
