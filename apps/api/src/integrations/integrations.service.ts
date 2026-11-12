@@ -97,6 +97,9 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
           });
         }
       }
+    } catch (err: any) {
+      // Database offline or connection issue
+      this.log.warn(`Skipping job queue processing (database offline): ${err?.message || err}`);
     } finally {
       this.busy = false;
     }
