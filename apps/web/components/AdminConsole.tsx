@@ -897,8 +897,8 @@ export default function AdminConsole() {
       {/* Sidebar Navigation */}
       <aside className="admin-app-sidebar">
         <div className="sidebar-brand">
-          <Image src="/brand/skyray-logo.png" alt="SkyRay Holidays" width={140} height={55} style={{ objectFit: 'contain' }} />
-          <span>MANAGEMENT</span>
+          <Image src="/brand/skyray-logo.png" alt="SkyRay Holidays" width={135} height={46} style={{ objectFit: 'contain' }} />
+          <span className="sidebar-badge">MANAGEMENT PORTAL</span>
         </div>
 
         <nav className="sidebar-nav">
