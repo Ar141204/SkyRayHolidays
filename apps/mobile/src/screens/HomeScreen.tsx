@@ -7,81 +7,25 @@ import {
   TouchableOpacity,
   Platform,
   Image,
+  Linking,
 } from 'react-native';
-import { BrandHeader, PrimaryButton, C, Badge } from '../components/UI';
+import { BrandHeader, C } from '../components/UI';
 import { getPackageImage } from '../lib/api';
 import { Ionicons } from '@expo/vector-icons';
 
-const FEATURED_TOURS = [
-  {
-    id: '1',
-    title: 'Kashmir Paradise Experience',
-    slug: 'kashmir-paradise',
-    destination: 'Srinagar, Gulmarg & Pahalgam',
-    category: 'Domestic',
-    duration: '6 Days / 5 Nights',
-    rating: 4.9,
-    highlights: ['Dal Lake Shikara', 'Gulmarg Gondola', 'Luxury Houseboat'],
-  },
-  {
-    id: '2',
-    title: 'Kerala God’s Own Country',
-    slug: 'kerala-backwaters',
-    destination: 'Munnar, Thekkady & Alleppey',
-    category: 'Domestic',
-    duration: '6 Days / 5 Nights',
-    rating: 4.9,
-    highlights: ['Tea Gardens', 'Spice Plantation', 'Private Houseboat'],
-  },
-  {
-    id: '3',
-    title: 'Dubai Holiday Package',
-    slug: 'dubai-holiday',
-    destination: 'Dubai, UAE',
-    category: 'International',
-    duration: '5 Days / 4 Nights',
-    rating: 4.8,
-    highlights: ['Burj Khalifa', 'Desert Safari BBQ', 'Marina Cruise'],
-  },
-  {
-    id: '4',
-    title: 'Sri Lanka Wonder Island',
-    slug: 'sri-lanka-wonder',
-    destination: 'Colombo, Kandy & Bentota',
-    category: 'International',
-    duration: '6 Days / 5 Nights',
-    rating: 4.9,
-    highlights: ['Tooth Relic Temple', 'Tea Estates', 'Bentota Beach'],
-  },
-  {
-    id: '5',
-    title: 'Maldives Luxury Lagoon',
-    slug: 'maldives-resort-escape',
-    destination: 'South Male & Ari Atolls',
-    category: 'International',
-    duration: '5 Days / 4 Nights',
-    rating: 5.0,
-    highlights: ['Overwater Villa', 'Speedboat Transfer', 'Reef Snorkeling'],
-  },
-];
-
 export function HomeScreen({ navigation }: any) {
-  const navigateToPackage = (slug: string) => {
-    try {
-      navigation.navigate('PackageDetail', { slug });
-    } catch {
-      try {
-        navigation.getParent?.()?.navigate('PackageDetail', { slug });
-      } catch (e) {
-        console.warn('Navigation error:', e);
-      }
-    }
-  };
-
   const navigateToEnquiry = (packageName?: string) => {
     (navigation.getParent?.() || navigation).navigate('Enquiry', { packageName });
   };
 
+  const handleWhatsApp = () => {
+    Linking.openURL(
+      'https://wa.me/919876543210?text=Hello%20SkyRay%20Holidays!%20I%20would%20like%20to%20plan%20a%20trip.',
+    ).catch(() => {});
+  };
+
+  const kashmirImg = getPackageImage('kashmir-paradise');
+  const maldivesImg = getPackageImage('maldives-resort-escape');
   const meccaImg = getPackageImage('premium-hajj-package');
 
   return (
@@ -96,20 +40,20 @@ export function HomeScreen({ navigation }: any) {
         contentContainerStyle={s.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Modern Airy Hero Banner */}
+        {/* 1. Welcome Brand Hero */}
         <View style={s.heroCard}>
           <View style={s.heroBadge}>
             <Ionicons name="sparkles" size={12} color="#93c5fd" style={{ marginRight: 5 }} />
-            <Text style={s.heroBadgeText}>WHERE EVERY TRIP BECOMES A MEMORY</Text>
+            <Text style={s.heroBadgeText}>YOUR TRUSTED TRAVEL CONCIERGE</Text>
           </View>
 
           <Text style={s.heroTitle}>
-            Your Journey Begins with{' '}
-            <Text style={{ color: '#fed7aa' }}>SkyRay Holidays.</Text>
+            Where Every Trip Becomes a{' '}
+            <Text style={{ color: '#fed7aa' }}>Cherished Memory.</Text>
           </Text>
 
           <Text style={s.heroBody}>
-            Discover handcrafted domestic tours, international getaways, and sacred pilgrimage journeys tailored to your preferences.
+            Bespoke domestic tours, handpicked international holidays, and sacred pilgrimage journeys crafted with authentic care and 24/7 personal support.
           </Text>
 
           <View style={s.heroActionRow}>
@@ -118,7 +62,7 @@ export function HomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('Packages')}
               activeOpacity={0.85}
             >
-              <Text style={s.heroBtnText}>Explore Packages</Text>
+              <Text style={s.heroBtnText}>Explore All Packages</Text>
               <Ionicons name="arrow-forward" size={14} color="#ffffff" />
             </TouchableOpacity>
 
@@ -127,7 +71,7 @@ export function HomeScreen({ navigation }: any) {
               onPress={() => navigateToEnquiry('Custom Planning Request')}
               activeOpacity={0.85}
             >
-              <Text style={s.heroSecondaryBtnText}>Custom Quote</Text>
+              <Text style={s.heroSecondaryBtnText}>Request Custom Quote</Text>
             </TouchableOpacity>
           </View>
 
@@ -139,208 +83,263 @@ export function HomeScreen({ navigation }: any) {
             </View>
             <View style={s.trustItemWrap}>
               <Ionicons name="checkmark-circle" size={13} color="#38bdf8" />
-              <Text style={s.trustItem}>24/7 Expert Support</Text>
+              <Text style={s.trustItem}>24/7 Expert Concierge</Text>
             </View>
             <View style={s.trustItemWrap}>
               <Ionicons name="checkmark-circle" size={13} color="#38bdf8" />
-              <Text style={s.trustItem}>Verified Quality</Text>
+              <Text style={s.trustItem}>Transparent Inclusions</Text>
             </View>
           </View>
         </View>
 
-        {/* Quick Category Navigation Pills */}
-        <View style={s.categoryStrip}>
+        {/* 2. About SkyRay Holidays: Brand Story */}
+        <View style={s.aboutCard}>
+          <View style={s.sectionKickerWrap}>
+            <Ionicons name="business-outline" size={13} color="#0284c7" style={{ marginRight: 5 }} />
+            <Text style={s.sectionKicker}>ABOUT SKYRAY HOLIDAYS</Text>
+          </View>
+
+          <Text style={s.aboutHeadline}>
+            Connecting You to Meaningful Places &amp; Sacred Moments
+          </Text>
+
+          <Text style={s.aboutParagraph}>
+            At SkyRay Holidays, we believe travel is more than reaching a destination — it is an enriching experience that connects you with new cultures, creates cherished family memories, and offers spiritual renewal.
+          </Text>
+
+          <Text style={s.aboutParagraph}>
+            Whether discovering Kashmir&apos;s breathtaking valleys, relaxing in overwater villas in the Maldives, or embarking on sacred Hajj &amp; Umrah pilgrimages in Makkah and Madinah, our team is committed to personal care, transparent pricing, and seamless ground logistics.
+          </Text>
+
+          {/* 4 Brand Metrics */}
+          <View style={s.metricsGrid}>
+            <View style={s.metricItem}>
+              <Text style={s.metricNumber}>10,000+</Text>
+              <Text style={s.metricLabel}>Happy Travelers</Text>
+            </View>
+            <View style={s.metricItem}>
+              <Text style={s.metricNumber}>50+</Text>
+              <Text style={s.metricLabel}>Global Destinations</Text>
+            </View>
+            <View style={s.metricItem}>
+              <Text style={s.metricNumber}>12+ Years</Text>
+              <Text style={s.metricLabel}>Industry Expertise</Text>
+            </View>
+            <View style={s.metricItem}>
+              <Text style={s.metricNumber}>99.4%</Text>
+              <Text style={s.metricLabel}>Satisfaction Rate</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* 3. Core Values & Pillars */}
+        <View style={s.valuesSection}>
+          <View style={s.sectionHeader}>
+            <View>
+              <Text style={s.sectionKicker}>CORE VALUES</Text>
+              <Text style={s.sectionTitle}>What Guides Everything We Do</Text>
+            </View>
+          </View>
+
+          <View style={s.pillarCard}>
+            <View style={s.pillarIconWrap}>
+              <Ionicons name="compass-outline" size={22} color="#0ea5e9" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.pillarTitle}>Our Mission</Text>
+              <Text style={s.pillarText}>
+                To make travel accessible, enriching, and effortless for every traveler through thoughtful planning, transparent pricing, and personalized itineraries.
+              </Text>
+            </View>
+          </View>
+
+          <View style={[s.pillarCard, s.pillarCardHighlight]}>
+            <View style={[s.pillarIconWrap, { backgroundColor: '#fef3c7' }]}>
+              <Ionicons name="sparkles-outline" size={22} color="#d97706" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.pillarTitle}>Our Vision</Text>
+              <Text style={s.pillarText}>
+                To be the most trusted global travel and pilgrimage facilitator, celebrated for unwavering reliability, customer warmth, and spiritual integrity.
+              </Text>
+            </View>
+          </View>
+
+          <View style={s.pillarCard}>
+            <View style={[s.pillarIconWrap, { backgroundColor: '#ecfdf5' }]}>
+              <Ionicons name="shield-checkmark-outline" size={22} color="#10b981" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.pillarTitle}>Why Choose Us</Text>
+              <Text style={s.pillarText}>
+                Handpicked 4-star and 5-star hotels, verified private chauffeurs, licensed tour guides, transparent quotes, and dedicated 24/7 concierge assistance.
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* 4. How We Plan Your Trip (3 Step Process) */}
+        <View style={s.processSection}>
+          <View style={s.sectionHeader}>
+            <View>
+              <Text style={s.sectionKicker}>SEAMLESS TRIP PLANNING</Text>
+              <Text style={s.sectionTitle}>How We Plan Your Perfect Trip</Text>
+            </View>
+          </View>
+
+          <View style={s.stepRow}>
+            <View style={s.stepBadge}>
+              <Text style={s.stepBadgeText}>1</Text>
+            </View>
+            <View style={s.stepContent}>
+              <Text style={s.stepTitle}>Share Your Dream Journey</Text>
+              <Text style={s.stepBody}>
+                Tell us your preferred travel dates, group size, and destination wish list through our quick enquiry form or directly on WhatsApp.
+              </Text>
+            </View>
+          </View>
+
+          <View style={s.stepRow}>
+            <View style={s.stepBadge}>
+              <Text style={s.stepBadgeText}>2</Text>
+            </View>
+            <View style={s.stepContent}>
+              <Text style={s.stepTitle}>Receive a Tailored Itinerary</Text>
+              <Text style={s.stepBody}>
+                Our destination specialists prepare a day-by-day itinerary tailored to your pace, budget, and accommodation tier with upfront pricing.
+              </Text>
+            </View>
+          </View>
+
+          <View style={[s.stepRow, { borderLeftWidth: 0, paddingBottom: 0 }]}>
+            <View style={[s.stepBadge, { backgroundColor: '#10b981' }]}>
+              <Text style={s.stepBadgeText}>3</Text>
+            </View>
+            <View style={s.stepContent}>
+              <Text style={s.stepTitle}>Travel with Complete Peace of Mind</Text>
+              <Text style={s.stepBody}>
+                Enjoy private VIP airport transfers, verified hotels, on-ground sightseeing, and 24/7 dedicated support throughout your entire stay.
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* 5. Explore Our Gateways (Links to Dedicated Tabs) */}
+        <View style={s.gatewaysSection}>
+          <View style={s.sectionHeader}>
+            <View>
+              <Text style={s.sectionKicker}>EXPLORE COLLECTIONS</Text>
+              <Text style={s.sectionTitle}>Where Would You Like to Go?</Text>
+            </View>
+          </View>
+
+          {/* Gateway 1: Domestic Packages */}
           <TouchableOpacity
-            style={[s.categoryChip, s.categoryChipActive]}
+            style={s.gatewayCard}
             onPress={() => navigation.navigate('Packages')}
-            activeOpacity={0.8}
+            activeOpacity={0.92}
           >
-            <Ionicons name="compass" size={16} color="#0369a1" style={{ marginRight: 5 }} />
-            <Text style={[s.categoryChipText, s.categoryChipTextActive]}>All Escapes</Text>
+            <View style={s.gatewayImageFrame}>
+              <Image source={kashmirImg} style={s.gatewayImage} resizeMode="cover" />
+              <View style={s.gatewayOverlay} />
+              <View style={s.gatewayTag}>
+                <Ionicons name="map" size={11} color="#ffffff" style={{ marginRight: 4 }} />
+                <Text style={s.gatewayTagText}>WITHIN INDIA</Text>
+              </View>
+            </View>
+            <View style={s.gatewayBody}>
+              <Text style={s.gatewayTitle}>Domestic Holidays &amp; Getaways</Text>
+              <Text style={s.gatewaySubtitle}>
+                Kashmir paradise, Kerala backwaters, Golden Triangle heritage, Andaman islands &amp; Goa.
+              </Text>
+              <View style={s.gatewayLinkRow}>
+                <Text style={s.gatewayLink}>Browse 5 Domestic Tours</Text>
+                <Ionicons name="arrow-forward" size={14} color="#0284c7" />
+              </View>
+            </View>
           </TouchableOpacity>
 
+          {/* Gateway 2: International Packages */}
           <TouchableOpacity
-            style={s.categoryChip}
+            style={s.gatewayCard}
             onPress={() => navigation.navigate('Packages')}
-            activeOpacity={0.8}
+            activeOpacity={0.92}
           >
-            <Ionicons name="map-outline" size={15} color="#475569" style={{ marginRight: 5 }} />
-            <Text style={s.categoryChipText}>Within India</Text>
+            <View style={s.gatewayImageFrame}>
+              <Image source={maldivesImg} style={s.gatewayImage} resizeMode="cover" />
+              <View style={s.gatewayOverlay} />
+              <View style={[s.gatewayTag, { backgroundColor: 'rgba(15, 23, 42, 0.88)' }]}>
+                <Ionicons name="airplane" size={11} color="#ffffff" style={{ marginRight: 4 }} />
+                <Text style={s.gatewayTagText}>INTERNATIONAL</Text>
+              </View>
+            </View>
+            <View style={s.gatewayBody}>
+              <Text style={s.gatewayTitle}>International Escapes</Text>
+              <Text style={s.gatewaySubtitle}>
+                Dubai, Sri Lanka wonder island, Maldives luxury lagoons, Bali, Turkey &amp; Europe.
+              </Text>
+              <View style={s.gatewayLinkRow}>
+                <Text style={s.gatewayLink}>Browse 7 International Holidays</Text>
+                <Ionicons name="arrow-forward" size={14} color="#0284c7" />
+              </View>
+            </View>
           </TouchableOpacity>
 
+          {/* Gateway 3: Sacred Pilgrimage */}
           <TouchableOpacity
-            style={s.categoryChip}
-            onPress={() => navigation.navigate('Packages')}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="airplane-outline" size={15} color="#475569" style={{ marginRight: 5 }} />
-            <Text style={s.categoryChipText}>International</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={s.categoryChip}
+            style={s.gatewayCard}
             onPress={() => navigation.navigate('Hajj & Umrah')}
-            activeOpacity={0.8}
+            activeOpacity={0.92}
           >
-            <Ionicons name="moon-outline" size={15} color="#475569" style={{ marginRight: 5 }} />
-            <Text style={s.categoryChipText}>Pilgrimage</Text>
+            <View style={s.gatewayImageFrame}>
+              <Image source={meccaImg} style={s.gatewayImage} resizeMode="cover" />
+              <View style={s.gatewayOverlay} />
+              <View style={[s.gatewayTag, { backgroundColor: 'rgba(217, 119, 6, 0.94)' }]}>
+                <Ionicons name="moon" size={11} color="#ffffff" style={{ marginRight: 4 }} />
+                <Text style={s.gatewayTagText}>SACRED BLESSINGS</Text>
+              </View>
+            </View>
+            <View style={s.gatewayBody}>
+              <Text style={s.gatewayTitle}>Hajj &amp; Umrah Pilgrimage</Text>
+              <Text style={s.gatewaySubtitle}>
+                5-Star hotels directly facing Haram, VIP transport, dedicated Islamic scholars &amp; visa care.
+              </Text>
+              <View style={s.gatewayLinkRow}>
+                <Text style={[s.gatewayLink, { color: '#d97706' }]}>Explore Pilgrimage Packages</Text>
+                <Ionicons name="arrow-forward" size={14} color="#d97706" />
+              </View>
+            </View>
           </TouchableOpacity>
         </View>
 
-        {/* Featured Tours Section */}
-        <View style={s.sectionHeader}>
-          <View>
-            <Text style={s.sectionEyebrow}>TOP DESTINATIONS</Text>
-            <Text style={s.sectionTitle}>Featured Packages</Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Packages')}
-            style={s.viewAllBtn}
-          >
-            <Text style={s.viewAllText}>View all</Text>
-            <Ionicons name="arrow-forward" size={13} color={C.skyDark} style={{ marginLeft: 3 }} />
-          </TouchableOpacity>
-        </View>
+        {/* 6. Ready to Plan Custom Trip CTA Card */}
+        <View style={s.ctaCard}>
+          <Text style={s.ctaKicker}>READY TO EXPLORE?</Text>
+          <Text style={s.ctaTitle}>Let&apos;s Plan Your Next Adventure Together</Text>
+          <Text style={s.ctaBody}>
+            Speak directly with our destination designers to customize travel dates, flight itineraries, and hotel room categories.
+          </Text>
 
-        {/* Tour Cards */}
-        {FEATURED_TOURS.map((item) => {
-          const cardImg = getPackageImage(item.slug);
-          const isDomestic = item.category === 'Domestic';
-
-          return (
+          <View style={s.ctaActionRow}>
             <TouchableOpacity
-              key={item.id}
-              style={s.card}
-              activeOpacity={0.92}
-              onPress={() => navigateToPackage(item.slug)}
+              style={s.ctaPrimaryBtn}
+              onPress={() => navigateToEnquiry('Custom Holiday Request')}
+              activeOpacity={0.85}
             >
-              <View style={s.cardImageFrame}>
-                <Image
-                  source={cardImg}
-                  style={s.cardCoverImg}
-                  resizeMode="cover"
-                />
-                <View style={s.cardOverlay} />
-                <View style={s.cardFloatingTop}>
-                  <View
-                    style={[
-                      s.categoryTag,
-                      isDomestic ? s.categoryTagSky : s.categoryTagNavy,
-                    ]}
-                  >
-                    <Ionicons
-                      name={isDomestic ? 'map' : 'airplane'}
-                      size={10}
-                      color="#ffffff"
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text style={s.categoryTagText}>
-                      {isDomestic ? 'DOMESTIC' : 'INTERNATIONAL'}
-                    </Text>
-                  </View>
-                  <View style={s.ratingBadge}>
-                    <Ionicons name="star" size={12} color="#f59e0b" style={{ marginRight: 3 }} />
-                    <Text style={s.ratingScore}>{item.rating}</Text>
-                  </View>
-                </View>
-                <View style={s.cardFloatingBottom}>
-                  <View style={s.durationPill}>
-                    <Ionicons name="time-outline" size={12} color="#ffffff" style={{ marginRight: 4 }} />
-                    <Text style={s.durationText}>{item.duration}</Text>
-                  </View>
-                </View>
-              </View>
-
-              <View style={s.cardInner}>
-                <Text style={s.cardTitle}>{item.title}</Text>
-                <View style={s.destinationRow}>
-                  <Ionicons name="location-outline" size={13} color="#0ea5e9" style={{ marginRight: 4 }} />
-                  <Text style={s.cardDestination}>{item.destination}</Text>
-                </View>
-
-                {/* Inclusions Chips */}
-                <View style={s.highlightsRow}>
-                  {item.highlights.map((h, i) => (
-                    <View key={i} style={s.highlightChip}>
-                      <Ionicons name="checkmark" size={11} color="#0284c7" style={{ marginRight: 3 }} />
-                      <Text style={s.highlightText}>{h}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                {/* Bottom Strip: Price On Enquiry & Prominent View Details CTA */}
-                <View style={s.cardBottom}>
-                  <View>
-                    <Text style={s.priceLabel}>Custom Quote</Text>
-                    <Text style={s.priceValue}>Price on Enquiry</Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={s.viewDetailsBtn}
-                    onPress={() => navigateToPackage(item.slug)}
-                    activeOpacity={0.85}
-                    accessibilityRole="button"
-                    accessibilityLabel={`View details for ${item.title}`}
-                  >
-                    <Text style={s.viewDetailsText}>View Details</Text>
-                    <Ionicons name="arrow-forward" size={14} color="#ffffff" style={{ marginLeft: 4 }} />
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <Text style={s.ctaPrimaryBtnText}>Start Trip Enquiry</Text>
+              <Ionicons name="arrow-forward" size={14} color="#ffffff" style={{ marginLeft: 5 }} />
             </TouchableOpacity>
-          );
-        })}
 
-        {/* Hajj & Umrah Dedicated Showcase Banner */}
-        <TouchableOpacity
-          style={s.pilgrimBanner}
-          activeOpacity={0.9}
-          onPress={() => navigation.navigate('Hajj & Umrah')}
-        >
-          <View style={s.pilgrimThumbFrame}>
-            <Image
-              source={meccaImg}
-              style={s.pilgrimThumb}
-              resizeMode="cover"
-            />
+            <TouchableOpacity
+              style={s.ctaWaBtn}
+              onPress={handleWhatsApp}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="logo-whatsapp" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+              <Text style={s.ctaWaBtnText}>Chat on WhatsApp</Text>
+            </TouchableOpacity>
           </View>
-
-          <View style={s.pilgrimContent}>
-            <View style={s.pilgrimBadge}>
-              <Ionicons name="moon" size={10} color="#fde68a" style={{ marginRight: 4 }} />
-              <Text style={s.pilgrimBadgeText}>SACRED BLESSINGS</Text>
-            </View>
-            <Text style={s.pilgrimTitle}>Hajj &amp; Umrah Services</Text>
-            <Text style={s.pilgrimBody}>
-              5-Star hotels near Haram, dedicated scholars, and complete visa care.
-            </Text>
-            <View style={s.pilgrimLinkRow}>
-              <Text style={s.pilgrimLink}>Explore Pilgrimage</Text>
-              <Ionicons name="arrow-forward" size={13} color="#38bdf8" style={{ marginLeft: 3 }} />
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Google Reviews Trust Strip */}
-        <TouchableOpacity
-          style={s.reviewsStrip}
-          onPress={() => navigation.navigate('Reviews')}
-          activeOpacity={0.9}
-        >
-          <View style={s.reviewsScoreBox}>
-            <Text style={s.reviewsBigScore}>4.8</Text>
-            <View style={s.starRow}>
-              {[...Array(5)].map((_, i) => (
-                <Ionicons key={i} name="star" size={10} color="#f59e0b" style={{ marginHorizontal: 0.5 }} />
-              ))}
-            </View>
-          </View>
-          <View style={s.reviewsContent}>
-            <Text style={s.reviewsHeading}>Rated 4.8 / 5 on Google</Text>
-            <Text style={s.reviewsSub}>Trusted by 1,200+ satisfied travelers worldwide</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-        </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -357,13 +356,13 @@ const s = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 36,
+    paddingBottom: 40,
   },
   heroCard: {
     backgroundColor: C.deep,
     borderRadius: 20,
     padding: 22,
-    marginBottom: 20,
+    marginBottom: 18,
     shadowColor: C.deep,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
@@ -371,6 +370,8 @@ const s = StyleSheet.create({
     elevation: 4,
   },
   heroBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
     paddingVertical: 5,
@@ -386,7 +387,7 @@ const s = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 24,
-    lineHeight: 30,
+    lineHeight: 31,
     fontWeight: '900',
     color: '#ffffff',
     letterSpacing: -0.4,
@@ -401,12 +402,13 @@ const s = StyleSheet.create({
   heroActionRow: {
     flexDirection: 'row',
     gap: 10,
+    flexWrap: 'wrap',
   },
   heroBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: C.gold,
-    paddingVertical: 11,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 10,
   },
@@ -416,13 +418,8 @@ const s = StyleSheet.create({
     fontSize: 13,
     marginRight: 6,
   },
-  heroBtnArrow: {
-    color: '#ffffff',
-    fontWeight: '900',
-    fontSize: 14,
-  },
   heroSecondaryBtn: {
-    paddingVertical: 11,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 10,
     borderWidth: 1,
@@ -440,6 +437,8 @@ const s = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.12)',
     marginTop: 18,
     paddingTop: 14,
+    flexWrap: 'wrap',
+    gap: 8,
   },
   trustItemWrap: {
     flexDirection: 'row',
@@ -451,370 +450,307 @@ const s = StyleSheet.create({
     fontSize: 10.5,
     fontWeight: '700',
   },
-  categoryStrip: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 24,
-  },
-  categoryChip: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+  aboutCard: {
     backgroundColor: '#ffffff',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 12,
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: '#e2e8f0',
     shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 3,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  categoryChipActive: {
-    backgroundColor: '#e0f2fe',
-    borderColor: '#7dd3fc',
-  },
-  categoryChipIcon: {
-    fontSize: 13,
-    marginRight: 4,
-  },
-  categoryChipText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  categoryChipTextActive: {
-    color: '#0369a1',
-  },
-  sectionHeader: {
+  sectionKickerWrap: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: 14,
+    alignItems: 'center',
+    marginBottom: 6,
   },
-  sectionEyebrow: {
-    fontSize: 10,
+  sectionKicker: {
+    fontSize: 10.5,
     fontWeight: '800',
     letterSpacing: 1.2,
     color: C.skyDark,
-    marginBottom: 3,
   },
-  sectionTitle: {
-    fontSize: 20,
+  aboutHeadline: {
+    fontSize: 19,
+    fontWeight: '900',
+    color: C.deep,
+    lineHeight: 25,
+    marginBottom: 10,
+    letterSpacing: -0.3,
+  },
+  aboutParagraph: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: '#475569',
+    marginBottom: 10,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 14,
+  },
+  metricItem: {
+    width: '48%',
+    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  metricNumber: {
+    fontSize: 18,
     fontWeight: '900',
     color: C.deep,
   },
-  viewAllBtn: {
-    paddingBottom: 2,
-  },
-  viewAllText: {
-    color: C.skyDark,
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-    overflow: 'hidden',
-  },
-  cardImageFrame: {
-    width: '100%',
-    height: 175,
-    backgroundColor: '#0f172a',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  cardCoverImg: {
-    width: '100%',
-    height: '100%',
-  },
-  cardOverlay: {
-    position: 'absolute',
-    inset: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.22)',
-  },
-  cardFloatingTop: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    right: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    zIndex: 2,
-  },
-  categoryTag: {
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-  },
-  categoryTagSky: {
-    backgroundColor: 'rgba(2, 132, 199, 0.9)',
-  },
-  categoryTagNavy: {
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-  },
-  categoryTagText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.8,
-  },
-  ratingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-  },
-  ratingStar: {
-    color: '#f59e0b',
-    fontSize: 12,
-    marginRight: 3,
-  },
-  ratingScore: {
+  metricLabel: {
     fontSize: 11,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  cardFloatingBottom: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    zIndex: 2,
-  },
-  durationPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 6,
-  },
-  durationText: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  cardInner: {
-    padding: 16,
-  },
-  cardTitle: {
-    fontSize: 17,
-    fontWeight: '900',
-    color: '#0f2942',
-    lineHeight: 22,
-    marginBottom: 3,
-    letterSpacing: -0.3,
-  },
-  cardDestination: {
-    fontSize: 12.5,
     color: '#64748b',
     fontWeight: '600',
-  },
-  destinationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  highlightsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 12,
-  },
-  highlightChip: {
-    backgroundColor: '#f8fafc',
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  highlightText: {
-    fontSize: 11,
-    color: '#475569',
-  },
-  cardBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    paddingTop: 12,
-  },
-  priceLabel: {
-    fontSize: 9.5,
-    color: '#0284c7',
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  priceValue: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#0f2942',
-    marginTop: 1,
-  },
-  viewDetailsBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0ea5e9',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    shadowColor: '#0ea5e9',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  viewDetailsText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '800',
-    marginRight: 6,
-    letterSpacing: 0.2,
-  },
-  viewDetailsArrow: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  pilgrimBanner: {
-    backgroundColor: '#0f2942',
-    borderRadius: 18,
-    padding: 14,
-    marginTop: 8,
-    marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#0f2942',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  pilgrimThumbFrame: {
-    width: 82,
-    height: 86,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginRight: 14,
-    backgroundColor: '#1e3a5f',
-  },
-  pilgrimThumb: {
-    width: '100%',
-    height: '100%',
-  },
-  pilgrimContent: {
-    flex: 1,
-  },
-  pilgrimBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(245, 158, 11, 0.22)',
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    marginBottom: 4,
-  },
-  pilgrimBadgeText: {
-    color: '#fde68a',
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
-  pilgrimTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  pilgrimBody: {
-    color: '#cbd5e1',
-    fontSize: 11.5,
-    lineHeight: 16,
-    marginVertical: 4,
-  },
-  pilgrimLinkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
     marginTop: 2,
   },
-  pilgrimLink: {
-    color: '#38bdf8',
-    fontSize: 11.5,
-    fontWeight: '800',
+  valuesSection: {
+    marginBottom: 20,
   },
-  pilgrimLinkArrow: {
-    color: '#38bdf8',
-    fontSize: 12,
+  sectionHeader: {
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 19,
     fontWeight: '900',
+    color: C.deep,
+    letterSpacing: -0.3,
   },
-  reviewsStrip: {
+  pillarCard: {
+    flexDirection: 'row',
     backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: '#e2e8f0',
     shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  reviewsScoreBox: {
+  pillarCardHighlight: {
+    borderColor: '#bae6fd',
+    backgroundColor: '#fbfdff',
+  },
+  pillarIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#eaf7fd',
     alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 14,
-    paddingRight: 14,
-    borderRightWidth: 1,
-    borderRightColor: '#f1f5f9',
   },
-  starRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 3,
-  },
-  reviewsBigScore: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: C.deep,
-  },
-  reviewsStars: {
-    color: '#d97706',
-    fontSize: 11,
-    marginTop: 2,
-  },
-  reviewsContent: {
-    flex: 1,
-  },
-  reviewsHeading: {
-    fontSize: 14,
+  pillarTitle: {
+    fontSize: 15,
     fontWeight: '800',
     color: C.deep,
+    marginBottom: 4,
   },
-  reviewsSub: {
-    fontSize: 11.5,
-    color: C.muted,
-    marginTop: 2,
+  pillarText: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: '#475569',
   },
-  reviewsArrow: {
+  processSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    borderLeftWidth: 2,
+    borderLeftColor: '#e0f2fe',
+    paddingLeft: 16,
+    marginLeft: 12,
+    paddingBottom: 20,
+    position: 'relative',
+  },
+  stepBadge: {
+    position: 'absolute',
+    left: -24,
+    top: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#0ea5e9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepBadgeText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  stepContent: {
+    flex: 1,
+  },
+  stepTitle: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: C.deep,
+    marginBottom: 3,
+  },
+  stepBody: {
+    fontSize: 12.5,
+    color: '#64748b',
+    lineHeight: 18,
+  },
+  gatewaysSection: {
+    marginBottom: 20,
+  },
+  gatewayCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    overflow: 'hidden',
+    marginBottom: 14,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  gatewayImageFrame: {
+    width: '100%',
+    height: 150,
+    position: 'relative',
+    backgroundColor: '#0f172a',
+  },
+  gatewayImage: {
+    width: '100%',
+    height: '100%',
+  },
+  gatewayOverlay: {
+    position: 'absolute',
+    inset: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.28)',
+  },
+  gatewayTag: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(2, 132, 199, 0.92)',
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: 6,
+  },
+  gatewayTagText: {
+    color: '#ffffff',
+    fontSize: 9.5,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  gatewayBody: {
+    padding: 16,
+  },
+  gatewayTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: C.deep,
+    marginBottom: 4,
+  },
+  gatewaySubtitle: {
+    fontSize: 12.5,
+    color: '#64748b',
+    lineHeight: 18,
+    marginBottom: 10,
+  },
+  gatewayLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  gatewayLink: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0284c7',
+  },
+  ctaCard: {
+    backgroundColor: '#0f2942',
+    borderRadius: 20,
+    padding: 22,
+    shadowColor: '#0f2942',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  ctaKicker: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#f59e0b',
+    letterSpacing: 1.2,
+    marginBottom: 6,
+  },
+  ctaTitle: {
     fontSize: 20,
-    color: '#94a3b8',
-    fontWeight: '700',
+    lineHeight: 26,
+    fontWeight: '900',
+    color: '#ffffff',
+    letterSpacing: -0.3,
+    marginBottom: 8,
+  },
+  ctaBody: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: '#cbd5e1',
+    marginBottom: 18,
+  },
+  ctaActionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  ctaPrimaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0ea5e9',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+  },
+  ctaPrimaryBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  ctaWaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#25D366',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+  },
+  ctaWaBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '800',
   },
 });
