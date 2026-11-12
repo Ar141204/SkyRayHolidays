@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { BrandHeader, PrimaryButton, C, Badge } from '../components/UI';
 import { getPackageImage } from '../lib/api';
+import { Ionicons } from '@expo/vector-icons';
 
 const FEATURED_TOURS = [
   {
@@ -21,7 +22,6 @@ const FEATURED_TOURS = [
     duration: '6 Days / 5 Nights',
     rating: 4.9,
     highlights: ['Dal Lake Shikara', 'Gulmarg Gondola', 'Luxury Houseboat'],
-    icon: '🏔',
   },
   {
     id: '2',
@@ -32,7 +32,6 @@ const FEATURED_TOURS = [
     duration: '6 Days / 5 Nights',
     rating: 4.9,
     highlights: ['Tea Gardens', 'Spice Plantation', 'Private Houseboat'],
-    icon: '🌴',
   },
   {
     id: '3',
@@ -43,7 +42,6 @@ const FEATURED_TOURS = [
     duration: '5 Days / 4 Nights',
     rating: 4.8,
     highlights: ['Burj Khalifa', 'Desert Safari BBQ', 'Marina Cruise'],
-    icon: '✈',
   },
   {
     id: '4',
@@ -54,7 +52,6 @@ const FEATURED_TOURS = [
     duration: '6 Days / 5 Nights',
     rating: 4.9,
     highlights: ['Tooth Relic Temple', 'Tea Estates', 'Bentota Beach'],
-    icon: '🏛',
   },
   {
     id: '5',
@@ -65,7 +62,6 @@ const FEATURED_TOURS = [
     duration: '5 Days / 4 Nights',
     rating: 5.0,
     highlights: ['Overwater Villa', 'Speedboat Transfer', 'Reef Snorkeling'],
-    icon: '🏝',
   },
 ];
 
@@ -103,6 +99,7 @@ export function HomeScreen({ navigation }: any) {
         {/* Modern Airy Hero Banner */}
         <View style={s.heroCard}>
           <View style={s.heroBadge}>
+            <Ionicons name="sparkles" size={12} color="#93c5fd" style={{ marginRight: 5 }} />
             <Text style={s.heroBadgeText}>WHERE EVERY TRIP BECOMES A MEMORY</Text>
           </View>
 
@@ -122,7 +119,7 @@ export function HomeScreen({ navigation }: any) {
               activeOpacity={0.85}
             >
               <Text style={s.heroBtnText}>Explore Packages</Text>
-              <Text style={s.heroBtnArrow}>→</Text>
+              <Ionicons name="arrow-forward" size={14} color="#ffffff" />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -134,11 +131,20 @@ export function HomeScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
 
-          {/* Clean Trust Pillars */}
+          {/* Clean Trust Pillars with Vector Icons */}
           <View style={s.trustRow}>
-            <Text style={s.trustItem}>✓ Curated Itineraries</Text>
-            <Text style={s.trustItem}>✓ 24/7 Support</Text>
-            <Text style={s.trustItem}>✓ Best Experience</Text>
+            <View style={s.trustItemWrap}>
+              <Ionicons name="checkmark-circle" size={13} color="#38bdf8" />
+              <Text style={s.trustItem}>Curated Itineraries</Text>
+            </View>
+            <View style={s.trustItemWrap}>
+              <Ionicons name="checkmark-circle" size={13} color="#38bdf8" />
+              <Text style={s.trustItem}>24/7 Expert Support</Text>
+            </View>
+            <View style={s.trustItemWrap}>
+              <Ionicons name="checkmark-circle" size={13} color="#38bdf8" />
+              <Text style={s.trustItem}>Verified Quality</Text>
+            </View>
           </View>
         </View>
 
@@ -147,32 +153,36 @@ export function HomeScreen({ navigation }: any) {
           <TouchableOpacity
             style={[s.categoryChip, s.categoryChipActive]}
             onPress={() => navigation.navigate('Packages')}
+            activeOpacity={0.8}
           >
-            <Text style={s.categoryChipIcon}>🌍</Text>
-            <Text style={[s.categoryChipText, s.categoryChipTextActive]}>All Tours</Text>
+            <Ionicons name="compass" size={16} color="#0369a1" style={{ marginRight: 5 }} />
+            <Text style={[s.categoryChipText, s.categoryChipTextActive]}>All Escapes</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={s.categoryChip}
             onPress={() => navigation.navigate('Packages')}
+            activeOpacity={0.8}
           >
-            <Text style={s.categoryChipIcon}>🇮🇳</Text>
+            <Ionicons name="map-outline" size={15} color="#475569" style={{ marginRight: 5 }} />
             <Text style={s.categoryChipText}>Within India</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={s.categoryChip}
             onPress={() => navigation.navigate('Packages')}
+            activeOpacity={0.8}
           >
-            <Text style={s.categoryChipIcon}>✈</Text>
+            <Ionicons name="airplane-outline" size={15} color="#475569" style={{ marginRight: 5 }} />
             <Text style={s.categoryChipText}>International</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={s.categoryChip}
             onPress={() => navigation.navigate('Hajj & Umrah')}
+            activeOpacity={0.8}
           >
-            <Text style={s.categoryChipIcon}>☾</Text>
+            <Ionicons name="moon-outline" size={15} color="#475569" style={{ marginRight: 5 }} />
             <Text style={s.categoryChipText}>Pilgrimage</Text>
           </TouchableOpacity>
         </View>
@@ -187,13 +197,16 @@ export function HomeScreen({ navigation }: any) {
             onPress={() => navigation.navigate('Packages')}
             style={s.viewAllBtn}
           >
-            <Text style={s.viewAllText}>View all →</Text>
+            <Text style={s.viewAllText}>View all</Text>
+            <Ionicons name="arrow-forward" size={13} color={C.skyDark} style={{ marginLeft: 3 }} />
           </TouchableOpacity>
         </View>
 
         {/* Tour Cards */}
         {FEATURED_TOURS.map((item) => {
           const cardImg = getPackageImage(item.slug);
+          const isDomestic = item.category === 'Domestic';
+
           return (
             <TouchableOpacity
               key={item.id}
@@ -212,34 +225,45 @@ export function HomeScreen({ navigation }: any) {
                   <View
                     style={[
                       s.categoryTag,
-                      item.category === 'Domestic' ? s.categoryTagSky : s.categoryTagNavy,
+                      isDomestic ? s.categoryTagSky : s.categoryTagNavy,
                     ]}
                   >
+                    <Ionicons
+                      name={isDomestic ? 'map' : 'airplane'}
+                      size={10}
+                      color="#ffffff"
+                      style={{ marginRight: 4 }}
+                    />
                     <Text style={s.categoryTagText}>
-                      {item.category === 'Domestic' ? '🇮🇳 WITHIN INDIA' : '✈ INTERNATIONAL'}
+                      {isDomestic ? 'DOMESTIC' : 'INTERNATIONAL'}
                     </Text>
                   </View>
                   <View style={s.ratingBadge}>
-                    <Text style={s.ratingStar}>★</Text>
+                    <Ionicons name="star" size={12} color="#f59e0b" style={{ marginRight: 3 }} />
                     <Text style={s.ratingScore}>{item.rating}</Text>
                   </View>
                 </View>
                 <View style={s.cardFloatingBottom}>
                   <View style={s.durationPill}>
-                    <Text style={s.durationText}>⏱ {item.duration}</Text>
+                    <Ionicons name="time-outline" size={12} color="#ffffff" style={{ marginRight: 4 }} />
+                    <Text style={s.durationText}>{item.duration}</Text>
                   </View>
                 </View>
               </View>
 
               <View style={s.cardInner}>
                 <Text style={s.cardTitle}>{item.title}</Text>
-                <Text style={s.cardDestination}>📍 {item.destination}</Text>
+                <View style={s.destinationRow}>
+                  <Ionicons name="location-outline" size={13} color="#0ea5e9" style={{ marginRight: 4 }} />
+                  <Text style={s.cardDestination}>{item.destination}</Text>
+                </View>
 
                 {/* Inclusions Chips */}
                 <View style={s.highlightsRow}>
                   {item.highlights.map((h, i) => (
                     <View key={i} style={s.highlightChip}>
-                      <Text style={s.highlightText}>• {h}</Text>
+                      <Ionicons name="checkmark" size={11} color="#0284c7" style={{ marginRight: 3 }} />
+                      <Text style={s.highlightText}>{h}</Text>
                     </View>
                   ))}
                 </View>
@@ -259,7 +283,7 @@ export function HomeScreen({ navigation }: any) {
                     accessibilityLabel={`View details for ${item.title}`}
                   >
                     <Text style={s.viewDetailsText}>View Details</Text>
-                    <Text style={s.viewDetailsArrow}>→</Text>
+                    <Ionicons name="arrow-forward" size={14} color="#ffffff" style={{ marginLeft: 4 }} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -283,7 +307,8 @@ export function HomeScreen({ navigation }: any) {
 
           <View style={s.pilgrimContent}>
             <View style={s.pilgrimBadge}>
-              <Text style={s.pilgrimBadgeText}>☾ SACRED BLESSINGS</Text>
+              <Ionicons name="moon" size={10} color="#fde68a" style={{ marginRight: 4 }} />
+              <Text style={s.pilgrimBadgeText}>SACRED BLESSINGS</Text>
             </View>
             <Text style={s.pilgrimTitle}>Hajj &amp; Umrah Services</Text>
             <Text style={s.pilgrimBody}>
@@ -291,7 +316,7 @@ export function HomeScreen({ navigation }: any) {
             </Text>
             <View style={s.pilgrimLinkRow}>
               <Text style={s.pilgrimLink}>Explore Pilgrimage</Text>
-              <Text style={s.pilgrimLinkArrow}>→</Text>
+              <Ionicons name="arrow-forward" size={13} color="#38bdf8" style={{ marginLeft: 3 }} />
             </View>
           </View>
         </TouchableOpacity>
@@ -304,13 +329,17 @@ export function HomeScreen({ navigation }: any) {
         >
           <View style={s.reviewsScoreBox}>
             <Text style={s.reviewsBigScore}>4.8</Text>
-            <Text style={s.reviewsStars}>★★★★★</Text>
+            <View style={s.starRow}>
+              {[...Array(5)].map((_, i) => (
+                <Ionicons key={i} name="star" size={10} color="#f59e0b" style={{ marginHorizontal: 0.5 }} />
+              ))}
+            </View>
           </View>
           <View style={s.reviewsContent}>
             <Text style={s.reviewsHeading}>Rated 4.8 / 5 on Google</Text>
             <Text style={s.reviewsSub}>Trusted by 1,200+ satisfied travelers worldwide</Text>
           </View>
-          <Text style={s.reviewsArrow}>›</Text>
+          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -411,6 +440,11 @@ const s = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.12)',
     marginTop: 18,
     paddingTop: 14,
+  },
+  trustItemWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   trustItem: {
     color: '#bae6fd',
@@ -588,8 +622,12 @@ const s = StyleSheet.create({
   cardDestination: {
     fontSize: 12.5,
     color: '#64748b',
-    marginBottom: 8,
     fontWeight: '600',
+  },
+  destinationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   highlightsRow: {
     flexDirection: 'row',
@@ -745,6 +783,11 @@ const s = StyleSheet.create({
     paddingRight: 14,
     borderRightWidth: 1,
     borderRightColor: '#f1f5f9',
+  },
+  starRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 3,
   },
   reviewsBigScore: {
     fontSize: 22,

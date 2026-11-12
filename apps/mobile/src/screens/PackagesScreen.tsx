@@ -11,12 +11,13 @@ import {
 } from 'react-native';
 import { getPackagesWithStatus, TourPackage, getPackageImage } from '../lib/api';
 import { C, BrandHeader, Badge } from '../components/UI';
+import { Ionicons } from '@expo/vector-icons';
 
-const CATEGORIES = [
-  { id: 'All', label: 'All Escapes' },
-  { id: 'Domestic', label: '🇮🇳 Within India' },
-  { id: 'International', label: '✈ International' },
-  { id: 'Pilgrimage', label: '☾ Pilgrimage' },
+const CATEGORIES: { id: string; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { id: 'All', label: 'All Escapes', icon: 'compass-outline' },
+  { id: 'Domestic', label: 'Within India', icon: 'map-outline' },
+  { id: 'International', label: 'International', icon: 'airplane-outline' },
+  { id: 'Pilgrimage', label: 'Pilgrimage', icon: 'moon-outline' },
 ];
 
 export function PackagesScreen({ navigation }: any) {
@@ -90,7 +91,7 @@ export function PackagesScreen({ navigation }: any) {
       <View style={s.filterHeader}>
         {/* Search Bar */}
         <View style={s.searchBar}>
-          <Text style={s.searchIcon}>🔍</Text>
+          <Ionicons name="search-outline" size={17} color="#64748b" style={s.searchIcon} />
           <TextInput
             style={s.searchInput}
             placeholder="Search dream destinations (e.g. Kashmir, Maldives, Kerala)..."
@@ -101,7 +102,7 @@ export function PackagesScreen({ navigation }: any) {
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')} style={s.clearBtn}>
-              <Text style={s.clearText}>✕</Text>
+              <Ionicons name="close-circle" size={18} color="#94a3b8" />
             </TouchableOpacity>
           )}
         </View>
@@ -115,6 +116,12 @@ export function PackagesScreen({ navigation }: any) {
               onPress={() => setActiveCategory(cat.id)}
               activeOpacity={0.8}
             >
+              <Ionicons
+                name={cat.icon}
+                size={14}
+                color={activeCategory === cat.id ? '#0284c7' : '#64748b'}
+                style={{ marginRight: 5 }}
+              />
               <Text style={[s.pillText, activeCategory === cat.id && s.activePillText]}>
                 {cat.label}
               </Text>
@@ -125,7 +132,7 @@ export function PackagesScreen({ navigation }: any) {
         {/* Discreet Offline Notice Banner */}
         {isOffline && (
           <View style={s.offlineBanner}>
-            <View style={s.offlineDot} />
+            <Ionicons name="cloud-offline-outline" size={13} color="#0ea5e9" style={{ marginRight: 6 }} />
             <Text style={s.offlineText}>
               Offline Catalog &bull; Showing 14 verified travel itineraries
             </Text>
@@ -187,24 +194,30 @@ export function PackagesScreen({ navigation }: any) {
                           : s.categoryTagNavy,
                       ]}
                     >
+                      <Ionicons
+                        name={isPilgrim ? 'moon' : isDomestic ? 'map' : 'airplane'}
+                        size={10}
+                        color="#ffffff"
+                        style={{ marginRight: 4 }}
+                      />
                       <Text style={s.categoryTagText}>
                         {isPilgrim
-                          ? '☾ PILGRIMAGE'
+                          ? 'PILGRIMAGE'
                           : isDomestic
-                          ? '🇮🇳 WITHIN INDIA'
-                          : '✈ INTERNATIONAL'}
+                          ? 'DOMESTIC'
+                          : 'INTERNATIONAL'}
                       </Text>
                     </View>
 
                     <View style={s.ratingBadge}>
-                      <Text style={s.ratingStar}>★</Text>
+                      <Ionicons name="star" size={12} color="#f59e0b" style={{ marginRight: 3 }} />
                       <Text style={s.ratingScore}>4.9</Text>
                     </View>
                   </View>
 
                   <View style={s.floatingBottomRow}>
                     <View style={s.durationPill}>
-                      <Text style={s.durationIcon}>⏱</Text>
+                      <Ionicons name="time-outline" size={12} color="#ffffff" style={{ marginRight: 4 }} />
                       <Text style={s.durationText}>{item.duration}</Text>
                     </View>
                   </View>
@@ -213,7 +226,10 @@ export function PackagesScreen({ navigation }: any) {
                 {/* Card Content */}
                 <View style={s.cardBody}>
                   <Text style={s.title}>{item.title}</Text>
-                  <Text style={s.destination}>📍 {item.destination}</Text>
+                  <View style={s.destinationRow}>
+                    <Ionicons name="location-outline" size={13} color="#0ea5e9" style={{ marginRight: 4 }} />
+                    <Text style={s.destination}>{item.destination}</Text>
+                  </View>
 
                   <Text style={s.summary} numberOfLines={2}>
                     {item.summary}
@@ -235,7 +251,7 @@ export function PackagesScreen({ navigation }: any) {
                       accessibilityLabel={`View details for ${item.title}`}
                     >
                       <Text style={s.viewDetailsText}>View Details</Text>
-                      <Text style={s.viewDetailsArrow}>→</Text>
+                      <Ionicons name="arrow-forward" size={14} color="#ffffff" style={{ marginLeft: 4 }} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -244,7 +260,7 @@ export function PackagesScreen({ navigation }: any) {
           }}
           ListEmptyComponent={
             <View style={s.emptyContainer}>
-              <Text style={s.emptyIcon}>🌍</Text>
+              <Ionicons name="search-outline" size={38} color="#94a3b8" style={{ marginBottom: 10 }} />
               <Text style={s.emptyTitle}>No packages found</Text>
               <Text style={s.emptyBody}>
                 Try adjusting your search query or choosing another destination category.
@@ -464,8 +480,12 @@ const s = StyleSheet.create({
   destination: {
     fontSize: 12.5,
     color: '#64748b',
-    marginBottom: 8,
     fontWeight: '600',
+  },
+  destinationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   summary: {
     fontSize: 13,

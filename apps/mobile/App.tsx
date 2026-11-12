@@ -11,6 +11,7 @@ import { PilgrimageScreen } from './src/screens/PilgrimageScreen';
 import { ContactScreen, ReviewsScreen, AboutScreen } from './src/screens/InfoScreens';
 import { EnquiryScreen } from './src/screens/EnquiryScreen';
 import { PackageDetailScreen } from './src/screens/PackageDetailScreen';
+import { Ionicons } from '@expo/vector-icons';
 
 export type RootStackParamList = {
   Tabs: undefined;
@@ -30,17 +31,17 @@ function Tabs() {
         tabBarActiveTintColor: '#0ea5e9',
         tabBarInactiveTintColor: '#64748b',
         tabBarStyle: {
-          height: Platform.OS === 'ios' ? 84 : 64,
+          height: Platform.OS === 'ios' ? 88 : 68,
           paddingTop: 8,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          paddingBottom: Platform.OS === 'ios' ? 26 : 10,
           borderTopWidth: 1,
           borderTopColor: '#f1f5f9',
           backgroundColor: '#ffffff',
           shadowColor: '#0f172a',
           shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.03,
-          shadowRadius: 8,
-          elevation: 4,
+          shadowOpacity: 0.04,
+          shadowRadius: 10,
+          elevation: 6,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -48,33 +49,36 @@ function Tabs() {
           marginTop: 2,
         },
         tabBarIcon: ({ color, focused }) => {
-          const icons: Record<string, string> = {
-            Home: '🏠',
-            Packages: '✈',
-            'Hajj & Umrah': '☾',
-            Contact: '📞',
-            Reviews: '★',
-          };
+          let iconName: keyof typeof Ionicons.glyphMap = 'home-outline';
+
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Packages') {
+            iconName = focused ? 'airplane' : 'airplane-outline';
+          } else if (route.name === 'Hajj & Umrah') {
+            iconName = focused ? 'moon' : 'moon-outline';
+          } else if (route.name === 'Contact') {
+            iconName = focused ? 'call' : 'call-outline';
+          } else if (route.name === 'Reviews') {
+            iconName = focused ? 'star' : 'star-outline';
+          }
 
           return (
             <View
               style={{
                 alignItems: 'center',
                 justifyContent: 'center',
-                paddingVertical: 2,
-                paddingHorizontal: 8,
-                borderRadius: 12,
-                backgroundColor: focused ? 'rgba(14, 165, 233, 0.08)' : 'transparent',
+                paddingVertical: 3,
+                paddingHorizontal: 10,
+                borderRadius: 14,
+                backgroundColor: focused ? 'rgba(14, 165, 233, 0.12)' : 'transparent',
               }}
             >
-              <Text
-                style={{
-                  fontSize: 18,
-                  color: focused ? '#0ea5e9' : color,
-                }}
-              >
-                {icons[route.name] || '•'}
-              </Text>
+              <Ionicons
+                name={iconName}
+                size={22}
+                color={focused ? '#0ea5e9' : color}
+              />
             </View>
           );
         },

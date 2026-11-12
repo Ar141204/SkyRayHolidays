@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { C, BrandHeader, PrimaryButton, Badge } from '../components/UI';
 import { API } from '../lib/api';
+import { Ionicons } from '@expo/vector-icons';
 
 const DEFAULT_PHONE = '+91 98765 43210';
 const DEFAULT_EMAIL = 'info@skyrayholidays.com';
@@ -58,7 +59,9 @@ export function AboutScreen() {
         {/* Three Core Pillars */}
         <View style={s.pillarCard}>
           <View style={s.pillarHeader}>
-            <Text style={s.pillarIcon}>🎯</Text>
+            <View style={s.pillarIconBox}>
+              <Ionicons name="compass-outline" size={18} color="#0ea5e9" />
+            </View>
             <Text style={s.pillarTitle}>Our Mission</Text>
           </View>
           <Text style={s.pillarBody}>
@@ -68,7 +71,9 @@ export function AboutScreen() {
 
         <View style={s.pillarCard}>
           <View style={s.pillarHeader}>
-            <Text style={s.pillarIcon}>🌟</Text>
+            <View style={s.pillarIconBox}>
+              <Ionicons name="sparkles-outline" size={18} color="#f59e0b" />
+            </View>
             <Text style={s.pillarTitle}>Our Vision</Text>
           </View>
           <Text style={s.pillarBody}>
@@ -78,7 +83,9 @@ export function AboutScreen() {
 
         <View style={s.pillarCard}>
           <View style={s.pillarHeader}>
-            <Text style={s.pillarIcon}>🛡</Text>
+            <View style={s.pillarIconBox}>
+              <Ionicons name="shield-checkmark-outline" size={18} color="#10b981" />
+            </View>
             <Text style={s.pillarTitle}>Why Choose Us</Text>
           </View>
           <Text style={s.pillarBody}>
@@ -144,13 +151,13 @@ export function ContactScreen() {
           }
         >
           <View style={s.waIconCircle}>
-            <Text style={s.waIconLarge}>💬</Text>
+            <Ionicons name="logo-whatsapp" size={24} color="#ffffff" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={s.waCardTitle}>Chat Directly on WhatsApp</Text>
             <Text style={s.waCardSub}>Fastest replies for quotations &amp; inquiries</Text>
           </View>
-          <Text style={s.waArrow}>→</Text>
+          <Ionicons name="arrow-forward" size={17} color="#ffffff" />
         </TouchableOpacity>
 
         {/* Contact Methods */}
@@ -161,12 +168,14 @@ export function ContactScreen() {
             activeOpacity={0.7}
             onPress={() => openUrl(`tel:${data.phone || DEFAULT_PHONE}`)}
           >
-            <View style={s.contactIconBox}><Text style={s.contactIconGlyph}>📞</Text></View>
+            <View style={s.contactIconBox}>
+              <Ionicons name="call" size={17} color="#0ea5e9" />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={s.contactFieldLabel}>Call Customer Desk</Text>
               <Text style={s.contactFieldVal}>{data.phone || DEFAULT_PHONE}</Text>
             </View>
-            <Text style={s.itemArrow}>›</Text>
+            <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
           </TouchableOpacity>
 
           {/* Email */}
@@ -175,12 +184,14 @@ export function ContactScreen() {
             activeOpacity={0.7}
             onPress={() => openUrl(`mailto:${data.email || DEFAULT_EMAIL}`)}
           >
-            <View style={s.contactIconBox}><Text style={s.contactIconGlyph}>✉</Text></View>
+            <View style={s.contactIconBox}>
+              <Ionicons name="mail" size={17} color="#0ea5e9" />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={s.contactFieldLabel}>Email Address</Text>
               <Text style={s.contactFieldVal}>{data.email || DEFAULT_EMAIL}</Text>
             </View>
-            <Text style={s.itemArrow}>›</Text>
+            <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
           </TouchableOpacity>
 
           {/* Office Address */}
@@ -189,13 +200,15 @@ export function ContactScreen() {
             activeOpacity={0.7}
             onPress={() => openUrl('https://maps.google.com/?q=Chennai+TN+India')}
           >
-            <View style={s.contactIconBox}><Text style={s.contactIconGlyph}>📍</Text></View>
+            <View style={s.contactIconBox}>
+              <Ionicons name="location" size={17} color="#0ea5e9" />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={s.contactFieldLabel}>Head Office</Text>
               <Text style={s.contactFieldVal}>{data.address || DEFAULT_ADDRESS}</Text>
               <Text style={s.hoursText}>Mon - Sat: 9:00 AM - 7:00 PM IST</Text>
             </View>
-            <Text style={s.itemArrow}>›</Text>
+            <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -256,7 +269,11 @@ export function ReviewsScreen() {
         {/* Rating Hero Card */}
         <View style={s.ratingHeroCard}>
           <Text style={s.ratingHeroBig}>4.8</Text>
-          <Text style={s.ratingHeroStars}>★★★★★</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 6 }}>
+            {[...Array(5)].map((_, i) => (
+              <Ionicons key={i} name="star" size={16} color="#f59e0b" style={{ marginHorizontal: 1 }} />
+            ))}
+          </View>
           <Text style={s.ratingHeroTitle}>Rated 4.8 / 5 on Google</Text>
           <Text style={s.ratingHeroSub}>
             Based on 1,200+ verified customer reviews across domestic &amp; international tours.
@@ -276,7 +293,11 @@ export function ReviewsScreen() {
                 <Text style={s.reviewerName}>{r.name}</Text>
                 <Text style={s.tripName}>{r.trip} · {r.date}</Text>
               </View>
-              <Text style={s.cardStars}>{'★'.repeat(r.rating)}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {[...Array(r.rating)].map((_, i) => (
+                  <Ionicons key={i} name="star" size={11} color="#f59e0b" style={{ marginHorizontal: 0.5 }} />
+                ))}
+              </View>
             </View>
             <Text style={s.reviewComment}>{r.comment}</Text>
           </View>
@@ -380,6 +401,15 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
+  },
+  pillarIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
   pillarIcon: {
     fontSize: 18,

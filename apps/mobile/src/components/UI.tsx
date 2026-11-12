@@ -8,6 +8,7 @@ import {
   Linking,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export const C = {
   deep: '#17496B',
@@ -67,7 +68,7 @@ export function BrandHeader({
             accessibilityRole="button"
             accessibilityLabel="Chat on WhatsApp"
           >
-            <Text style={s.headerCtaIcon}>💬</Text>
+            <Ionicons name="logo-whatsapp" size={15} color="#ffffff" style={{ marginRight: 5 }} />
             <Text style={s.headerCtaText}>Chat</Text>
           </TouchableOpacity>
         )}

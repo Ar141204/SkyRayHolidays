@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { sendEnquiry } from '../lib/api';
 import { C, PrimaryButton, BrandHeader } from '../components/UI';
+import { Ionicons } from '@expo/vector-icons';
 
 const SAMPLE_PACKAGES = [
   'Kashmir Paradise Experience',
@@ -156,7 +157,11 @@ export function EnquiryScreen({ route, navigation }: any) {
               activeOpacity={0.8}
             >
               <Text style={s.pickerText} numberOfLines={1}>{data.packageName}</Text>
-              <Text style={s.pickerArrow}>{showPkgPicker ? '▲' : '▼'}</Text>
+              <Ionicons
+                name={showPkgPicker ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color="#64748b"
+              />
             </TouchableOpacity>
 
             {showPkgPicker && (

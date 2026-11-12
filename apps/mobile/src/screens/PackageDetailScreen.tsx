@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { API, TourPackage, getFallbackPackage, getPackageImage } from '../lib/api';
 import { C, PrimaryButton, BrandHeader, Badge } from '../components/UI';
+import { Ionicons } from '@expo/vector-icons';
 
 export function PackageDetailScreen({ route, navigation }: any) {
   const [item, setItem] = useState<TourPackage | null>(null);
@@ -87,7 +88,7 @@ export function PackageDetailScreen({ route, navigation }: any) {
             onPress={() => navigation.goBack()}
             activeOpacity={0.7}
           >
-            <Text style={s.backArrow}>‹</Text>
+            <Ionicons name="arrow-back" size={17} color={C.skyDark} style={{ marginRight: 6 }} />
             <Text style={s.backText}>Back to all packages</Text>
           </TouchableOpacity>
 
@@ -114,17 +115,25 @@ export function PackageDetailScreen({ route, navigation }: any) {
             />
           </View>
           <View style={s.photoHeroDuration}>
-            <Text style={s.photoHeroDurationText}>⏱ {item.duration}</Text>
+            <Ionicons name="time-outline" size={12} color="#ffffff" style={{ marginRight: 4 }} />
+            <Text style={s.photoHeroDurationText}>{item.duration}</Text>
           </View>
         </View>
 
         {/* Hero Card */}
         <View style={s.heroCard}>
           <Text style={s.heroTitle}>{item.title}</Text>
-          <Text style={s.heroDestination}>📍 {item.destination}</Text>
+          <View style={s.destinationRow}>
+            <Ionicons name="location-outline" size={14} color="#0ea5e9" style={{ marginRight: 4 }} />
+            <Text style={s.heroDestination}>{item.destination}</Text>
+          </View>
 
           <View style={s.ratingStrip}>
-            <Text style={s.stars}>★★★★★</Text>
+            <View style={s.starRow}>
+              {[...Array(5)].map((_, i) => (
+                <Ionicons key={i} name="star" size={13} color="#f59e0b" style={{ marginHorizontal: 0.5 }} />
+              ))}
+            </View>
             <Text style={s.ratingNum}>4.9</Text>
             <Text style={s.reviewsText}>(120+ verified reviews)</Text>
           </View>
@@ -157,7 +166,7 @@ export function PackageDetailScreen({ route, navigation }: any) {
               onPress={handleWhatsApp}
               activeOpacity={0.8}
             >
-              <Text style={s.waIcon}>💬</Text>
+              <Ionicons name="logo-whatsapp" size={22} color="#ffffff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -174,7 +183,7 @@ export function PackageDetailScreen({ route, navigation }: any) {
           <View style={s.checkList}>
             {inclusions.map((inc, i) => (
               <View key={i} style={s.checkRow}>
-                <Text style={s.greenCheck}>✔</Text>
+                <Ionicons name="checkmark-circle" size={17} color="#10b981" style={{ marginRight: 8, marginTop: 1 }} />
                 <Text style={s.checkText}>
                   {typeof inc === 'string' ? inc : JSON.stringify(inc)}
                 </Text>
@@ -189,7 +198,7 @@ export function PackageDetailScreen({ route, navigation }: any) {
           <View style={s.checkList}>
             {exclusions.map((exc, i) => (
               <View key={i} style={s.checkRow}>
-                <Text style={s.grayCross}>✕</Text>
+                <Ionicons name="close-circle-outline" size={17} color="#94a3b8" style={{ marginRight: 8, marginTop: 1 }} />
                 <Text style={[s.checkText, { color: '#64748b' }]}>
                   {typeof exc === 'string' ? exc : JSON.stringify(exc)}
                 </Text>
@@ -374,6 +383,10 @@ const s = StyleSheet.create({
     fontSize: 13,
     color: C.muted,
     fontWeight: '600',
+  },
+  destinationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 6,
   },
   ratingStrip: {
@@ -383,6 +396,11 @@ const s = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
+  },
+  starRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 6,
   },
   stars: {
     color: '#d97706',
