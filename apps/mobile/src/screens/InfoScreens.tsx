@@ -217,73 +217,142 @@ export function ContactScreen() {
 }
 
 // SCREEN 8: Google Reviews Screen
+const GOOGLE_REVIEWS_URL = 'https://maps.app.goo.gl/mzoUCar9aFRcQumW8';
+
+const ORIGINAL_GOOGLE_REVIEWS = [
+  {
+    id: '1',
+    name: 'Riyaz Ahamed',
+    badge: 'Verified Google Review',
+    rating: 5,
+    date: 'Verified Review',
+    comment: 'Great service, quick response, knowledge in immigration services.',
+  },
+  {
+    id: '2',
+    name: 'Mohamed Thasin',
+    badge: 'Verified Google Review',
+    rating: 5,
+    date: 'Verified Review',
+    comment: 'Excellent customer services and Kind personal care to customers.',
+  },
+  {
+    id: '3',
+    name: 'Abdul Rasheed',
+    badge: 'Verified Google Review',
+    rating: 5,
+    date: 'Verified Review',
+    comment: 'He was very patient and guided me and responded to all my queries.',
+  },
+];
+
 export function ReviewsScreen() {
-  const reviews = [
-    {
-      id: '1',
-      name: 'Priya Sharma',
-      trip: 'Kashmir Paradise Experience',
-      rating: 5,
-      date: 'October 2026',
-      comment:
-        'Our family trip to Kashmir was absolutely unforgettable! The houseboat in Dal Lake was spotless, and our driver was courteous and knowledgeable throughout Pahalgam and Gulmarg.',
-    },
-    {
-      id: '2',
-      name: 'Mohammed Farooq',
-      trip: 'Premium Umrah Package',
-      rating: 5,
-      date: 'September 2026',
-      comment:
-        'Alhamdulillah, SkyRay Holidays took care of every single detail. Our hotel was literally 2 minutes from the Haram in Makkah, and the Haramain train transfers made travel effortless.',
-    },
-    {
-      id: '3',
-      name: 'Rajesh & Sneha',
-      trip: 'Kerala Backwaters Getaway',
-      rating: 5,
-      date: 'August 2026',
-      comment:
-        'The Alleppey houseboat experience was pure bliss! From the authentic Kerala meals to the serene sunset cruise in Munnar, everything exceeded our expectations.',
-    },
-    {
-      id: '4',
-      name: 'Arun Kumar',
-      trip: 'Dubai Holiday Package',
-      rating: 5,
-      date: 'July 2026',
-      comment:
-        'Seamless desert safari, premium Marina dinner cruise, and great hotel stay. The itinerary was perfectly paced with no rush. Highly recommend SkyRay Holidays!',
-    },
-  ];
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch(`${API}/integrations/google-reviews`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        if (res && res.available) setData(res);
+      })
+      .catch(() => {});
+  }, []);
+
+  const openGoogleMaps = () => {
+    const url = data?.url || GOOGLE_REVIEWS_URL;
+    Linking.openURL(url).catch(() => {});
+  };
+
+  const rating = data?.rating || 4.9;
+  const reviewCount = data?.reviewCount || 34;
+
+  const reviewsList =
+    data?.reviews && data.reviews.length > 0
+      ? data.reviews.map((r: any, idx: number) => ({
+          id: String(idx + 1),
+          name: r.author || 'Google Reviewer',
+          badge: 'Verified Google Review',
+          rating: r.rating || 5,
+          date: r.publishTime || 'Verified Review',
+          comment: r.text || '',
+        }))
+      : ORIGINAL_GOOGLE_REVIEWS;
 
   return (
     <View style={s.container}>
-      <BrandHeader subtitle="Traveler Testimonials" />
+      <BrandHeader subtitle="Real Customer Reviews" />
 
       <ScrollView
         style={s.scrollView}
         contentContainerStyle={s.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Rating Hero Card */}
-        <View style={s.ratingHeroCard}>
-          <Text style={s.ratingHeroBig}>4.8</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 6 }}>
-            {[...Array(5)].map((_, i) => (
-              <Ionicons key={i} name="star" size={16} color="#f59e0b" style={{ marginHorizontal: 1 }} />
-            ))}
+        {/* Google Business Profile Header Card */}
+        <View style={s.googleBusinessCard}>
+          <View style={s.gbHeaderRow}>
+            <View style={s.gbLeft}>
+              <View style={s.googleGBox}>
+                <Text style={s.googleGText}>G</Text>
+              </View>
+              <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={s.gbBusinessName}>Skyray Holidays</Text>
+                  <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                </View>
+                <Text style={s.gbLocationText}>Melacavery, Kumbakonam</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={s.verifiedPill}
+              onPress={openGoogleMaps}
+              activeOpacity={0.8}
+            >
+              <View style={s.greenDot} />
+              <Text style={s.verifiedPillText}>Verified</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={s.ratingHeroTitle}>Rated 4.8 / 5 on Google</Text>
-          <Text style={s.ratingHeroSub}>
-            Based on 1,200+ verified customer reviews across domestic &amp; international tours.
-          </Text>
+
+          {/* Rating Big Number & Stars */}
+          <View style={s.ratingScoreRow}>
+            <Text style={s.ratingScoreNum}>{Number(rating).toFixed(1)}</Text>
+            <View style={{ marginLeft: 12, justifyContent: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {[...Array(5)].map((_, i) => (
+                  <Ionicons
+                    key={i}
+                    name="star"
+                    size={20}
+                    color="#f59e0b"
+                    style={{ marginRight: 3 }}
+                  />
+                ))}
+              </View>
+              <Text style={s.ratingCountText}>
+                {reviewCount} reviews on Google Maps
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={s.openGoogleBtn}
+            onPress={openGoogleMaps}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="logo-google" size={16} color="#ffffff" style={{ marginRight: 8 }} />
+            <Text style={s.openGoogleBtnText}>Read &amp; Rate on Google Maps</Text>
+            <Ionicons name="open-outline" size={14} color="#ffffff" style={{ marginLeft: 6 }} />
+          </TouchableOpacity>
         </View>
 
-        <Text style={s.reviewsSectionTitle}>Customer Testimonials</Text>
+        {/* Section Heading */}
+        <View style={s.reviewsHeadRow}>
+          <Text style={s.reviewsSectionTitle}>Authentic Google Reviews</Text>
+          <Text style={s.reviewsSectionSub}>Direct from our Kumbakonam travellers</Text>
+        </View>
 
         {/* Review Cards */}
-        {reviews.map((r) => (
+        {reviewsList.map((r: any) => (
           <View key={r.id} style={s.reviewCard}>
             <View style={s.reviewCardHeader}>
               <View style={s.avatarCircle}>
@@ -291,17 +360,37 @@ export function ReviewsScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.reviewerName}>{r.name}</Text>
-                <Text style={s.tripName}>{r.trip} · {r.date}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                  <Ionicons name="shield-checkmark" size={11} color="#0284c7" style={{ marginRight: 3 }} />
+                  <Text style={s.tripName}>{r.badge}</Text>
+                </View>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 {[...Array(r.rating)].map((_, i) => (
-                  <Ionicons key={i} name="star" size={11} color="#f59e0b" style={{ marginHorizontal: 0.5 }} />
+                  <Ionicons key={i} name="star" size={13} color="#f59e0b" style={{ marginHorizontal: 0.5 }} />
                 ))}
               </View>
             </View>
-            <Text style={s.reviewComment}>{r.comment}</Text>
+            <Text style={s.reviewComment}>&ldquo;{r.comment}&rdquo;</Text>
           </View>
         ))}
+
+        {/* Bottom CTA to leave review */}
+        <View style={s.leaveReviewCard}>
+          <Ionicons name="sparkles" size={20} color="#0284c7" style={{ marginBottom: 6 }} />
+          <Text style={s.leaveReviewTitle}>Traveled With Us Recently?</Text>
+          <Text style={s.leaveReviewSub}>
+            Your feedback helps us continuously improve our pilgrimage, visa, and tour services.
+          </Text>
+          <TouchableOpacity
+            style={s.leaveReviewBtn}
+            onPress={openGoogleMaps}
+            activeOpacity={0.85}
+          >
+            <Text style={s.leaveReviewBtnText}>Share Your Review on Google</Text>
+            <Ionicons name="arrow-forward" size={13} color="#0284c7" style={{ marginLeft: 4 }} />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -574,19 +663,136 @@ const s = StyleSheet.create({
     lineHeight: 18,
     marginTop: 4,
   },
+  // Google Reviews Styles
+  googleBusinessCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  gbHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  gbLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  googleGBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  googleGText: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#0284c7',
+  },
+  gbBusinessName: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#17496b',
+  },
+  gbLocationText: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  verifiedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ecfdf5',
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+    gap: 5,
+  },
+  greenDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10b981',
+  },
+  verifiedPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#047857',
+  },
+  ratingScoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 18,
+    marginBottom: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  ratingScoreNum: {
+    fontSize: 42,
+    fontWeight: '900',
+    color: '#17496b',
+    lineHeight: 46,
+  },
+  ratingCountText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#64748b',
+    marginTop: 3,
+  },
+  openGoogleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0284c7',
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  openGoogleBtnText: {
+    color: '#ffffff',
+    fontSize: 13.5,
+    fontWeight: '700',
+  },
+  reviewsHeadRow: {
+    marginBottom: 12,
+  },
   reviewsSectionTitle: {
     fontSize: 18,
     fontWeight: '900',
     color: C.deep,
-    marginBottom: 12,
+  },
+  reviewsSectionSub: {
+    fontSize: 12,
+    color: C.muted,
+    marginTop: 2,
   },
   reviewCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
-    padding: 18,
+    padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
   },
   reviewCardHeader: {
     flexDirection: 'row',
@@ -614,8 +820,8 @@ const s = StyleSheet.create({
   },
   tripName: {
     fontSize: 11,
-    color: C.muted,
-    marginTop: 1,
+    color: '#0284c7',
+    fontWeight: '600',
   },
   cardStars: {
     color: '#d97706',
@@ -625,5 +831,44 @@ const s = StyleSheet.create({
     fontSize: 13,
     color: '#334155',
     lineHeight: 19,
+  },
+  leaveReviewCard: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 16,
+    padding: 18,
+    marginTop: 8,
+    marginBottom: 28,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    alignItems: 'center',
+    textAlign: 'center',
+  },
+  leaveReviewTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0369a1',
+  },
+  leaveReviewSub: {
+    fontSize: 12,
+    color: '#475569',
+    textAlign: 'center',
+    lineHeight: 17,
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  leaveReviewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#0284c7',
+  },
+  leaveReviewBtnText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#0284c7',
   },
 });

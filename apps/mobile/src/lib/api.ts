@@ -17,9 +17,20 @@ export const DESTINATION_IMAGES: Record<string, any> = {
   'turkey-tour': require('../../assets/destinations/turkey.jpg'),
   'bali-escape': require('../../assets/destinations/bali.jpg'),
   'europe-tour': require('../../assets/destinations/europe.jpg'),
-  'premium-hajj-package': require('../../assets/destinations/mecca.jpg'),
-  'classic-umrah-package': require('../../assets/destinations/madinah.jpg'),
-  'premium-umrah': require('../../assets/destinations/madinah.jpg'),
+  'reunion-island-escape': require('../../assets/destinations/reunion.jpg'),
+  'russia-grand-explorer': require('../../assets/destinations/russia.jpg'),
+  'mauritius-paradise': require('../../assets/destinations/mauritius.jpg'),
+  'seychelles-archipelago': require('../../assets/destinations/seychelles.jpg'),
+  'armenia-heritage-tour': require('../../assets/destinations/armenia.jpg'),
+  'georgia-caucasus-wonder': require('../../assets/destinations/georgia.jpg'),
+  'azerbaijan-land-of-fire': require('../../assets/destinations/azerbaijan.jpg'),
+  'us-visa': require('../../assets/destinations/us-visa.jpg'),
+  'uk-visa': require('../../assets/destinations/uk-visa.jpg'),
+  'schengen-visa': require('../../assets/destinations/schengen-visa.jpg'),
+  'premium-hajj-package': require('../../assets/destinations/makkah-kaaba.jpg'),
+  'classic-umrah-package': require('../../assets/destinations/madinah-courtyard.jpg'),
+  'premium-umrah': require('../../assets/destinations/madinah-green-dome.jpg'),
+  'economy-umrah-package': require('../../assets/destinations/madinah-courtyard.jpg'),
 };
 
 export function getPackageImage(slug?: string) {
@@ -50,15 +61,15 @@ export type TourPackage = {
 };
 
 export const SPECIALIZED_DESTINATIONS = [
-  { name: 'Reunion Island', slug: 'reunion-island-escape', duration: '6 Days', image: 'maldives-resort-escape' },
-  { name: 'Russia', slug: 'russia-grand-explorer', duration: '8 Days', image: 'europe-tour' },
-  { name: 'Turkey', slug: 'turkey-tour', duration: '7 Days', image: 'turkey-tour' },
-  { name: 'Mauritius', slug: 'mauritius-paradise', duration: '6 Days', image: 'maldives-resort-escape' },
-  { name: 'Maldives', slug: 'maldives-resort-escape', duration: '5 Days', image: 'maldives-resort-escape' },
-  { name: 'Seychelles', slug: 'seychelles-archipelago', duration: '6 Days', image: 'andaman-escape' },
-  { name: 'Armenia', slug: 'armenia-heritage-tour', duration: '5 Days', image: 'turkey-tour' },
-  { name: 'Georgia', slug: 'georgia-caucasus-wonder', duration: '6 Days', image: 'europe-tour' },
-  { name: 'Azerbaijan', slug: 'azerbaijan-land-of-fire', duration: '5 Days', image: 'dubai-holiday' },
+  { name: 'Reunion Island', slug: 'reunion-island-escape', duration: '6 Days / 5 Nights', image: 'reunion-island-escape', tag: 'Volcanic Island' },
+  { name: 'Russia', slug: 'russia-grand-explorer', duration: '8 Days / 7 Nights', image: 'russia-grand-explorer', tag: 'Imperial Splendor' },
+  { name: 'Turkey', slug: 'turkey-tour', duration: '7 Days / 6 Nights', image: 'turkey-tour', tag: 'Historic Gateway' },
+  { name: 'Mauritius', slug: 'mauritius-paradise', duration: '6 Days / 5 Nights', image: 'mauritius-paradise', tag: 'Tropical Paradise' },
+  { name: 'Maldives', slug: 'maldives-resort-escape', duration: '5 Days / 4 Nights', image: 'maldives-resort-escape', tag: 'Overwater Luxury' },
+  { name: 'Seychelles', slug: 'seychelles-archipelago', duration: '6 Days / 5 Nights', image: 'seychelles-archipelago', tag: 'Granite Beaches' },
+  { name: 'Armenia', slug: 'armenia-heritage-tour', duration: '5 Days / 4 Nights', image: 'armenia-heritage-tour', tag: 'Ancient Heritage' },
+  { name: 'Georgia', slug: 'georgia-caucasus-wonder', duration: '6 Days / 5 Nights', image: 'georgia-caucasus-wonder', tag: 'Caucasus Wonders' },
+  { name: 'Azerbaijan', slug: 'azerbaijan-land-of-fire', duration: '5 Days / 4 Nights', image: 'azerbaijan-land-of-fire', tag: 'Land of Fire' },
 ];
 
 export const FALLBACK_PACKAGES: TourPackage[] = [
