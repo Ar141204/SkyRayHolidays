@@ -86,6 +86,7 @@ export default function AdminConsole() {
   const [unlockCodeInput, setUnlockCodeInput] = useState('');
   const [unlockStatus, setUnlockStatus] = useState('');
   const [unlockBusy, setUnlockBusy] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   // Filtering states
   const [enquiryStatusFilter, setEnquiryStatusFilter] = useState('ALL');
@@ -250,14 +251,38 @@ export default function AdminConsole() {
     }
   }
 
-  // Session check on mount
+  // Auto sign-in with cookies & persistent session on mount
   useEffect(() => {
-    request('/auth/me')
+    const cachedToken = typeof window !== 'undefined' ? localStorage.getItem('skyray_admin_token') : null;
+    const cachedUser = typeof window !== 'undefined' ? localStorage.getItem('skyray_admin_user') : null;
+
+    if (cachedToken && cachedUser) {
+      try {
+        setToken(cachedToken);
+        setUser(JSON.parse(cachedUser));
+      } catch {}
+    }
+
+    // Verify session with server using HTTP-only cookie
+    request('/auth/me', {
+      headers: cachedToken ? { Authorization: `Bearer ${cachedToken}` } : {},
+    })
       .then((u) => {
         setUser(u);
-        setToken('cookie-session');
+        setToken((prev) => prev || 'cookie-session');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('skyray_admin_user', JSON.stringify(u));
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cachedToken) {
+          setToken('');
+          setUser(null);
+        }
+      })
+      .finally(() => {
+        setCheckingAuth(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -279,7 +304,7 @@ export default function AdminConsole() {
     return () => clearInterval(interval);
   }, [lockRemaining]);
 
-  // Login handler with 5-attempt detection
+  // Login handler with persistent cookies & 5-attempt detection
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -291,6 +316,13 @@ export default function AdminConsole() {
       });
       setToken(d.accessToken);
       setUser(d.user);
+
+      // Persist across browser restarts
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('skyray_admin_token', d.accessToken);
+        localStorage.setItem('skyray_admin_user', JSON.stringify(d.user));
+      }
+
       setPassword('');
       setIsLocked(false);
       setLockRemaining(0);
@@ -328,13 +360,13 @@ export default function AdminConsole() {
 
   // Resend Emergency Unlock Code
   async function handleResendUnlock() {
-    setUnlockStatus('Sending emergency code...');
+    setUnlockStatus('Sending new emergency code to email...');
     try {
       const d = await request('/auth/resend-unlock', {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
-      setUnlockStatus(d.message || 'New 6-digit code sent to your email.');
+      setUnlockStatus(d.message || 'New 6-digit emergency code sent to email.');
     } catch (err: any) {
       setUnlockStatus(err.message || 'Failed to resend code.');
     }
@@ -344,6 +376,10 @@ export default function AdminConsole() {
     try {
       await request('/auth/logout', { method: 'POST' });
     } catch {}
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('skyray_admin_token');
+      localStorage.removeItem('skyray_admin_user');
+    }
     setToken('');
     setUser(null);
   }
@@ -642,6 +678,28 @@ export default function AdminConsole() {
       return matchStatus && matchSearch;
     });
   }, [enquiries, enquiryStatusFilter, searchQuery]);
+
+  // Restoring persistent auto sign-in session
+  if (checkingAuth && !token) {
+    return (
+      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+        <div style={{ textAlign: 'center' }}>
+          <Image
+            src="/brand/skyray-logo.png"
+            alt="SkyRay Holidays"
+            width={140}
+            height={65}
+            style={{ objectFit: 'contain', margin: '0 auto 16px' }}
+            priority
+          />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
+            <Loader2 size={16} className="spin" color="#0284c7" />
+            <span>Restoring secure session...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // SCREEN 1: Admin Login Page
   if (!token) {

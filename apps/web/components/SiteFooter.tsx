@@ -50,12 +50,7 @@ export default function SiteFooter() {
       </div>
 
       <div className="container footer-bottom">
-        <span>
-          © {new Date().getFullYear()} SkyRay Holidays. All rights reserved. ·{' '}
-          <Link href="/admin" style={{ color: 'inherit', textDecoration: 'none', opacity: 0.35 }}>
-            Staff Access
-          </Link>
-        </span>
+        <span>© {new Date().getFullYear()} SkyRay Holidays. All rights reserved.</span>
         <span>Explore · Travel · Experience</span>
       </div>
     </footer>

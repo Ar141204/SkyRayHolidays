@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import * as bcrypt from 'bcryptjs';
 import * as nodemailer from 'nodemailer';
+import { randomInt } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginRateGuard } from '../common/login-rate.guard';
 
@@ -66,17 +67,21 @@ export class AuthService {
     accountSecurityMap.delete(email);
     LoginRateGuard.recordSuccess(email);
 
-    const accessToken = await this.jwt.signAsync({ sub: user!.id, role: user!.role });
+    const accessToken = await this.jwt.signAsync(
+      { sub: user!.id, role: user!.role, name: user!.name, email: user!.email },
+      { expiresIn: (process.env.JWT_EXPIRES_IN || '30d') as any },
+    );
 
     const isSecure = process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production';
     const sameSiteMode = (process.env.COOKIE_SAME_SITE as 'lax' | 'strict' | 'none') || 'lax';
 
+    // 30 days persistent auto sign-in cookie
     res.cookie('skyray_session', accessToken, {
       httpOnly: true,
       secure: isSecure,
       sameSite: sameSiteMode,
       path: '/',
-      maxAge: 8 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     await this.db.auditLog.create({
@@ -105,7 +110,7 @@ export class AuthService {
 
     if (sec.failedAttempts >= 5) {
       sec.lockedUntil = Date.now() + 15 * 60 * 1000; // Lock for 15 minutes
-      sec.unlockCode = Math.floor(100000 + Math.random() * 900000).toString();
+      sec.unlockCode = randomInt(100000, 1000000).toString(); // Cryptographically secure fresh code every time
       sec.codeExpires = Date.now() + 15 * 60 * 1000;
       accountSecurityMap.set(email, sec);
 
@@ -180,7 +185,7 @@ export class AuthService {
       throw new BadRequestException('Admin panel is not currently locked.');
     }
 
-    sec.unlockCode = Math.floor(100000 + Math.random() * 900000).toString();
+    sec.unlockCode = randomInt(100000, 1000000).toString(); // Fresh code on every resend
     sec.codeExpires = Date.now() + 15 * 60 * 1000;
     accountSecurityMap.set(email, sec);
 
