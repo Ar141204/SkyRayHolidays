@@ -411,7 +411,7 @@ export function HomeScreen({ navigation }: any) {
             <View style={{ flex: 1 }}>
               <Text style={s.googleOverviewTitle}>Skyray Holidays</Text>
               <Text style={s.googleOverviewSub}>
-                34 Reviews on Google Maps • Melacavery, Kumbakonam
+                34 Verified Reviews on Google Maps • 4.9 ★ Rating
               </Text>
             </View>
             <View style={s.googleBadge}>
@@ -456,18 +456,27 @@ export function HomeScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        {/* 8. Office Location & Contact Desk */}
-        <View style={s.officeCard}>
-          <Text style={s.officeTitle}>SkyRay Holidays Office</Text>
-          <View style={s.officeRow}>
-            <Ionicons name="location-outline" size={16} color="#0284c7" style={{ marginTop: 2, marginRight: 8 }} />
-            <Text style={s.officeText}>
-              No. 3, Rahamath Complex, 5th Cross Road, ESMP Nagar, Melacavery, Kumbakonam, Tamil Nadu 612002
+        {/* 8. Dedicated Travel Concierge Card (No physical address) */}
+        <View style={s.conciergeCard}>
+          <View style={s.conciergeHeadRow}>
+            <View style={s.conciergeIconBox}>
+              <Ionicons name="headset-outline" size={18} color="#0284c7" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.conciergeEyebrow}>24/7 PRIORITY ASSISTANCE</Text>
+              <Text style={s.conciergeTitle}>SkyRay Travel Concierge</Text>
+            </View>
+          </View>
+
+          <View style={s.conciergeRow}>
+            <Ionicons name="chatbubbles-outline" size={15} color="#0284c7" style={{ marginTop: 2, marginRight: 8 }} />
+            <Text style={s.conciergeText}>
+              Direct Specialist Support for Tours, Hajj &amp; Umrah, and Visas
             </Text>
           </View>
-          <View style={s.officeRow}>
-            <Ionicons name="time-outline" size={16} color="#0284c7" style={{ marginRight: 8 }} />
-            <Text style={s.officeText}>
+          <View style={s.conciergeRow}>
+            <Ionicons name="time-outline" size={15} color="#0284c7" style={{ marginRight: 8 }} />
+            <Text style={s.conciergeText}>
               Mon – Sat: 9:30 AM – 8:30 PM (24/7 Dedicated Concierge)
             </Text>
           </View>
@@ -932,6 +941,7 @@ const s = StyleSheet.create({
     fontSize: 10.5,
     lineHeight: 14,
     color: '#64748b',
+    minHeight: 30,
     marginBottom: 8,
   },
   visaEnquireBtn: {
@@ -980,7 +990,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   featureCell: {
-    width: (width - 76) / 2,
+    width: (width - 80) / 2,
     backgroundColor: '#f8fafc',
     padding: 12,
     borderRadius: 12,
@@ -1159,27 +1169,54 @@ const s = StyleSheet.create({
     color: '#0284c7',
   },
 
-  // 8. Office Card
-  officeCard: {
+  // 8. Concierge Card (No physical address)
+  conciergeCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
     borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  officeTitle: {
-    fontSize: 13.5,
+  conciergeHeadRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 12,
+  },
+  conciergeIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#f0f9ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
+  conciergeEyebrow: {
+    fontSize: 9,
     fontWeight: '800',
-    color: '#0f2942',
-    marginBottom: 10,
+    letterSpacing: 1,
+    color: '#0284c7',
   },
-  officeRow: {
+  conciergeTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#0f2942',
+    marginTop: 1,
+  },
+  conciergeRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  officeText: {
+  conciergeText: {
     fontSize: 11.5,
     lineHeight: 16,
     color: '#64748b',

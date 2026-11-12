@@ -39,20 +39,20 @@ export function AboutScreen() {
         {/* 4 Trust Metrics */}
         <View style={s.statsGrid}>
           <View style={s.statCard}>
-            <Text style={s.statNum}>1,200+</Text>
-            <Text style={s.statLabel}>Happy Travelers</Text>
+            <Text style={s.statNum}>10,000+</Text>
+            <Text style={s.statLabel}>Happy Travellers</Text>
           </View>
           <View style={s.statCard}>
             <Text style={s.statNum}>50+</Text>
-            <Text style={s.statLabel}>Curated Packages</Text>
+            <Text style={s.statLabel}>Destinations</Text>
           </View>
           <View style={s.statCard}>
-            <Text style={s.statNum}>4.8 ★</Text>
+            <Text style={s.statNum}>4.9 ★</Text>
             <Text style={s.statLabel}>Google Rating</Text>
           </View>
           <View style={s.statCard}>
             <Text style={s.statNum}>24/7</Text>
-            <Text style={s.statLabel}>Travel Support</Text>
+            <Text style={s.statLabel}>Concierge Support</Text>
           </View>
         </View>
 
@@ -299,7 +299,7 @@ export function ReviewsScreen() {
                   <Text style={s.gbBusinessName}>Skyray Holidays</Text>
                   <Ionicons name="checkmark-circle" size={16} color="#10b981" />
                 </View>
-                <Text style={s.gbLocationText}>Melacavery, Kumbakonam</Text>
+                <Text style={s.gbLocationText}>Global Travel &amp; Pilgrimage Specialists</Text>
               </View>
             </View>
 
@@ -348,7 +348,7 @@ export function ReviewsScreen() {
         {/* Section Heading */}
         <View style={s.reviewsHeadRow}>
           <Text style={s.reviewsSectionTitle}>Authentic Google Reviews</Text>
-          <Text style={s.reviewsSectionSub}>Direct from our Kumbakonam travellers</Text>
+          <Text style={s.reviewsSectionSub}>Direct from our verified travellers</Text>
         </View>
 
         {/* Review Cards */}

@@ -163,8 +163,8 @@ const s = StyleSheet.create({
   header: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'web' ? 16 : 12,
-    paddingBottom: 14,
+    paddingTop: Platform.OS === 'web' ? 14 : 10,
+    paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
     shadowColor: '#0f172a',
@@ -183,7 +183,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   logoImage: {
-    width: 96,
+    width: 82,
     height: 82,
   },
   headerCta: {
