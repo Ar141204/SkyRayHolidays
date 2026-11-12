@@ -48,8 +48,8 @@ export default function SiteHeader() {
           <Image
             src="/brand/skyray-logo.png"
             alt="SkyRay Holidays"
-            width={120}
-            height={90}
+            width={160}
+            height={120}
             className="brand-logo-img"
             priority
           />
