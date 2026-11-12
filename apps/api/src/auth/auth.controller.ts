@@ -22,6 +22,16 @@ export class AuthController {
     return this.auth.login(body, res);
   }
 
+  @Post('unlock')
+  unlock(@Body() body: any) {
+    return this.auth.unlock(body);
+  }
+
+  @Post('resend-unlock')
+  resendUnlock(@Body() body: any) {
+    return this.auth.resendUnlockCode(body);
+  }
+
   @UseGuards(AuthGuard)
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {

@@ -38,6 +38,10 @@ import {
   Loader2,
   Filter,
   Sparkles,
+  ShieldAlert,
+  Lock,
+  Unlock,
+  KeyRound,
 } from 'lucide-react';
 import { API_URL, contactDefaults } from '@/lib/config';
 
@@ -75,6 +79,13 @@ export default function AdminConsole() {
   const [busy, setBusy] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Lockout & Security states (5 wrong password lock)
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockRemaining, setLockRemaining] = useState(0);
+  const [unlockCodeInput, setUnlockCodeInput] = useState('');
+  const [unlockStatus, setUnlockStatus] = useState('');
+  const [unlockBusy, setUnlockBusy] = useState(false);
 
   // Filtering states
   const [enquiryStatusFilter, setEnquiryStatusFilter] = useState('ALL');
@@ -253,10 +264,26 @@ export default function AdminConsole() {
     if (token) loadData();
   }, [token]);
 
-  // Login handler
+  // Lockout Countdown Timer
+  useEffect(() => {
+    if (lockRemaining <= 0) return;
+    const interval = setInterval(() => {
+      setLockRemaining((prev) => {
+        if (prev <= 1) {
+          setIsLocked(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockRemaining]);
+
+  // Login handler with 5-attempt detection
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setUnlockStatus('');
     try {
       const d = await request('/auth/login', {
         method: 'POST',
@@ -265,8 +292,51 @@ export default function AdminConsole() {
       setToken(d.accessToken);
       setUser(d.user);
       setPassword('');
+      setIsLocked(false);
+      setLockRemaining(0);
     } catch (err: any) {
+      if (err.message?.includes('locked') || err.message?.includes('Locked') || err.status === 423) {
+        setIsLocked(true);
+        setLockRemaining(15 * 60);
+      }
       setError(err.message || 'Invalid credentials. Please verify your email and password.');
+    }
+  }
+
+  // Emergency Unlock handler using 6-digit code
+  async function handleUnlock(e: React.FormEvent) {
+    e.preventDefault();
+    setUnlockStatus('');
+    setUnlockBusy(true);
+    try {
+      const d = await request('/auth/unlock', {
+        method: 'POST',
+        body: JSON.stringify({ email, code: unlockCodeInput.trim() }),
+      });
+      setIsLocked(false);
+      setLockRemaining(0);
+      setUnlockCodeInput('');
+      setError('');
+      setSavedMsg(d.message || 'Admin panel unlocked successfully! You may now sign in.');
+      setTimeout(() => setSavedMsg(''), 5000);
+    } catch (err: any) {
+      setUnlockStatus(err.message || 'Invalid unlock code.');
+    } finally {
+      setUnlockBusy(false);
+    }
+  }
+
+  // Resend Emergency Unlock Code
+  async function handleResendUnlock() {
+    setUnlockStatus('Sending emergency code...');
+    try {
+      const d = await request('/auth/resend-unlock', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      setUnlockStatus(d.message || 'New 6-digit code sent to your email.');
+    } catch (err: any) {
+      setUnlockStatus(err.message || 'Failed to resend code.');
     }
   }
 
@@ -584,50 +654,163 @@ export default function AdminConsole() {
           </div>
 
           <div className="admin-login-card">
-            <h2>Admin Login</h2>
-            <p className="login-sub">Sign in to continue to SkyRay Management Portal</p>
-
-            {error && <div className="form-error">{error}</div>}
-
-            <form onSubmit={handleLogin} className="login-form-inner">
-              <label>
-                Email Address
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="syedrahamathullah@skyrayholidays.com"
-                />
-              </label>
-
-              <label>
-                Password
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                />
-              </label>
-
-              <button type="submit" className="btn btn-primary full-btn">
-                Login
-              </button>
-
-              <div className="login-bottom-links">
-                <a
-                  href="#forgot"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    alert('Password reset instructions will be sent to the administrator email.');
+            {isLocked ? (
+              <div className="login-locked-box" style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    backgroundColor: '#fef2f2',
+                    border: '2px solid #fecaca',
+                    display: 'grid',
+                    placeItems: 'center',
+                    margin: '0 auto 16px',
+                    color: '#dc2626',
                   }}
                 >
-                  Forgot Password?
-                </a>
+                  <Lock size={32} />
+                </div>
+                <h2 style={{ color: '#991b1b', fontSize: '24px', margin: '0 0 8px 0' }}>Admin Panel Locked</h2>
+                <p style={{ color: '#64748b', fontSize: '13px', margin: '0 0 16px 0', lineHeight: 1.5 }}>
+                  5 consecutive incorrect password attempts were detected. Access has been locked for security.
+                </p>
+
+                <div
+                  style={{
+                    backgroundColor: '#fff1f2',
+                    border: '1px solid #ffe4e6',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    color: '#be123c',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    marginBottom: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Clock size={15} />
+                  <span>
+                    Auto-unlocks in: {Math.floor(lockRemaining / 60)}:{(lockRemaining % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    padding: '18px',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#0f172a', fontWeight: 700, fontSize: '13px' }}>
+                    <KeyRound size={16} color="#0284c7" />
+                    <span>Owner Emergency Unlock</span>
+                  </div>
+                  <p style={{ fontSize: '12px', color: '#475569', margin: '0 0 12px 0' }}>
+                    A 6-digit emergency unlock code has been sent to your verified email:
+                    <br />
+                    <strong style={{ color: '#0f172a' }}>{email}</strong>
+                  </p>
+
+                  {unlockStatus && (
+                    <div
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: unlockStatus.includes('unlocked') ? '#ecfdf5' : '#fef2f2',
+                        color: unlockStatus.includes('unlocked') ? '#065f46' : '#991b1b',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        marginBottom: '10px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {unlockStatus}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleUnlock} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      required
+                      value={unlockCodeInput}
+                      onChange={(e) => setUnlockCodeInput(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="Enter 6-digit code (e.g. 481920)"
+                      style={{
+                        textAlign: 'center',
+                        fontSize: '18px',
+                        fontWeight: 800,
+                        letterSpacing: '4px',
+                        padding: '10px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                      }}
+                    />
+
+                    <button type="submit" className="btn btn-primary full-btn" disabled={unlockBusy}>
+                      {unlockBusy ? 'Verifying...' : 'Unlock Panel'}
+                    </button>
+                  </form>
+
+                  <div style={{ textAlign: 'center', marginTop: '12px' }}>
+                    <button
+                      type="button"
+                      onClick={handleResendUnlock}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#0284c7',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      Resend code to email
+                    </button>
+                  </div>
+                </div>
               </div>
-            </form>
+            ) : (
+              <>
+                <h2>Admin Login</h2>
+                <p className="login-sub">Sign in to continue to SkyRay Management Portal</p>
+
+                {error && <div className="form-error">{error}</div>}
+
+                <form onSubmit={handleLogin} className="login-form-inner">
+                  <label>
+                    Email Address
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="syedrahamathullah@skyrayholidays.com"
+                    />
+                  </label>
+
+                  <label>
+                    Password
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                    />
+                  </label>
+
+                  <button type="submit" className="btn btn-primary full-btn">
+                    Login
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
 

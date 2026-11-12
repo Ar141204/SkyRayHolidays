@@ -7,7 +7,7 @@ export class LoginRateGuard implements CanActivate {
   private readonly maxEntries = 5000;
   private readonly windowMs = 15 * 60 * 1000; // 15 minutes
   private readonly maxIpAttempts = 50; // Allow multiple staff from same office IP
-  private readonly maxAccountAttempts = 10; // Max attempts per specific email account
+  private readonly maxAccountAttempts = 30; // AuthService manages 5-attempt strict lock & unlock code
 
   static recordSuccess(email?: string) {
     if (email) {

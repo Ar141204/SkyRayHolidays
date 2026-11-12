@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { Menu, X, ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { Menu, X, ArrowUpRight } from 'lucide-react';
 
 const links = [
   { href: '/', label: 'Home' },
@@ -39,21 +39,14 @@ export default function SiteHeader() {
             </Link>
           ))}
           <div className="mobile-menu-actions">
-            <Link className="btn btn-admin" href="/admin" onClick={() => setOpen(false)}>
-              <ShieldCheck size={16} /> Admin Panel
-            </Link>
             <Link className="btn btn-primary" href="/enquire" onClick={() => setOpen(false)}>
               Enquire Now <ArrowUpRight size={16} />
             </Link>
           </div>
         </nav>
 
-        {/* Right Corner: Admin Panel & Enquiry Buttons */}
+        {/* Right Corner: Enquiry Button & Mobile Toggle */}
         <div className="nav-actions">
-          <Link className="btn btn-admin" href="/admin" title="Access Admin Console">
-            <ShieldCheck size={16} />
-            <span>Admin Panel</span>
-          </Link>
           <Link className="btn btn-primary nav-cta" href="/enquire">
             Enquire Now <ArrowUpRight size={16} />
           </Link>
