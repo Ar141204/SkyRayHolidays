@@ -3,6 +3,7 @@ import {
   View,
   Text,
   FlatList,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
@@ -107,8 +108,13 @@ export function PackagesScreen({ navigation }: any) {
           )}
         </View>
 
-        {/* Category Filter Pills */}
-        <View style={s.pillsRow}>
+        {/* Category Filter Pills (Horizontal Scrollable) */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.pillsScroll}
+          style={s.pillsScrollWrap}
+        >
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
               key={cat.id}
@@ -119,7 +125,7 @@ export function PackagesScreen({ navigation }: any) {
               <Ionicons
                 name={cat.icon}
                 size={14}
-                color={activeCategory === cat.id ? '#0284c7' : '#64748b'}
+                color={activeCategory === cat.id ? '#ffffff' : '#64748b'}
                 style={{ marginRight: 5 }}
               />
               <Text style={[s.pillText, activeCategory === cat.id && s.activePillText]}>
@@ -127,7 +133,7 @@ export function PackagesScreen({ navigation }: any) {
               </Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
 
         {/* Discreet Offline Notice Banner */}
         {isOffline && (
@@ -326,16 +332,21 @@ const s = StyleSheet.create({
     color: '#94a3b8',
     fontWeight: '700',
   },
-  pillsRow: {
+  pillsScrollWrap: {
+    marginBottom: 6,
+  },
+  pillsScroll: {
     flexDirection: 'row',
-    gap: 6,
-    flexWrap: 'wrap',
+    gap: 8,
+    paddingRight: 16,
   },
   pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 7,
     paddingHorizontal: 13,
     borderRadius: 20,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },

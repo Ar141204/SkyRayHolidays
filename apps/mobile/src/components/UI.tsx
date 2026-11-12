@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const C = {
   deep: '#17496B',
@@ -40,16 +41,18 @@ export function BrandHeader({
   showContactAction = true,
   onContactPress,
 }: BrandHeaderProps) {
+  const insets = useSafeAreaInsets();
+
   const handleWhatsApp = () => {
     if (onContactPress) {
       onContactPress();
     } else {
-      Linking.openURL('https://wa.me/919876543210?text=Hello%20SkyRay%20Holidays!').catch(() => { });
+      Linking.openURL('https://wa.me/919176357791?text=Hello%20SkyRay%20Holidays!').catch(() => { });
     }
   };
 
   return (
-    <View style={s.header}>
+    <View style={[s.header, { paddingTop: Math.max(insets.top, Platform.OS === 'web' ? 14 : 10) + 4 }]}>
       <View style={s.brandRow}>
         <View style={s.logoWrap}>
           <Image

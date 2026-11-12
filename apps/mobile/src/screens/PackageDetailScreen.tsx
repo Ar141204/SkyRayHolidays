@@ -66,7 +66,7 @@ export function PackageDetailScreen({ route, navigation }: any) {
 
   const handleWhatsApp = () => {
     const text = encodeURIComponent(`Hello SkyRay Holidays! I would like to enquire about the ${item.title}.`);
-    Linking.openURL(`https://wa.me/919876543210?text=${text}`).catch(() => {});
+    Linking.openURL(`https://wa.me/919176357791?text=${text}`).catch(() => {});
   };
 
   return (

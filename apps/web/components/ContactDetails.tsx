@@ -42,16 +42,17 @@ export function ContactDetails() {
   const mapUrl = s.mapUrl || contactDefaults.mapUrl;
 
   const rows = [
-    { icon: Phone, label: 'Phone', value: phone, href: `tel:${phone}` },
+    { icon: Phone, label: 'India Desk', value: '+91 91763 57791', href: 'tel:+919176357791' },
+    { icon: Phone, label: 'Saudi Arabia Desk', value: '+966 57 549 0602', href: 'tel:+966575490602' },
     {
       icon: MessageCircle,
       label: 'WhatsApp',
-      value: whatsapp,
-      href: `https://wa.me/${whatsapp.replace(/\D/g, '')}`,
+      value: '+91 91763 57791',
+      href: 'https://wa.me/919176357791?text=Hello%20SkyRay%20Holidays!',
     },
-    { icon: Mail, label: 'Email', value: email, href: `mailto:${email}` },
-    { icon: MapPin, label: 'Office', value: address, href: mapUrl },
-    { icon: Clock3, label: 'Business hours', value: hours, href: undefined },
+    { icon: Mail, label: 'Official Email', value: email || 'syedrahamathullah@skyrayholidays.com', href: `mailto:${email || 'syedrahamathullah@skyrayholidays.com'}` },
+    ...(address ? [{ icon: MapPin, label: 'Office', value: address, href: mapUrl }] : []),
+    { icon: Clock3, label: 'Concierge hours', value: hours || '24/7 Dedicated Support', href: undefined },
   ];
 
   return (

@@ -11,10 +11,10 @@ import { C, BrandHeader, PrimaryButton, Badge } from '../components/UI';
 import { API } from '../lib/api';
 import { Ionicons } from '@expo/vector-icons';
 
-const DEFAULT_PHONE = '+91 98765 43210';
-const DEFAULT_EMAIL = 'info@skyrayholidays.com';
-const DEFAULT_WHATSAPP = '+91 98765 43210';
-const DEFAULT_ADDRESS = '123 Travel Street, Chennai, TN 600001';
+const DEFAULT_PHONE = '+91 91763 57791';
+const DEFAULT_PHONE_SA = '+966 57 549 0602';
+const DEFAULT_EMAIL = 'syedrahamathullah@skyrayholidays.com';
+const DEFAULT_WHATSAPP = '+91 91763 57791';
 
 export function AboutScreen() {
   return (
@@ -103,7 +103,7 @@ export function ContactScreen() {
     phone: DEFAULT_PHONE,
     whatsapp: DEFAULT_WHATSAPP,
     email: DEFAULT_EMAIL,
-    address: DEFAULT_ADDRESS,
+    address: '',
   });
 
   useEffect(() => {
@@ -144,7 +144,7 @@ export function ContactScreen() {
           activeOpacity={0.9}
           onPress={() =>
             openUrl(
-              `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+              `https://wa.me/919176357791?text=${encodeURIComponent(
                 'Hello SkyRay Holidays! I would like to enquire about your tour packages.',
               )}`,
             )
@@ -162,25 +162,41 @@ export function ContactScreen() {
 
         {/* Contact Methods */}
         <View style={s.contactListCard}>
-          {/* Phone */}
+          {/* Phone - India */}
           <TouchableOpacity
             style={s.contactItem}
             activeOpacity={0.7}
-            onPress={() => openUrl(`tel:${data.phone || DEFAULT_PHONE}`)}
+            onPress={() => openUrl(`tel:${DEFAULT_PHONE}`)}
           >
             <View style={s.contactIconBox}>
               <Ionicons name="call" size={17} color="#0ea5e9" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.contactFieldLabel}>Call Customer Desk</Text>
-              <Text style={s.contactFieldVal}>{data.phone || DEFAULT_PHONE}</Text>
+              <Text style={s.contactFieldLabel}>India Concierge Desk</Text>
+              <Text style={s.contactFieldVal}>{DEFAULT_PHONE}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
+          </TouchableOpacity>
+
+          {/* Phone - Saudi Arabia */}
+          <TouchableOpacity
+            style={s.contactItem}
+            activeOpacity={0.7}
+            onPress={() => openUrl(`tel:${DEFAULT_PHONE_SA}`)}
+          >
+            <View style={s.contactIconBox}>
+              <Ionicons name="call" size={17} color="#0ea5e9" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.contactFieldLabel}>Saudi Arabia &amp; Pilgrimage Desk</Text>
+              <Text style={s.contactFieldVal}>{DEFAULT_PHONE_SA}</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
           </TouchableOpacity>
 
           {/* Email */}
           <TouchableOpacity
-            style={s.contactItem}
+            style={[s.contactItem, { borderBottomWidth: 0 }]}
             activeOpacity={0.7}
             onPress={() => openUrl(`mailto:${data.email || DEFAULT_EMAIL}`)}
           >
@@ -188,25 +204,9 @@ export function ContactScreen() {
               <Ionicons name="mail" size={17} color="#0ea5e9" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.contactFieldLabel}>Email Address</Text>
+              <Text style={s.contactFieldLabel}>Official Email Address</Text>
               <Text style={s.contactFieldVal}>{data.email || DEFAULT_EMAIL}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
-          </TouchableOpacity>
-
-          {/* Office Address */}
-          <TouchableOpacity
-            style={[s.contactItem, { borderBottomWidth: 0 }]}
-            activeOpacity={0.7}
-            onPress={() => openUrl('https://maps.google.com/?q=Chennai+TN+India')}
-          >
-            <View style={s.contactIconBox}>
-              <Ionicons name="location" size={17} color="#0ea5e9" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.contactFieldLabel}>Head Office</Text>
-              <Text style={s.contactFieldVal}>{data.address || DEFAULT_ADDRESS}</Text>
-              <Text style={s.hoursText}>Mon - Sat: 9:00 AM - 7:00 PM IST</Text>
+              <Text style={s.hoursText}>24/7 Dedicated Concierge Support</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
           </TouchableOpacity>

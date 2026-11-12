@@ -154,7 +154,7 @@ export default function EnquiryForm() {
             maxLength={20}
             value={form.phone}
             onChange={(e) => update('phone', e.target.value)}
-            placeholder="+91 98765 43210"
+            placeholder="+91 91763 57791"
           />
         </label>
 

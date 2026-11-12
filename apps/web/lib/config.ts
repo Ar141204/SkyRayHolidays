@@ -4,12 +4,14 @@ export const API_URL =
     : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export const contactDefaults = {
-  phone: '+91 98765 43210',
-  whatsapp: '+91 98765 43210',
-  email: 'info@skyrayholidays.com',
-  address: '123 Travel Street, Chennai, TN 600001',
-  hours: 'Mon - Sat: 9:00 AM - 7:00 PM',
-  mapUrl: 'https://maps.google.com/?q=Chennai+TN+India',
+  phone: '+91 91763 57791',
+  phoneSecondary: '+966 57 549 0602',
+  whatsapp: '+91 91763 57791',
+  whatsappSecondary: '+966 57 549 0602',
+  email: 'syedrahamathullah@skyrayholidays.com',
+  address: '',
+  hours: '24/7 Dedicated Concierge Support',
+  mapUrl: '',
   whatsappMessage: 'Hello SkyRay Holidays! I would like to know more about your tour packages.',
 };
 

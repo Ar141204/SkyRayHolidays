@@ -33,7 +33,7 @@ export function PilgrimageScreen({ navigation }: any) {
 
   const handleWhatsApp = () => {
     const text = encodeURIComponent('Hello SkyRay Holidays! I would like to enquire about Hajj & Umrah pilgrimage packages.');
-    Linking.openURL(`https://wa.me/919876543210?text=${text}`).catch(() => {});
+    Linking.openURL(`https://wa.me/919176357791?text=${text}`).catch(() => {});
   };
 
   const meccaImg = getPackageImage('premium-hajj-package');

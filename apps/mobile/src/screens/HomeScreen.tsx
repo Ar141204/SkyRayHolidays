@@ -20,7 +20,7 @@ export function HomeScreen({ navigation }: any) {
 
   const handleWhatsApp = () => {
     Linking.openURL(
-      'https://wa.me/919876543210?text=Hello%20SkyRay%20Holidays!%20I%20would%20like%20to%20plan%20a%20trip.',
+      'https://wa.me/919176357791?text=Hello%20SkyRay%20Holidays!%20I%20would%20like%20to%20plan%20a%20trip.',
     ).catch(() => {});
   };
 
@@ -360,8 +360,8 @@ const s = StyleSheet.create({
   },
   heroCard: {
     backgroundColor: C.deep,
-    borderRadius: 20,
-    padding: 22,
+    borderRadius: 18,
+    padding: 18,
     marginBottom: 18,
     shadowColor: C.deep,
     shadowOffset: { width: 0, height: 6 },
@@ -498,7 +498,8 @@ const s = StyleSheet.create({
     paddingTop: 14,
   },
   metricItem: {
-    width: '48%',
+    flex: 1,
+    minWidth: '46%',
     backgroundColor: '#f8fafc',
     borderRadius: 10,
     padding: 12,
@@ -693,8 +694,8 @@ const s = StyleSheet.create({
   },
   ctaCard: {
     backgroundColor: '#0f2942',
-    borderRadius: 20,
-    padding: 22,
+    borderRadius: 18,
+    padding: 18,
     shadowColor: '#0f2942',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,

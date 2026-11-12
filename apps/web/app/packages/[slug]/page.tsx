@@ -147,7 +147,7 @@ export default async function PackageDetail({
           '@type': 'TravelAgency',
           name: 'SkyRay Holidays',
           url: 'https://skyrayholidays.com',
-          telephone: '+919876543210',
+          telephone: '+919176357791',
         },
         ...(itinerary.length > 0
           ? {

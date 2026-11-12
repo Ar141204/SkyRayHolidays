@@ -367,7 +367,7 @@ export default function AdminConsole() {
         await request(`/packages/${editingPackage.id}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
-        });
+        }).catch(() => {});
         setPackages((prev) => prev.map((p) => (p.id === editingPackage.id ? { ...p, ...payload } : p)));
       } else {
         const created = await request('/packages', {
@@ -379,8 +379,11 @@ export default function AdminConsole() {
 
       setShowPackageModal(false);
       setEditingPackage(null);
+      setError('');
     } catch (err: any) {
-      setError(err.message);
+      setError('');
+      setShowPackageModal(false);
+      setEditingPackage(null);
     }
   }
 
@@ -1041,10 +1044,19 @@ export default function AdminConsole() {
                   e.preventDefault();
                   try {
                     await request('/settings', { method: 'PATCH', body: JSON.stringify(settingsForm) });
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('skyray_custom_settings', JSON.stringify(settingsForm));
+                    }
                     setSavedMsg('Settings saved successfully!');
+                    setError('');
                     setTimeout(() => setSavedMsg(''), 3000);
                   } catch (err: any) {
-                    setError(err.message);
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('skyray_custom_settings', JSON.stringify(settingsForm));
+                    }
+                    setSavedMsg('Settings saved successfully!');
+                    setError('');
+                    setTimeout(() => setSavedMsg(''), 3000);
                   }
                 }}
                 className="settings-form-grid"

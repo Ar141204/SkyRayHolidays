@@ -129,7 +129,7 @@ export function EnquiryScreen({ route, navigation }: any) {
               keyboardType="phone-pad"
               value={data.phone}
               onChangeText={(v) => set('phone', v)}
-              placeholder="+91 98765 43210"
+              placeholder="+91 91763 57791"
               placeholderTextColor="#94a3b8"
             />
           </View>

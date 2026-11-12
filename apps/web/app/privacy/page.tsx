@@ -68,9 +68,9 @@ export default function Privacy() {
           <br />
           SkyRay Holidays
           <br />
-          Email: <a href="mailto:privacy@skyrayholidays.com">privacy@skyrayholidays.com</a>
+          Email: <a href="mailto:syedrahamathullah@skyrayholidays.com">syedrahamathullah@skyrayholidays.com</a>
           <br />
-          Address: 123 Travel Street, Chennai, TN 600001, India
+          Phone: <a href="tel:+919176357791">+91 91763 57791</a> / <a href="tel:+966575490602">+966 57 549 0602</a>
         </div>
       </section>
     </div>

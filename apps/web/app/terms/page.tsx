@@ -62,7 +62,7 @@ export default function Terms() {
         <h2>7. Governing Law &amp; Jurisdiction</h2>
         <p>
           These terms and any disputes arising out of travel arrangements shall be governed by and construed in accordance with the laws
-          of India, with exclusive jurisdiction in the courts of Chennai, Tamil Nadu.
+          of India, with exclusive jurisdiction in the competent courts of law.
         </p>
       </section>
     </div>

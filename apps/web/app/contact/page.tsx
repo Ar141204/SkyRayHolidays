@@ -57,49 +57,52 @@ export default function Contact() {
 
       <section className="section container">
         <div className="contact-grid-wrap">
-          {/* Left Column: Contact Info Card matching Preview Screen 6 */}
+          {/* Left Column: Contact Info Card */}
           <div className="contact-info-card">
-            <h3>Contact Information</h3>
-            <p>Our team is available to assist you with tour planning, flights, and pilgrimage inquiries.</p>
+            <h3>Direct Contact Channels</h3>
+            <p>Our concierge team is available to assist you with tour planning, flights, and pilgrimage inquiries.</p>
 
             <div className="contact-details-list">
               <div className="c-item">
                 <div className="c-icon"><Phone size={18} /></div>
                 <div>
-                  <strong>Phone</strong>
-                  <a href={`tel:${contactDefaults.phone}`}>{contactDefaults.phone}</a>
+                  <strong>India Desk (Call &amp; WhatsApp)</strong>
+                  <a href="tel:+919176357791">+91 91763 57791</a>
+                </div>
+              </div>
+
+              <div className="c-item">
+                <div className="c-icon"><Phone size={18} /></div>
+                <div>
+                  <strong>Saudi Arabia &amp; Pilgrimage Desk</strong>
+                  <a href="tel:+966575490602">+966 57 549 0602</a>
                 </div>
               </div>
 
               <div className="c-item">
                 <div className="c-icon"><Mail size={18} /></div>
                 <div>
-                  <strong>Email</strong>
-                  <a href={`mailto:${contactDefaults.email}`}>{contactDefaults.email}</a>
-                </div>
-              </div>
-
-              <div className="c-item">
-                <div className="c-icon"><MapPin size={18} /></div>
-                <div>
-                  <strong>Address</strong>
-                  <span>{contactDefaults.address}</span>
+                  <strong>Official Email</strong>
+                  <a href="mailto:syedrahamathullah@skyrayholidays.com">syedrahamathullah@skyrayholidays.com</a>
                 </div>
               </div>
             </div>
 
-            {/* Embedded Stylized Map matching Preview Screen 6 */}
-            <div className="contact-map-frame">
-              <iframe
-                title="Office Location Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d124413.9189387431!2d80.14120377750838!3d13.047525492477148!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5265ea4f7d3361%3A0x6e61a70b6863d433!2sChennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
-                width="100%"
-                height="220"
-                style={{ border: 0, borderRadius: '4px' }}
-                allowFullScreen={false}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
+            {/* Instant WhatsApp Quick Connect Box */}
+            <div style={{ marginTop: '24px', padding: '18px', backgroundColor: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+              <strong style={{ color: '#166534', display: 'block', marginBottom: '6px' }}>Need an Instant Quotation?</strong>
+              <p style={{ fontSize: '13px', color: '#15803d', margin: '0 0 12px 0', lineHeight: 1.5 }}>
+                Chat directly with our destination specialists on WhatsApp for instant pricing, flight itineraries, and customized travel schedules.
+              </p>
+              <a
+                href="https://wa.me/919176357791?text=Hello%20SkyRay%20Holidays!%20I%20would%20like%20to%20plan%20a%20trip."
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary"
+                style={{ backgroundColor: '#25D366', borderColor: '#25D366', display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#ffffff' }}
+              >
+                Chat on WhatsApp (+91 91763 57791)
+              </a>
             </div>
           </div>
 
