@@ -36,6 +36,8 @@ export class EnquiriesService {
       if (!pkg) {
         throw new BadRequestException('Selected package is unavailable; please refresh and choose again');
       }
+    } else if (d.packageSlug && d.packageSlug !== 'not-sure') {
+      pkg = await this.db.package.findFirst({ where: { slug: d.packageSlug, status: 'PUBLISHED' } });
     }
 
     let attempts = 0;
@@ -53,7 +55,7 @@ export class EnquiriesService {
               email: d.email.trim().toLowerCase(),
               members: Number(d.members) || 1,
               packageId: pkg?.id,
-              packageNameSnapshot: pkg?.title || d.packageName || 'Not sure yet',
+              packageNameSnapshot: pkg?.title || d.packageName || (d.packageSlug === 'not-sure' ? 'Custom Planning Request' : 'Not sure yet'),
               preferredDate: date,
               days: Number(d.days) || 1,
               instructions: d.instructions?.trim() || null,

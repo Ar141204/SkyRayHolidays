@@ -55,20 +55,40 @@ export default function EnquiryForm() {
       const pkg = packages.find((p) => p.slug === form.packageSlug);
       const requestKey = (idempotencyKey.current ||= crypto.randomUUID());
 
+      const payload: Record<string, any> = {
+        fullName: form.fullName.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(),
+        members: Number(form.members) || 1,
+        preferredDate: form.preferredDate,
+        days: Number(form.days) || 1,
+        consent: Boolean(form.consent),
+        sourcePlatform: 'WEBSITE',
+      };
+
+      if (form.instructions?.trim()) {
+        payload.instructions = form.instructions.trim();
+      }
+
+      if (pkg?.id && !String(pkg.id).startsWith('pkg-') && !String(pkg.id).startsWith('demo-')) {
+        payload.packageId = pkg.id;
+      }
+      if (pkg?.title) {
+        payload.packageName = pkg.title;
+      } else if (form.packageSlug === 'not-sure') {
+        payload.packageName = 'Custom Planning Request';
+      }
+      if (form.packageSlug) {
+        payload.packageSlug = form.packageSlug;
+      }
+
       const res = await fetch(`${API_URL}/enquiries`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Idempotency-Key': requestKey,
         },
-        body: JSON.stringify({
-          ...form,
-          members: Number(form.members) || 1,
-          days: Number(form.days) || 1,
-          packageId: pkg?.id && !String(pkg.id).startsWith('pkg-') && !String(pkg.id).startsWith('demo-') ? pkg.id : undefined,
-          packageName: pkg?.title || (form.packageSlug === 'not-sure' ? 'Custom Planning Request' : undefined),
-          sourcePlatform: 'WEBSITE',
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
