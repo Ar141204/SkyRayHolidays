@@ -63,8 +63,8 @@ export default function PilgrimageExplorer() {
         </button>
       </div>
 
-      {/* Grid of Pilgrimage Cards (Economy and Premium) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(520px, 1fr))', gap: '28px' }}>
+      {/* Responsive Grid of Pilgrimage Cards (Economy and Premium) */}
+      <div className="pilgrim-cards-responsive-grid">
         {filteredPackages.map((pkg) => {
           const isPremium = pkg.category?.toLowerCase() === 'premium' || pkg.title.toLowerCase().includes('premium');
           const meccaImg =
@@ -114,10 +114,11 @@ export default function PilgrimageExplorer() {
 
               {/* Dual Holy Cities Image Showcase */}
               <div
+                className="pilgrim-dual-showcase"
                 style={{
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
-                  height: '220px',
+                  height: '210px',
                   position: 'relative',
                   backgroundColor: '#0f172a',
                   gap: '2px',
@@ -199,7 +200,7 @@ export default function PilgrimageExplorer() {
               </div>
 
               {/* Package Content & Inclusions */}
-              <div className="p-card-left" style={{ flex: 1, padding: '24px' }}>
+              <div className="p-card-left pilgrim-card-body" style={{ flex: 1 }}>
                 <div className="p-eyebrow" style={{ color: isPremium ? '#0284c7' : '#059669', fontWeight: 800 }}>
                   {pkg.category?.toUpperCase() || (isPremium ? 'PREMIUM TIER' : 'ECONOMY TIER')} &bull; {activeTab}
                 </div>

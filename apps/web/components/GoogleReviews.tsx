@@ -121,7 +121,7 @@ export default function GoogleReviews() {
         ))}
       </div>
 
-      <div style={{ marginTop: '18px', paddingTop: '14px', borderTop: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginTop: '18px', paddingTop: '14px', borderTop: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <span style={{ fontSize: '11.5px', color: '#64748b' }}>
           Melacavery, Kumbakonam, Tamil Nadu
         </span>
