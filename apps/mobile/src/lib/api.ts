@@ -247,15 +247,26 @@ export function getFallbackPackage(slug?: string): TourPackage {
   return found || FALLBACK_PACKAGES[0];
 }
 
-export async function getPackages(): Promise<TourPackage[]> {
+export async function getPackagesWithStatus(): Promise<{ packages: TourPackage[]; isOffline: boolean }> {
   try {
-    const r = await fetch(`${API}/packages`);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3500);
+    const r = await fetch(`${API}/packages`, { signal: controller.signal });
+    clearTimeout(timer);
     if (!r.ok) throw new Error('Unable to load packages');
     const data = await r.json();
-    return Array.isArray(data) && data.length > 0 ? data : FALLBACK_PACKAGES;
+    if (Array.isArray(data) && data.length > 0) {
+      return { packages: data, isOffline: false };
+    }
+    return { packages: FALLBACK_PACKAGES, isOffline: true };
   } catch {
-    return FALLBACK_PACKAGES;
+    return { packages: FALLBACK_PACKAGES, isOffline: true };
   }
+}
+
+export async function getPackages(): Promise<TourPackage[]> {
+  const res = await getPackagesWithStatus();
+  return res.packages;
 }
 
 export async function sendEnquiry(data: any, key: string) {

@@ -22,6 +22,8 @@ import {
   Clock,
   Eye,
   SlidersHorizontal,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { API_URL, contactDefaults } from '@/lib/config';
 
@@ -63,6 +65,24 @@ export default function AdminConsole() {
   // Filtering states
   const [enquiryStatusFilter, setEnquiryStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [copiedPkgId, setCopiedPkgId] = useState<string | null>(null);
+
+  function copyPackageQuote(pkg: any) {
+    const inclusions = Array.isArray(pkg.inclusions) ? pkg.inclusions.join('\n• ') : pkg.inclusions || 'Hotel accommodation, private sightseeing, transfers';
+    const text = `*${pkg.title}* - SkyRay Holidays\n` +
+      `📍 Destination: ${pkg.destination || 'Custom'}\n` +
+      `⏱ Duration: ${pkg.duration || '5 Days'}\n` +
+      `💰 Quotation: ${pkg.priceFrom ? `${pkg.currency || '$'}${pkg.priceFrom} per person` : 'Custom Quote on Enquiry'}\n\n` +
+      `*Key Inclusions:*\n• ${inclusions}\n\n` +
+      `Itinerary details: https://skyrayholidays.com/packages/${pkg.slug}\n` +
+      `Contact our travel specialists for custom dates, hotel upgrades & flight bookings!`;
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedPkgId(pkg.id);
+      setTimeout(() => setCopiedPkgId(null), 2500);
+    }
+  }
 
   // Modals
   const [showPackageModal, setShowPackageModal] = useState(false);
@@ -861,30 +881,50 @@ export default function AdminConsole() {
                           </span>
                         </td>
                         <td>
-                          <button
-                            className="btn btn-outline small"
-                            onClick={() => {
-                              setEditingPackage(pkg);
-                              setPackageFormData({
-                                title: pkg.title,
-                                slug: pkg.slug,
-                                destination: pkg.destination || 'Destination',
-                                kind: pkg.kind || 'TOUR',
-                                category: pkg.category || 'International',
-                                duration: pkg.duration || '5 Days',
-                                priceFrom: pkg.priceFrom ? String(pkg.priceFrom) : '',
-                                currency: pkg.currency || '$',
-                                summary: pkg.summary || '',
-                                description: pkg.description || '',
-                                image: pkg.image || '/images/destinations/dubai.jpg',
-                                inclusions: Array.isArray(pkg.inclusions) ? pkg.inclusions.join(', ') : 'Flight Tickets, Hotel Stay',
-                                exclusions: Array.isArray(pkg.exclusions) ? pkg.exclusions.join(', ') : 'Personal Expenses',
-                              });
-                              setShowPackageModal(true);
-                            }}
-                          >
-                            <Edit2 size={13} /> Edit
-                          </button>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                              className="btn btn-outline small"
+                              title="Copy formatted quotation for WhatsApp or Email"
+                              onClick={() => copyPackageQuote(pkg)}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              {copiedPkgId === pkg.id ? (
+                                <>
+                                  <Check size={13} color="#10b981" />
+                                  <span style={{ color: '#10b981' }}>Copied!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy size={13} />
+                                  <span>Copy Quote</span>
+                                </>
+                              )}
+                            </button>
+                            <button
+                              className="btn btn-outline small"
+                              onClick={() => {
+                                setEditingPackage(pkg);
+                                setPackageFormData({
+                                  title: pkg.title,
+                                  slug: pkg.slug,
+                                  destination: pkg.destination || 'Destination',
+                                  kind: pkg.kind || 'TOUR',
+                                  category: pkg.category || 'International',
+                                  duration: pkg.duration || '5 Days',
+                                  priceFrom: pkg.priceFrom ? String(pkg.priceFrom) : '',
+                                  currency: pkg.currency || '$',
+                                  summary: pkg.summary || '',
+                                  description: pkg.description || '',
+                                  image: pkg.image || '/images/destinations/dubai.jpg',
+                                  inclusions: Array.isArray(pkg.inclusions) ? pkg.inclusions.join(', ') : 'Flight Tickets, Hotel Stay',
+                                  exclusions: Array.isArray(pkg.exclusions) ? pkg.exclusions.join(', ') : 'Personal Expenses',
+                                });
+                                setShowPackageModal(true);
+                              }}
+                            >
+                              <Edit2 size={13} /> Edit
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

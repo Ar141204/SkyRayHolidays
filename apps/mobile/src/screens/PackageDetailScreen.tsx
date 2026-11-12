@@ -14,14 +14,24 @@ import { C, PrimaryButton, BrandHeader, Badge } from '../components/UI';
 
 export function PackageDetailScreen({ route, navigation }: any) {
   const [item, setItem] = useState<TourPackage | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
   const slug = route.params?.slug;
 
   useEffect(() => {
-    fetch(`${API}/packages/${slug}`)
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3500);
+
+    fetch(`${API}/packages/${slug}`, { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('Package not found'))))
-      .then(setItem)
+      .then((data) => {
+        clearTimeout(timer);
+        setItem(data);
+        setIsOffline(false);
+      })
       .catch(() => {
+        clearTimeout(timer);
         setItem(getFallbackPackage(slug));
+        setIsOffline(true);
       });
   }, [slug]);
 
@@ -71,14 +81,23 @@ export function PackageDetailScreen({ route, navigation }: any) {
         showsVerticalScrollIndicator={false}
       >
         {/* Back navigation link */}
-        <TouchableOpacity
-          style={s.backBar}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Text style={s.backArrow}>‹</Text>
-          <Text style={s.backText}>Back to all packages</Text>
-        </TouchableOpacity>
+        <View style={s.topNavRow}>
+          <TouchableOpacity
+            style={s.backBar}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Text style={s.backArrow}>‹</Text>
+            <Text style={s.backText}>Back to all packages</Text>
+          </TouchableOpacity>
+
+          {isOffline && (
+            <View style={s.offlineChip}>
+              <View style={s.offlineDot} />
+              <Text style={s.offlineChipText}>Verified Offline Cache</Text>
+            </View>
+          )}
+        </View>
 
         {/* Visual Travel Photo Hero Frame */}
         <View style={s.photoHeroFrame}>
@@ -226,11 +245,38 @@ const s = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 40,
   },
+  topNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
   backBar: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
-    marginBottom: 8,
+  },
+  offlineChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 5,
+    paddingHorizontal: 9,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  offlineDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#0ea5e9',
+    marginRight: 6,
+  },
+  offlineChipText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748b',
   },
   backArrow: {
     fontSize: 22,

@@ -30,9 +30,41 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const p = await getPackage(slug);
+  if (!p) {
+    return {
+      title: 'Package Not Found | SkyRay Holidays',
+      description: 'The requested travel package could not be found.',
+    };
+  }
+
+  const title = `${p.title} | SkyRay Holidays`;
+  const description = p.summary || p.description || 'Custom crafted itinerary with SkyRay Holidays.';
+  const imageUrl = p.image || '/images/destinations/dubai.jpg';
+
   return {
-    title: p?.title || 'Package Details | SkyRay Holidays',
-    description: p?.summary,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://skyrayholidays.com/packages/${p.slug}`,
+      siteName: 'SkyRay Holidays',
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 800,
+          alt: p.title,
+        },
+      ],
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
+    },
   };
 }
 
@@ -69,8 +101,73 @@ export default async function PackageDetail({
       : '/images/destinations/kashmir.jpg',
   ];
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: 'https://skyrayholidays.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Packages',
+            item: 'https://skyrayholidays.com/packages',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: p.title,
+            item: `https://skyrayholidays.com/packages/${p.slug}`,
+          },
+        ],
+      },
+      {
+        '@type': 'TouristTrip',
+        '@id': `https://skyrayholidays.com/packages/${p.slug}#trip`,
+        name: p.title,
+        description: p.description || p.summary,
+        touristType: p.kind === 'HAJJ' || p.kind === 'UMRAH' ? 'Pilgrim' : 'Leisure Traveler',
+        image: [`https://skyrayholidays.com${mainImage}`],
+        offers: {
+          '@type': 'Offer',
+          name: 'Custom Quote on Enquiry',
+          priceCurrency: 'INR',
+          price: '0',
+          priceValidUntil: '2026-12-31',
+          availability: 'https://schema.org/InStock',
+          url: `https://skyrayholidays.com/packages/${p.slug}`,
+        },
+        provider: {
+          '@type': 'TravelAgency',
+          name: 'SkyRay Holidays',
+          url: 'https://skyrayholidays.com',
+          telephone: '+919876543210',
+        },
+        ...(itinerary.length > 0
+          ? {
+              itinerary: itinerary.map((day: any, i: number) => ({
+                '@type': 'TouristTrip',
+                name: day.day || `Day ${i + 1}`,
+                description: day.description || day.title,
+              })),
+            }
+          : {}),
+      },
+    ],
+  };
+
   return (
     <div className="package-detail-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Top Breadcrumb & Hero */}
       <section className="detail-top-strip">
         <div className="container">

@@ -117,3 +117,4 @@ SkyRay Holidays is a bespoke travel and pilgrimage concierge. The visual languag
 2. **No E-Commerce Cart Metaphors**: Travel packages are high-consideration bespoke bookings. Do not introduce cart icons, checkout funnels, or deceptive "Rs. 99" price tags.
 3. **No Low-Contrast Overlays**: Hero text over photographic backgrounds must always include a minimum 40%-88% linear dark gradient overlay to guarantee WCAG 2.2 AA compliance ($>4.5:1$).
 4. **No Unbounded Mobile Tap Targets**: All clickable icons, chips, and buttons must reserve at least $44\times 44\,\text{pt}$ hit areas to avoid touch congestion.
+

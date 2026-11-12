@@ -9,7 +9,7 @@ import {
   TextInput,
   Image,
 } from 'react-native';
-import { getPackages, TourPackage, getPackageImage } from '../lib/api';
+import { getPackagesWithStatus, TourPackage, getPackageImage } from '../lib/api';
 import { C, BrandHeader, Badge } from '../components/UI';
 
 const CATEGORIES = [
@@ -25,11 +25,18 @@ export function PackagesScreen({ navigation }: any) {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
-    getPackages()
-      .then(setItems)
-      .catch((e) => setError(e.message))
+    getPackagesWithStatus()
+      .then((res) => {
+        setItems(res.packages);
+        setIsOffline(res.isOffline);
+      })
+      .catch((e) => {
+        setError(e.message);
+        setIsOffline(true);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -114,6 +121,16 @@ export function PackagesScreen({ navigation }: any) {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Discreet Offline Notice Banner */}
+        {isOffline && (
+          <View style={s.offlineBanner}>
+            <View style={s.offlineDot} />
+            <Text style={s.offlineText}>
+              Offline Catalog &bull; Showing 14 verified travel itineraries
+            </Text>
+          </View>
+        )}
       </View>
 
       {loading ? (
@@ -553,5 +570,29 @@ const s = StyleSheet.create({
     color: '#ffffff',
     fontSize: 13,
     fontWeight: '700',
+  },
+  offlineBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  offlineDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#0ea5e9',
+    marginRight: 8,
+  },
+  offlineText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748b',
+    letterSpacing: 0.1,
   },
 });
