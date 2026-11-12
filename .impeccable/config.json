@@ -1,0 +1,19 @@
+{
+  "name": "SkyRay Holidays",
+  "platform": "adaptive",
+  "frameworks": ["nextjs", "react-native-expo", "nestjs"],
+  "paths": {
+    "web": "apps/web",
+    "mobile": "apps/mobile",
+    "api": "apps/api"
+  },
+  "ignore": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/.expo/**",
+    "**/dist/**"
+  ],
+  "live": {
+    "url": "http://localhost:3000"
+  }
+}

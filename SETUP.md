@@ -297,3 +297,4 @@ Check that `DATABASE_URL` matches the user, password, and database specified in 
 npm run db:generate
 ```
 Restart the API server afterwards.
+

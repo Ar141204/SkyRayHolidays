@@ -1,0 +1,6 @@
+{
+  "port": 3000,
+  "framework": "nextjs",
+  "url": "http://localhost:3000",
+  "appDir": "apps/web"
+}
