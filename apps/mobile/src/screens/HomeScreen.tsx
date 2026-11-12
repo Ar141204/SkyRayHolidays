@@ -131,7 +131,7 @@ export function HomeScreen({ navigation }: any) {
               <View style={s.heroActions}>
                 <TouchableOpacity
                   style={s.heroPrimaryBtn}
-                  onPress={() => navigation.navigate('Packages')}
+                  onPress={() => navigation.navigate('Services', { initialTab: 'packages' })}
                   activeOpacity={0.85}
                 >
                   <Text style={s.heroPrimaryBtnText}>Explore Packages</Text>
@@ -199,7 +199,7 @@ export function HomeScreen({ navigation }: any) {
             <Text style={s.sectionTitle}>Our Specialized Key Destinations</Text>
           </View>
           <TouchableOpacity
-            onPress={() => navigation.navigate('Packages')}
+            onPress={() => navigation.navigate('Services', { initialTab: 'packages' })}
             style={s.seeAllLink}
             activeOpacity={0.7}
           >
@@ -297,11 +297,11 @@ export function HomeScreen({ navigation }: any) {
             <Text style={s.sectionTitle}>International Visa Services</Text>
           </View>
           <TouchableOpacity
-            onPress={() => navigateToEnquiry({ service: 'visa' })}
+            onPress={() => navigation.navigate('Services', { initialTab: 'visa' })}
             style={s.seeAllLink}
             activeOpacity={0.7}
           >
-            <Text style={s.seeAllText}>Visa Enquiry</Text>
+            <Text style={s.seeAllText}>View All Visas</Text>
             <Ionicons name="chevron-forward" size={14} color="#0284c7" />
           </TouchableOpacity>
         </View>

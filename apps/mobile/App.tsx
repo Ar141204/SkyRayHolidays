@@ -9,6 +9,7 @@ import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 
 import { HomeScreen } from './src/screens/HomeScreen';
+import { ServicesScreen } from './src/screens/ServicesScreen';
 import { PackagesScreen } from './src/screens/PackagesScreen';
 import { PilgrimageScreen } from './src/screens/PilgrimageScreen';
 import { ContactScreen, ReviewsScreen, AboutScreen } from './src/screens/InfoScreens';
@@ -40,7 +41,9 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 
 export type RootStackParamList = {
   Tabs: undefined;
-  Enquiry: { packageId?: string; packageName?: string } | undefined;
+  Services: { initialTab?: 'all' | 'packages' | 'visa' } | undefined;
+  Packages: { initialTab?: 'all' | 'packages' | 'visa' } | undefined;
+  Enquiry: { packageId?: string; packageName?: string; service?: string; country?: string; visaCategory?: string } | undefined;
   PackageDetail: { slug: string };
   About: undefined;
 };
@@ -81,8 +84,8 @@ function Tabs() {
 
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Packages') {
-            iconName = focused ? 'airplane' : 'airplane-outline';
+          } else if (route.name === 'Services' || route.name === 'Packages') {
+            iconName = focused ? 'layers' : 'layers-outline';
           } else if (route.name === 'Hajj & Umrah') {
             iconName = focused ? 'moon' : 'moon-outline';
           } else if (route.name === 'Contact') {
@@ -113,7 +116,11 @@ function Tabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Packages" component={PackagesScreen} />
+      <Tab.Screen
+        name="Services"
+        component={ServicesScreen}
+        options={{ tabBarLabel: 'Services' }}
+      />
       <Tab.Screen name="Hajj & Umrah" component={PilgrimageScreen} />
       <Tab.Screen name="Contact" component={ContactScreen} />
       <Tab.Screen name="Reviews" component={ReviewsScreen} />
@@ -159,6 +166,17 @@ export default function App() {
           }}
         >
           <Stack.Screen name="Tabs" component={Tabs} options={{ headerShown: false }} />
+          <Stack.Screen
+            name="Services"
+            component={ServicesScreen}
+            options={{ title: 'Tour & Visa Services' }}
+          />
+          <Stack.Screen
+            name="Packages"
+            component={ServicesScreen}
+            initialParams={{ initialTab: 'packages' }}
+            options={{ title: 'Tour Packages' }}
+          />
           <Stack.Screen
             name="Enquiry"
             component={EnquiryScreen}
