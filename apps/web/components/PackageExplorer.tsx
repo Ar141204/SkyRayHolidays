@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Search, MapPin, Clock3, ArrowUpRight, Star } from 'lucide-react';
 import { API_URL, demoPackages, type PackageItem } from '@/lib/config';
 
-const PRESET_CATEGORIES = ['All', 'Domestic', 'International', 'Family', 'Honeymoon', 'Adventure'];
+const PRESET_CATEGORIES = ['All', 'Specialized Destinations', 'International', 'Domestic', 'Honeymoon', 'Family'];
 
 export default function PackageExplorer() {
   const [items, setItems] = useState<PackageItem[]>([]);
@@ -37,12 +37,27 @@ export default function PackageExplorer() {
 
   const shown = useMemo(() => {
     let list = items.filter((x) => {
-      const matchKind = kindFilter === 'All' || x.kind === kindFilter;
+      // Exclude Hajj and Umrah packages: they have their own dedicated Hajj & Umrah page!
+      if (x.kind === 'HAJJ' || x.kind === 'UMRAH') return false;
+
+      const isSpecialized =
+        x.category === 'Specialized' ||
+        ['reunion', 'russia', 'turkey', 'mauritius', 'maldives', 'seychelles', 'armenia', 'georgia', 'azerbaijan'].some(
+          (k) => x.slug?.toLowerCase().includes(k) || x.destination?.toLowerCase().includes(k)
+        );
+
+      const matchKind =
+        kindFilter === 'All' ||
+        (kindFilter === 'Specialized' && isSpecialized) ||
+        (kindFilter === 'International' && x.category !== 'Domestic') ||
+        (kindFilter === 'Domestic' && x.category === 'Domestic');
+
       const matchCategory =
         activeCategory === 'All' ||
-        (x.category && x.category.toLowerCase() === activeCategory.toLowerCase()) ||
-        (activeCategory === 'International' && x.kind === 'TOUR' && x.category !== 'Domestic') ||
-        (activeCategory === 'Domestic' && x.category === 'Domestic');
+        (activeCategory === 'Specialized Destinations' && isSpecialized) ||
+        (activeCategory === 'International' && x.category !== 'Domestic') ||
+        (activeCategory === 'Domestic' && x.category === 'Domestic') ||
+        (x.category && x.category.toLowerCase() === activeCategory.toLowerCase());
 
       const text = `${x.title} ${x.destination} ${x.summary} ${x.category || ''}`.toLowerCase();
       const matchSearch = !search.trim() || text.includes(search.toLowerCase());
@@ -65,7 +80,7 @@ export default function PackageExplorer() {
 
   return (
     <div className="packages-explorer-wrap">
-      {/* Search and Dropdowns Bar matching Preview Screen 3 */}
+      {/* Search and Dropdowns Bar */}
       <div className="search-filter-bar">
         <div className="search-input-box">
           <Search size={18} className="search-icon" />
@@ -73,7 +88,7 @@ export default function PackageExplorer() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search packages or destinations..."
+            placeholder="Search packages (e.g. Turkey, Russia, Maldives, Georgia)..."
             aria-label="Search packages"
           />
         </div>
@@ -84,10 +99,10 @@ export default function PackageExplorer() {
             onChange={(e) => setKindFilter(e.target.value)}
             className="filter-dropdown"
           >
-            <option value="All">All Categories</option>
-            <option value="TOUR">Tour Holidays</option>
-            <option value="HAJJ">Hajj Packages</option>
-            <option value="UMRAH">Umrah Packages</option>
+            <option value="All">All Types</option>
+            <option value="Specialized">Specialized Key Destinations</option>
+            <option value="International">International Escapes</option>
+            <option value="Domestic">Within India</option>
           </select>
 
           <select
@@ -107,7 +122,7 @@ export default function PackageExplorer() {
         </div>
       </div>
 
-      {/* Category Filter Pills matching Preview Screen 3 */}
+      {/* Category Filter Pills */}
       <div className="category-pills-row">
         {PRESET_CATEGORIES.map((cat) => (
           <button

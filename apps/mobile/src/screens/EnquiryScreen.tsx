@@ -16,20 +16,29 @@ import { Ionicons } from '@expo/vector-icons';
 import { ORDERED_COUNTRIES } from '../lib/countries';
 
 const FEATURED_PACKAGES = [
+  'Economy Hajj Package',
+  'Premium Hajj Package',
+  'Economy Umrah Package',
+  'Premium Umrah Package',
+  'Reunion Island Tropical Discovery',
+  'Russia Grand Explorer',
+  'Turkey Tour - Istanbul & Cappadocia',
+  'Mauritius Paradise Island Getaway',
+  'Maldives Luxury Lagoon',
+  'Seychelles Pristine Archipelago',
+  'Armenia Ancient Heritage & Lakes',
+  'Georgia Caucasus Wonder',
+  'Azerbaijan Land of Fire',
   'Dubai Holiday Package',
-  'Andaman Island Discovery',
-  'Bali Escape',
-  'Europe Tour',
-  'Goa Coastal Getaway',
-  'Golden Triangle & Royal Heritage',
   'Kashmir Paradise Experience',
   'Kerala God’s Own Country',
-  'Maldives Luxury Lagoon',
-  'Nepal Himalayan Splendor',
-  'Premium Hajj Package',
-  'Premium Umrah Package',
+  'Golden Triangle & Royal Heritage',
+  'Andaman Island Discovery',
+  'Goa Coastal Getaway',
   'Sri Lanka Wonder Island',
-  'Turkey Tour',
+  'Nepal Himalayan Splendor',
+  'Bali Escape',
+  'Europe Tour',
   'Customized Multi-Destination Tour',
   'Not sure yet (Help me plan)',
 ];
@@ -46,6 +55,9 @@ export function EnquiryScreen({ route, navigation }: any) {
     phone: '',
     email: '',
     packageName: route.params?.packageName || 'Dubai Holiday Package',
+    tier: route.params?.tier || 'Premium',
+    adults: '2',
+    kids: '0',
     preferredDate: '',
     members: '2',
     instructions: '',
@@ -53,6 +65,7 @@ export function EnquiryScreen({ route, navigation }: any) {
   });
   const [busy, setBusy] = useState(false);
   const [showPkgPicker, setShowPkgPicker] = useState(false);
+  const [showTierPicker, setShowTierPicker] = useState(false);
   const [pkgSearch, setPkgSearch] = useState('');
 
   const set = (k: string, v: string) => {
@@ -70,11 +83,15 @@ export function EnquiryScreen({ route, navigation }: any) {
     setBusy(true);
     try {
       const key = (idempotencyKey.current ||= `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      const totalMembers = (Number(data.adults) || 1) + (Number(data.kids) || 0);
       const res = await sendEnquiry(
         {
           ...data,
           email: data.email.trim() || 'traveller@example.com',
-          members: Number(data.members) || 2,
+          members: totalMembers,
+          adults: Number(data.adults) || 1,
+          kids: Number(data.kids) || 0,
+          tier: data.tier,
           days: 5,
           consent: true,
           sourcePlatform: Platform.OS === 'ios' ? 'IOS' : 'ANDROID',
@@ -255,6 +272,37 @@ export function EnquiryScreen({ route, navigation }: any) {
             )}
           </View>
 
+          {/* Package Category / Tier */}
+          <View style={s.field}>
+            <Text style={s.label}>Package Category / Tier *</Text>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                style={[
+                  s.input,
+                  { flex: 1, alignItems: 'center', justifyContent: 'center' },
+                  data.tier === 'Premium' && { backgroundColor: '#0284c7', borderColor: '#0284c7' },
+                ]}
+                onPress={() => set('tier', 'Premium')}
+              >
+                <Text style={{ fontWeight: '800', color: data.tier === 'Premium' ? '#ffffff' : '#334155', fontSize: 13 }}>
+                  ★ Premium (5-Star / VIP)
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  s.input,
+                  { flex: 1, alignItems: 'center', justifyContent: 'center' },
+                  data.tier === 'Economy' && { backgroundColor: '#0284c7', borderColor: '#0284c7' },
+                ]}
+                onPress={() => set('tier', 'Economy')}
+              >
+                <Text style={{ fontWeight: '800', color: data.tier === 'Economy' ? '#ffffff' : '#334155', fontSize: 13 }}>
+                  Economy (Comfort)
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           {/* Travel Date */}
           <View style={s.field}>
             <Text style={s.label}>Preferred Travel Date / Month *</Text>
@@ -267,17 +315,30 @@ export function EnquiryScreen({ route, navigation }: any) {
             />
           </View>
 
-          {/* Travelers Count */}
-          <View style={s.field}>
-            <Text style={s.label}>Number of Travelers</Text>
-            <TextInput
-              style={s.input}
-              keyboardType="number-pad"
-              value={data.members}
-              onChangeText={(v) => set('members', v)}
-              placeholder="2"
-              placeholderTextColor="#94a3b8"
-            />
+          {/* Travelers Breakdown (Adults & Kids) */}
+          <View style={[s.field, { flexDirection: 'row', gap: 10 }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={s.label}>No. of Adults (12+ yrs) *</Text>
+              <TextInput
+                style={s.input}
+                keyboardType="number-pad"
+                value={data.adults}
+                onChangeText={(v) => set('adults', v)}
+                placeholder="2"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.label}>No. of Kids (Under 12)</Text>
+              <TextInput
+                style={s.input}
+                keyboardType="number-pad"
+                value={data.kids}
+                onChangeText={(v) => set('kids', v)}
+                placeholder="0"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
           </View>
 
           {/* Special Requests */}

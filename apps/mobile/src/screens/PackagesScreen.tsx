@@ -16,9 +16,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 const CATEGORIES: { id: string; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'All', label: 'All Escapes', icon: 'compass-outline' },
-  { id: 'Domestic', label: 'Within India', icon: 'map-outline' },
+  { id: 'Specialized', label: 'Specialized Keys', icon: 'star-outline' },
   { id: 'International', label: 'International', icon: 'airplane-outline' },
-  { id: 'Pilgrimage', label: 'Pilgrimage', icon: 'moon-outline' },
+  { id: 'Domestic', label: 'Within India', icon: 'map-outline' },
 ];
 
 export function PackagesScreen({ navigation }: any) {
@@ -44,8 +44,18 @@ export function PackagesScreen({ navigation }: any) {
 
   const filtered = useMemo(() => {
     return items.filter((p) => {
+      // Exclude Hajj and Umrah packages: they have their own dedicated Hajj & Umrah screen!
+      if (p.kind === 'HAJJ' || p.kind === 'UMRAH') return false;
+
+      const isSpecialized =
+        p.category === 'Specialized' ||
+        ['reunion', 'russia', 'turkey', 'mauritius', 'maldives', 'seychelles', 'armenia', 'georgia', 'azerbaijan'].some(
+          (k) => p.slug?.toLowerCase().includes(k) || p.destination?.toLowerCase().includes(k)
+        );
+
       const matchesCategory =
         activeCategory === 'All' ||
+        (activeCategory === 'Specialized' && isSpecialized) ||
         (activeCategory === 'Domestic' &&
           (p.category === 'Domestic' ||
             p.destination.includes('India') ||
@@ -55,9 +65,7 @@ export function PackagesScreen({ navigation }: any) {
             p.slug.includes('andaman') ||
             p.slug.includes('goa'))) ||
         (activeCategory === 'International' &&
-          (p.category === 'International' || (!p.category && p.kind === 'TOUR'))) ||
-        (activeCategory === 'Pilgrimage' &&
-          (p.kind === 'HAJJ' || p.kind === 'UMRAH' || p.category === 'Pilgrimage'));
+          (p.category === 'International' || (!p.category && p.kind === 'TOUR')));
 
       const matchesSearch =
         !searchQuery.trim() ||

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
 
 const links = [
@@ -15,17 +16,18 @@ const links = [
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="site-header">
       <div className="nav-wrap">
-        {/* Left Corner: Large Brand Logo */}
+        {/* Left Corner: Extra Large Brand Logo */}
         <Link href="/" className="brand" aria-label="SkyRay Holidays Home">
           <Image
             src="/brand/skyray-logo.png"
             alt="SkyRay Holidays"
-            width={110}
-            height={95}
+            width={130}
+            height={110}
             className="brand-logo-img"
             priority
           />
@@ -33,11 +35,22 @@ export default function SiteHeader() {
 
         {/* Center: Navigation Links */}
         <nav className={open ? 'nav-links open' : 'nav-links'}>
-          {links.map((x) => (
-            <Link key={x.href} href={x.href} onClick={() => setOpen(false)}>
-              {x.label}
-            </Link>
-          ))}
+          {links.map((x) => {
+            const isActive =
+              x.href === '/'
+                ? pathname === '/'
+                : pathname === x.href || pathname?.startsWith(`${x.href}/`);
+            return (
+              <Link
+                key={x.href}
+                href={x.href}
+                className={isActive ? 'nav-link active' : 'nav-link'}
+                onClick={() => setOpen(false)}
+              >
+                {x.label}
+              </Link>
+            );
+          })}
           <div className="mobile-menu-actions">
             <Link className="btn btn-primary" href="/enquire" onClick={() => setOpen(false)}>
               Enquire Now <ArrowUpRight size={16} />

@@ -32,6 +32,23 @@ export class CreateEnquiryDto {
   members!: number;
 
   @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  adults?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  kids?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  tier?: string;
+
+  @IsOptional()
   @IsString()
   packageId?: string;
 

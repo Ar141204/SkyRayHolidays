@@ -13,6 +13,7 @@ export type PublicSettings = {
   hours?: string;
   mapUrl?: string;
   whatsappMessage?: string;
+  googleReviewsUrl?: string;
 };
 
 export function usePublicSettings() {

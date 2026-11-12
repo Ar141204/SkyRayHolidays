@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export function PilgrimageScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState<'ALL' | 'HAJJ' | 'UMRAH'>('ALL');
+  const [tierFilter, setTierFilter] = useState<'ALL' | 'PREMIUM' | 'ECONOMY'>('ALL');
 
   const navigateToEnquiry = (packageName: string) => {
     (navigation.getParent?.() || navigation).navigate('Enquiry', { packageName });

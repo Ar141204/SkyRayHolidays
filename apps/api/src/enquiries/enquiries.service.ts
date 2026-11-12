@@ -40,15 +40,28 @@ export class EnquiriesService {
       pkg = await this.db.package.findFirst({ where: { slug: d.packageSlug, status: 'PUBLISHED' } });
     }
 
+    const tierLabel = d.tier && d.tier !== 'any' ? ` [${d.tier.toUpperCase()}]` : '';
     const packageNameSnapshot =
-      pkg?.title ||
-      (d.country ? `${d.country} Tour Package` : null) ||
-      d.packageName ||
+      (pkg?.title ? `${pkg.title}${tierLabel}` : null) ||
+      (d.country ? `${d.country} Tour Package${tierLabel}` : null) ||
+      (d.packageName ? `${d.packageName}${tierLabel}` : null) ||
       (d.packageSlug === 'not-sure' ? 'Custom Planning Request' : 'Not sure yet');
 
     let finalInstructions = d.instructions?.trim() || null;
+    const extraDetails: string[] = [];
     if (d.country && (!finalInstructions || !finalInstructions.includes(d.country))) {
-      finalInstructions = finalInstructions ? `Destination: ${d.country}\n${finalInstructions}` : `Destination: ${d.country}`;
+      extraDetails.push(`Destination: ${d.country}`);
+    }
+    if (d.tier && d.tier !== 'any') {
+      extraDetails.push(`Package Tier: ${d.tier.toUpperCase()}`);
+    }
+    if (d.adults !== undefined || d.kids !== undefined) {
+      extraDetails.push(`Travelers: ${d.adults || 1} Adults, ${d.kids || 0} Kids`);
+    }
+
+    if (extraDetails.length > 0) {
+      const extraText = extraDetails.join(' | ');
+      finalInstructions = finalInstructions ? `${extraText}\n${finalInstructions}` : extraText;
     }
 
     let attempts = 0;

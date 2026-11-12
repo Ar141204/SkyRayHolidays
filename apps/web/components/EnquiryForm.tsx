@@ -11,7 +11,9 @@ const initial = {
   fullName: '',
   phone: '',
   email: '',
-  members: '2',
+  adults: '2',
+  kids: '0',
+  packageTier: 'any',
   packageSlug: '',
   preferredDate: '',
   days: '5',
@@ -32,13 +34,25 @@ export default function EnquiryForm() {
   useEffect(() => {
     const slug = params.get('package') || '';
     const countryParam = params.get('country') || '';
+    const tierParam = params.get('tier') || '';
+
     if (slug) {
-      setForm((x) => ({ ...x, packageSlug: slug }));
+      setForm((x) => ({
+        ...x,
+        packageSlug: slug,
+        packageTier: tierParam ? tierParam.toLowerCase() : x.packageTier,
+      }));
     } else if (countryParam) {
       const match = getCountryByNameOrSlug(countryParam);
       if (match) {
-        setForm((x) => ({ ...x, packageSlug: `country-${match.slug}` }));
+        setForm((x) => ({
+          ...x,
+          packageSlug: `country-${match.slug}`,
+          packageTier: tierParam ? tierParam.toLowerCase() : x.packageTier,
+        }));
       }
+    } else if (tierParam) {
+      setForm((x) => ({ ...x, packageTier: tierParam.toLowerCase() }));
     }
 
     fetch(`${API_URL}/packages`)
@@ -67,11 +81,18 @@ export default function EnquiryForm() {
       );
       const requestKey = (idempotencyKey.current ||= crypto.randomUUID());
 
+      const numAdults = Number(form.adults) || 1;
+      const numKids = Number(form.kids) || 0;
+      const totalMembers = numAdults + numKids;
+
       const payload: Record<string, any> = {
         fullName: form.fullName.trim(),
         phone: form.phone.trim(),
         email: form.email.trim(),
-        members: Number(form.members) || 1,
+        members: totalMembers,
+        adults: numAdults,
+        kids: numKids,
+        tier: form.packageTier,
         preferredDate: form.preferredDate,
         days: Number(form.days) || 1,
         consent: Boolean(form.consent),
@@ -116,14 +137,20 @@ export default function EnquiryForm() {
       }
 
       const finalRef = data.reference || data.enquiryReference || `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`;
-      const displayTitle = pkg?.title || (selectedCountry ? `${selectedCountry.name} Holiday Package` : (form.packageSlug === 'not-sure' ? 'Custom Planning Request' : form.packageSlug));
+      const tierBadge = form.packageTier && form.packageTier !== 'any' ? ` (${form.packageTier.toUpperCase()})` : '';
+      const displayTitle = (pkg?.title ? `${pkg.title}${tierBadge}` : null) || (selectedCountry ? `${selectedCountry.name} Holiday Package` : (form.packageSlug === 'not-sure' ? 'Custom Planning Request' : form.packageSlug));
       setReference(finalRef);
-      setSubmittedData({ ...form, reference: finalRef, packageTitle: displayTitle, country: selectedCountry?.name });
+      setSubmittedData({
+        ...form,
+        reference: finalRef,
+        packageTitle: displayTitle,
+        country: selectedCountry?.name,
+        members: totalMembers,
+      });
       setState('success');
       idempotencyKey.current = null;
       setForm(initial);
     } catch (err: any) {
-      // In offline / preview fallback, provide a simulated confirmation
       if (err.message && !err.message.includes('fetch')) {
         setMessage(err.message);
         setState('error');
@@ -133,9 +160,18 @@ export default function EnquiryForm() {
           (c) => `country-${c.slug}` === form.packageSlug || c.slug === form.packageSlug
         );
         const pkg = packages.find((p) => p.slug === form.packageSlug);
-        const displayTitle = pkg?.title || (selectedCountry ? `${selectedCountry.name} Holiday Package` : (form.packageSlug === 'not-sure' ? 'Custom Planning Request' : form.packageSlug));
+        const tierBadge = form.packageTier && form.packageTier !== 'any' ? ` (${form.packageTier.toUpperCase()})` : '';
+        const displayTitle = (pkg?.title ? `${pkg.title}${tierBadge}` : null) || (selectedCountry ? `${selectedCountry.name} Holiday Package` : (form.packageSlug === 'not-sure' ? 'Custom Planning Request' : form.packageSlug));
+        const numAdults = Number(form.adults) || 1;
+        const numKids = Number(form.kids) || 0;
         setReference(fallbackRef);
-        setSubmittedData({ ...form, reference: fallbackRef, packageTitle: displayTitle, country: selectedCountry?.name });
+        setSubmittedData({
+          ...form,
+          reference: fallbackRef,
+          packageTitle: displayTitle,
+          country: selectedCountry?.name,
+          members: numAdults + numKids,
+        });
         setState('success');
       }
     }
@@ -257,14 +293,25 @@ export default function EnquiryForm() {
         </label>
 
         <label>
-          Number of Members *
+          No. of Adults (12+ yrs) *
           <input
             required
             type="number"
             min="1"
             max="100"
-            value={form.members}
-            onChange={(e) => update('members', e.target.value)}
+            value={form.adults}
+            onChange={(e) => update('adults', e.target.value)}
+          />
+        </label>
+
+        <label>
+          No. of Kids (Under 12 yrs)
+          <input
+            type="number"
+            min="0"
+            max="50"
+            value={form.kids}
+            onChange={(e) => update('kids', e.target.value)}
           />
         </label>
 
@@ -278,12 +325,33 @@ export default function EnquiryForm() {
             <option value="">Choose a package or destination country...</option>
             <option value="not-sure">✨ Not sure yet — help me plan a custom trip</option>
 
-            <optgroup label="🌟 Featured Tour & Pilgrimage Packages">
-              {[...packages]
+            <optgroup label="🕋 Hajj &amp; Umrah Pilgrimage Packages">
+              {packages
+                .filter((p) => p.kind === 'HAJJ' || p.kind === 'UMRAH')
+                .map((p) => (
+                  <option value={p.slug} key={p.id || p.slug}>
+                    {p.title} · {p.category || p.kind} Tier
+                  </option>
+                ))}
+            </optgroup>
+
+            <optgroup label="🌟 Our Specialized Key Destinations">
+              {packages
+                .filter((p) => p.category === 'Specialized')
+                .map((p) => (
+                  <option value={p.slug} key={p.id || p.slug}>
+                    {p.title} · {p.destination}
+                  </option>
+                ))}
+            </optgroup>
+
+            <optgroup label="✈️ Other Holiday Escapes">
+              {packages
+                .filter((p) => p.kind === 'TOUR' && p.category !== 'Specialized')
                 .sort((a, b) => (a.title || '').localeCompare(b.title || ''))
                 .map((p) => (
                   <option value={p.slug} key={p.id || p.slug}>
-                    {p.title} · {p.destination} ({p.currency || '$'}{p.priceFrom ? p.priceFrom.toLocaleString('en-IN') : 'Enquiry'})
+                    {p.title} · {p.destination}
                   </option>
                 ))}
             </optgroup>
@@ -295,6 +363,18 @@ export default function EnquiryForm() {
                 </option>
               ))}
             </optgroup>
+          </select>
+        </label>
+
+        <label className="span-2">
+          Package Category / Tier (Economy / Premium) *
+          <select
+            value={form.packageTier}
+            onChange={(e) => update('packageTier', e.target.value)}
+          >
+            <option value="any">Flexible / Recommended Tier</option>
+            <option value="economy">Economy Package (Value, Clean Stays &amp; Comfort)</option>
+            <option value="premium">Premium Package (5-Star Luxury, Haram View &amp; VIP)</option>
           </select>
         </label>
 

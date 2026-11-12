@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { Star, MapPin } from 'lucide-react';
 import { usePublicSettings } from './ContactDetails';
 import { contactDefaults } from '@/lib/config';
 
@@ -10,29 +11,58 @@ export default function SiteFooter() {
   const phone = s.phone || contactDefaults.phone;
   const email = s.email || contactDefaults.email;
   const address = s.address || contactDefaults.address;
+  const reviewsUrl = s.googleReviewsUrl || contactDefaults.googleReviewsUrl;
 
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
-        <div>
-          <Image src="/brand/skyray-logo.png" alt="SkyRay Holidays" width={80} height={70} style={{ width: 'auto', height: '68px', objectFit: 'contain' }} />
+        <div className="footer-brand-col">
+          <Image
+            src="/brand/skyray-logo.png"
+            alt="SkyRay Holidays"
+            width={120}
+            height={90}
+            className="footer-logo-img"
+          />
           <p>
-            Thoughtful journeys, meaningful experiences. Discover your next holiday or sacred pilgrimage with SkyRay Holidays.
+            Thoughtful journeys, meaningful experiences. Discover your next dream holiday or sacred pilgrimage with SkyRay Holidays.
           </p>
+
+          {/* Official Google Reviews Badge */}
+          <a
+            href={reviewsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-reviews-badge"
+          >
+            <div className="reviews-stars-row">
+              <Star size={14} fill="#f59e0b" color="#f59e0b" />
+              <Star size={14} fill="#f59e0b" color="#f59e0b" />
+              <Star size={14} fill="#f59e0b" color="#f59e0b" />
+              <Star size={14} fill="#f59e0b" color="#f59e0b" />
+              <Star size={14} fill="#f59e0b" color="#f59e0b" />
+            </div>
+            <span className="reviews-badge-text">
+              <strong>5.0 Rating</strong> on Google Reviews ↗
+            </span>
+          </a>
         </div>
 
         <div>
           <h4>Explore</h4>
           <Link href="/packages">Tour Packages</Link>
           <Link href="/hajj-umrah">Hajj &amp; Umrah</Link>
+          <Link href="/packages?category=Specialized">Specialized Key Destinations</Link>
           <Link href="/about">About Us</Link>
-          <Link href="/packages?kind=TOUR">International Tours</Link>
         </div>
 
         <div>
           <h4>Plan With Us</h4>
           <Link href="/enquire">Send an Enquiry</Link>
-          <Link href="/contact">Contact</Link>
+          <Link href="/contact">Contact &amp; Support</Link>
+          <a href={reviewsUrl} target="_blank" rel="noopener noreferrer">
+            Google Reviews &amp; Maps
+          </a>
           <Link href="/privacy">Privacy Notice</Link>
           <Link href="/terms">Terms of Use</Link>
         </div>
@@ -44,14 +74,17 @@ export default function SiteFooter() {
           <a href="mailto:syedrahamathullah@skyrayholidays.com">syedrahamathullah@skyrayholidays.com</a>
           {address ? <p>{address}</p> : null}
           <Link href="/contact" className="text-link">
-            Contact our team →
+            Contact our concierge team →
           </Link>
         </div>
       </div>
 
       <div className="container footer-bottom">
         <span>© {new Date().getFullYear()} SkyRay Holidays. All rights reserved.</span>
-        <span>Explore · Travel · Experience</span>
+        <a href={reviewsUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+          ⭐ Official Google Business Profile &bull; SkyRay Holidays
+        </a>
+        <span>Explore &bull; Travel &bull; Experience</span>
       </div>
     </footer>
   );
