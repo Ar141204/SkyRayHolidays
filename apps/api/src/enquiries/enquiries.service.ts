@@ -36,8 +36,19 @@ export class EnquiriesService {
       if (!pkg) {
         throw new BadRequestException('Selected package is unavailable; please refresh and choose again');
       }
-    } else if (d.packageSlug && d.packageSlug !== 'not-sure') {
+    } else if (d.packageSlug && d.packageSlug !== 'not-sure' && !d.packageSlug.startsWith('country-')) {
       pkg = await this.db.package.findFirst({ where: { slug: d.packageSlug, status: 'PUBLISHED' } });
+    }
+
+    const packageNameSnapshot =
+      pkg?.title ||
+      (d.country ? `${d.country} Tour Package` : null) ||
+      d.packageName ||
+      (d.packageSlug === 'not-sure' ? 'Custom Planning Request' : 'Not sure yet');
+
+    let finalInstructions = d.instructions?.trim() || null;
+    if (d.country && (!finalInstructions || !finalInstructions.includes(d.country))) {
+      finalInstructions = finalInstructions ? `Destination: ${d.country}\n${finalInstructions}` : `Destination: ${d.country}`;
     }
 
     let attempts = 0;
@@ -55,10 +66,10 @@ export class EnquiriesService {
               email: d.email.trim().toLowerCase(),
               members: Number(d.members) || 1,
               packageId: pkg?.id,
-              packageNameSnapshot: pkg?.title || d.packageName || (d.packageSlug === 'not-sure' ? 'Custom Planning Request' : 'Not sure yet'),
+              packageNameSnapshot,
               preferredDate: date,
               days: Number(d.days) || 1,
-              instructions: d.instructions?.trim() || null,
+              instructions: finalInstructions,
               sourcePlatform: d.sourcePlatform || 'WEBSITE',
               idempotencyKey: key || undefined,
               consentAt: new Date(),

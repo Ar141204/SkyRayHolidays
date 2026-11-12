@@ -13,24 +13,30 @@ import {
 import { sendEnquiry } from '../lib/api';
 import { C, PrimaryButton, BrandHeader } from '../components/UI';
 import { Ionicons } from '@expo/vector-icons';
+import { ORDERED_COUNTRIES } from '../lib/countries';
 
-const SAMPLE_PACKAGES = [
-  'Kashmir Paradise Experience',
-  'Kerala God’s Own Country',
-  'Golden Triangle & Royal Heritage',
-  'Andaman Island Discovery',
-  'Goa Coastal Getaway',
-  'Sri Lanka Wonder Island',
-  'Maldives Luxury Lagoon',
-  'Nepal Himalayan Splendor',
+const FEATURED_PACKAGES = [
   'Dubai Holiday Package',
-  'Turkey Tour',
+  'Andaman Island Discovery',
   'Bali Escape',
   'Europe Tour',
+  'Goa Coastal Getaway',
+  'Golden Triangle & Royal Heritage',
+  'Kashmir Paradise Experience',
+  'Kerala God’s Own Country',
+  'Maldives Luxury Lagoon',
+  'Nepal Himalayan Splendor',
   'Premium Hajj Package',
   'Premium Umrah Package',
+  'Sri Lanka Wonder Island',
+  'Turkey Tour',
   'Customized Multi-Destination Tour',
   'Not sure yet (Help me plan)',
+];
+
+const ALL_DESTINATIONS = [
+  ...FEATURED_PACKAGES,
+  ...ORDERED_COUNTRIES.map((c) => `${c} Holiday`),
 ];
 
 export function EnquiryScreen({ route, navigation }: any) {
@@ -47,6 +53,7 @@ export function EnquiryScreen({ route, navigation }: any) {
   });
   const [busy, setBusy] = useState(false);
   const [showPkgPicker, setShowPkgPicker] = useState(false);
+  const [pkgSearch, setPkgSearch] = useState('');
 
   const set = (k: string, v: string) => {
     idempotencyKey.current = null;
@@ -209,28 +216,41 @@ export function EnquiryScreen({ route, navigation }: any) {
 
             {showPkgPicker && (
               <View style={s.dropdownList}>
-                {SAMPLE_PACKAGES.map((pkg) => (
-                  <TouchableOpacity
-                    key={pkg}
-                    style={[
-                      s.dropdownItem,
-                      pkg === data.packageName && s.dropdownItemActive,
-                    ]}
-                    onPress={() => {
-                      set('packageName', pkg);
-                      setShowPkgPicker(false);
-                    }}
-                  >
-                    <Text
+                <TextInput
+                  style={[s.input, { margin: 8, paddingVertical: 8, fontSize: 13, backgroundColor: '#f1f5f9' }]}
+                  placeholder="🔍 Type country or package..."
+                  placeholderTextColor="#94a3b8"
+                  value={pkgSearch}
+                  onChangeText={setPkgSearch}
+                  autoCapitalize="none"
+                />
+                <ScrollView nestedScrollEnabled style={{ maxHeight: 240 }}>
+                  {ALL_DESTINATIONS.filter((d) =>
+                    !pkgSearch || d.toLowerCase().includes(pkgSearch.toLowerCase())
+                  ).map((pkg) => (
+                    <TouchableOpacity
+                      key={pkg}
                       style={[
-                        s.dropdownText,
-                        pkg === data.packageName && s.dropdownTextActive,
+                        s.dropdownItem,
+                        pkg === data.packageName && s.dropdownItemActive,
                       ]}
+                      onPress={() => {
+                        set('packageName', pkg);
+                        setShowPkgPicker(false);
+                        setPkgSearch('');
+                      }}
                     >
-                      {pkg}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          s.dropdownText,
+                          pkg === data.packageName && s.dropdownTextActive,
+                        ]}
+                      >
+                        {pkg}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             )}
           </View>

@@ -45,6 +45,11 @@ export class CreateEnquiryDto {
   @MaxLength(180)
   packageSlug?: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  country?: string;
+
   @IsDateString()
   preferredDate!: string;
 

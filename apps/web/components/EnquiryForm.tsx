@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { API_URL, demoPackages } from '@/lib/config';
+import { WORLD_COUNTRIES, getCountryByNameOrSlug } from '@/lib/countries';
 import { CheckCircle2, LoaderCircle, Send, ArrowRight, MessageCircle } from 'lucide-react';
 
 const initial = {
@@ -30,7 +31,15 @@ export default function EnquiryForm() {
 
   useEffect(() => {
     const slug = params.get('package') || '';
-    if (slug) setForm((x) => ({ ...x, packageSlug: slug }));
+    const countryParam = params.get('country') || '';
+    if (slug) {
+      setForm((x) => ({ ...x, packageSlug: slug }));
+    } else if (countryParam) {
+      const match = getCountryByNameOrSlug(countryParam);
+      if (match) {
+        setForm((x) => ({ ...x, packageSlug: `country-${match.slug}` }));
+      }
+    }
 
     fetch(`${API_URL}/packages`)
       .then((r) => (r.ok ? r.json() : []))
@@ -53,6 +62,9 @@ export default function EnquiryForm() {
 
     try {
       const pkg = packages.find((p) => p.slug === form.packageSlug);
+      const selectedCountry = WORLD_COUNTRIES.find(
+        (c) => `country-${c.slug}` === form.packageSlug || c.slug === form.packageSlug
+      );
       const requestKey = (idempotencyKey.current ||= crypto.randomUUID());
 
       const payload: Record<string, any> = {
@@ -73,12 +85,19 @@ export default function EnquiryForm() {
       if (pkg?.id && !String(pkg.id).startsWith('pkg-') && !String(pkg.id).startsWith('demo-')) {
         payload.packageId = pkg.id;
       }
+
       if (pkg?.title) {
         payload.packageName = pkg.title;
+        payload.packageSlug = pkg.slug;
+      } else if (selectedCountry) {
+        payload.packageName = `${selectedCountry.name} Holiday Package`;
+        payload.packageSlug = `country-${selectedCountry.slug}`;
+        payload.country = selectedCountry.name;
       } else if (form.packageSlug === 'not-sure') {
         payload.packageName = 'Custom Planning Request';
-      }
-      if (form.packageSlug) {
+        payload.packageSlug = 'not-sure';
+      } else if (form.packageSlug) {
+        payload.packageName = form.packageSlug;
         payload.packageSlug = form.packageSlug;
       }
 
@@ -97,8 +116,9 @@ export default function EnquiryForm() {
       }
 
       const finalRef = data.reference || data.enquiryReference || `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`;
+      const displayTitle = pkg?.title || (selectedCountry ? `${selectedCountry.name} Holiday Package` : (form.packageSlug === 'not-sure' ? 'Custom Planning Request' : form.packageSlug));
       setReference(finalRef);
-      setSubmittedData({ ...form, reference: finalRef, packageTitle: pkg?.title || form.packageSlug });
+      setSubmittedData({ ...form, reference: finalRef, packageTitle: displayTitle, country: selectedCountry?.name });
       setState('success');
       idempotencyKey.current = null;
       setForm(initial);
@@ -109,8 +129,13 @@ export default function EnquiryForm() {
         setState('error');
       } else {
         const fallbackRef = `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`;
+        const selectedCountry = WORLD_COUNTRIES.find(
+          (c) => `country-${c.slug}` === form.packageSlug || c.slug === form.packageSlug
+        );
+        const pkg = packages.find((p) => p.slug === form.packageSlug);
+        const displayTitle = pkg?.title || (selectedCountry ? `${selectedCountry.name} Holiday Package` : (form.packageSlug === 'not-sure' ? 'Custom Planning Request' : form.packageSlug));
         setReference(fallbackRef);
-        setSubmittedData({ ...form, reference: fallbackRef });
+        setSubmittedData({ ...form, reference: fallbackRef, packageTitle: displayTitle, country: selectedCountry?.name });
         setState('success');
       }
     }
@@ -244,19 +269,32 @@ export default function EnquiryForm() {
         </label>
 
         <label className="span-2">
-          Select Package *
+          Select Package or Destination Country *
           <select
             required
             value={form.packageSlug}
             onChange={(e) => update('packageSlug', e.target.value)}
           >
-            <option value="">Choose a package...</option>
-            <option value="not-sure">Not sure yet — help me plan a custom trip</option>
-            {packages.map((p) => (
-              <option value={p.slug} key={p.id || p.slug}>
-                {p.title} · {p.destination} ({p.currency || '$'}{p.priceFrom ? p.priceFrom.toLocaleString('en-IN') : 'Enquiry'})
-              </option>
-            ))}
+            <option value="">Choose a package or destination country...</option>
+            <option value="not-sure">✨ Not sure yet — help me plan a custom trip</option>
+
+            <optgroup label="🌟 Featured Tour & Pilgrimage Packages">
+              {[...packages]
+                .sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+                .map((p) => (
+                  <option value={p.slug} key={p.id || p.slug}>
+                    {p.title} · {p.destination} ({p.currency || '$'}{p.priceFrom ? p.priceFrom.toLocaleString('en-IN') : 'Enquiry'})
+                  </option>
+                ))}
+            </optgroup>
+
+            <optgroup label="🌍 All Countries & Destinations (A–Z Orderwise)">
+              {WORLD_COUNTRIES.map((c) => (
+                <option value={`country-${c.slug}`} key={c.slug}>
+                  {c.name}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </label>
 
