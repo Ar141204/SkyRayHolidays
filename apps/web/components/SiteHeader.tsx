@@ -11,6 +11,7 @@ const links = [
   { href: '/about', label: 'About' },
   { href: '/packages', label: 'Packages' },
   { href: '/hajj-umrah', label: 'Hajj & Umrah' },
+  { href: '/visa', label: 'Visa Services' },
   { href: '/contact', label: 'Contact' },
 ];
 

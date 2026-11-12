@@ -33,7 +33,7 @@ export class CreateEnquiryDto {
 
   @IsOptional()
   @IsInt()
-  @Min(1)
+  @Min(0)
   @Max(100)
   adults?: number;
 
@@ -42,6 +42,39 @@ export class CreateEnquiryDto {
   @Min(0)
   @Max(50)
   kids?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  children?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  infants?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  serviceType?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  visaType?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  tourType?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(365)
+  nights?: number;
 
   @IsOptional()
   @IsString()

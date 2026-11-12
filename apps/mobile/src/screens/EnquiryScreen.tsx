@@ -15,60 +15,62 @@ import { C, PrimaryButton, BrandHeader } from '../components/UI';
 import { Ionicons } from '@expo/vector-icons';
 import { ORDERED_COUNTRIES } from '../lib/countries';
 
-const FEATURED_PACKAGES = [
-  'Economy Hajj Package',
-  'Premium Hajj Package',
-  'Economy Umrah Package',
-  'Premium Umrah Package',
-  'Reunion Island Tropical Discovery',
-  'Russia Grand Explorer',
-  'Turkey Tour - Istanbul & Cappadocia',
-  'Mauritius Paradise Island Getaway',
-  'Maldives Luxury Lagoon',
-  'Seychelles Pristine Archipelago',
-  'Armenia Ancient Heritage & Lakes',
-  'Georgia Caucasus Wonder',
-  'Azerbaijan Land of Fire',
-  'Dubai Holiday Package',
-  'Kashmir Paradise Experience',
-  'Kerala God’s Own Country',
-  'Golden Triangle & Royal Heritage',
-  'Andaman Island Discovery',
-  'Goa Coastal Getaway',
-  'Sri Lanka Wonder Island',
-  'Nepal Himalayan Splendor',
-  'Bali Escape',
-  'Europe Tour',
-  'Customized Multi-Destination Tour',
-  'Not sure yet (Help me plan)',
+const SCHENGEN_COUNTRIES = [
+  'Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Czech Republic', 'Denmark',
+  'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary',
+  'Iceland', 'Italy', 'Latvia', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+  'Malta', 'Netherlands', 'Norway', 'Poland', 'Portugal', 'Romania',
+  'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland'
 ];
 
-const ALL_DESTINATIONS = [
-  ...FEATURED_PACKAGES,
-  ...ORDERED_COUNTRIES.map((c) => `${c} Holiday`),
+const EVISA_COUNTRIES = [
+  'United Arab Emirates', 'Saudi Arabia', 'Singapore', 'Malaysia',
+  'Thailand', 'Sri Lanka', 'Turkey', 'Egypt', 'Vietnam',
+  'Indonesia', 'Georgia', 'Azerbaijan', 'Armenia', 'Russia',
+  'Oman', 'Qatar', 'Bahrain', 'Kuwait', 'Kenya', 'Australia'
 ];
+
+type ServiceType = 'tour' | 'umrah' | 'visa';
 
 export function EnquiryScreen({ route, navigation }: any) {
   const idempotencyKey = useRef<string | null>(null);
+
+  const initialService: ServiceType =
+    route.params?.service === 'visa' || route.params?.visaCategory
+      ? 'visa'
+      : route.params?.service === 'umrah' || route.params?.packageName?.toLowerCase().includes('umrah')
+      ? 'umrah'
+      : 'tour';
+
   const [data, setData] = useState({
     fullName: '',
     phone: '',
     email: '',
-    packageName: route.params?.packageName || 'Dubai Holiday Package',
-    tier: route.params?.tier || 'Premium',
+    serviceType: initialService,
+    // Travelers breakdown
     adults: '2',
-    kids: '0',
+    children: '0',
+    infants: '0',
+    // Visa
+    visaCountry: route.params?.country || 'United States',
+    visaType: 'Tourist Visa' as 'Tourist Visa' | 'Business Visa' | 'Medical Visa',
+    // Tour
+    tourCountry: route.params?.packageName || 'Reunion Island',
+    tourType: 'Private Tour' as 'Private Tour' | 'Group Tour',
+    nights: '5',
+    // Umrah
+    umrahTier: 'economy',
+    // Common
     preferredDate: '',
-    members: '2',
     instructions: '',
     consent: true,
   });
-  const [busy, setBusy] = useState(false);
-  const [showPkgPicker, setShowPkgPicker] = useState(false);
-  const [showTierPicker, setShowTierPicker] = useState(false);
-  const [pkgSearch, setPkgSearch] = useState('');
 
-  const set = (k: string, v: string) => {
+  const [busy, setBusy] = useState(false);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+
+  const set = (k: string, v: any) => {
     idempotencyKey.current = null;
     setData((x) => ({ ...x, [k]: v }));
   };
@@ -76,34 +78,63 @@ export function EnquiryScreen({ route, navigation }: any) {
   async function submit() {
     if (busy) return;
     if (!data.fullName.trim() || !data.phone.trim() || !data.preferredDate.trim()) {
-      Alert.alert('Missing Details', 'Please enter your Full Name, Phone Number, and Preferred Travel Date.');
+      Alert.alert('Missing Details', 'Please enter your Full Name, Contact Number / WhatsApp, and Preferred Date.');
       return;
     }
 
     setBusy(true);
     try {
       const key = (idempotencyKey.current ||= `${Date.now()}-${Math.random().toString(36).slice(2)}`);
-      const totalMembers = (Number(data.adults) || 1) + (Number(data.kids) || 0);
+      const numAdults = Number(data.adults) || 1;
+      const numChildren = Number(data.children) || 0;
+      const numInfants = Number(data.infants) || 0;
+      const totalMembers = numAdults + numChildren + numInfants;
+
+      let serviceLabel = '';
+      let targetCountry = '';
+      if (data.serviceType === 'visa') {
+        serviceLabel = `Visa: ${data.visaCountry} (${data.visaType})`;
+        targetCountry = data.visaCountry;
+      } else if (data.serviceType === 'tour') {
+        serviceLabel = `Tour: ${data.tourCountry} (${data.tourType})`;
+        targetCountry = data.tourCountry;
+      } else {
+        serviceLabel = `Umrah Enquiry (${data.umrahTier.toUpperCase()} Tier)`;
+        targetCountry = 'Saudi Arabia';
+      }
+
       const res = await sendEnquiry(
         {
-          ...data,
+          fullName: data.fullName.trim(),
+          phone: data.phone.trim(),
           email: data.email.trim() || 'traveller@example.com',
           members: totalMembers,
-          adults: Number(data.adults) || 1,
-          kids: Number(data.kids) || 0,
-          tier: data.tier,
-          days: 5,
+          adults: numAdults,
+          children: numChildren,
+          kids: numChildren,
+          infants: numInfants,
+          serviceType: data.serviceType,
+          visaType: data.serviceType === 'visa' ? data.visaType : undefined,
+          tourType: data.serviceType === 'tour' ? data.tourType : undefined,
+          tier: data.serviceType === 'umrah' ? data.umrahTier : undefined,
+          country: targetCountry,
+          packageName: serviceLabel,
+          preferredDate: data.preferredDate,
+          days: Number(data.nights) || 5,
+          nights: Number(data.nights) || 5,
+          instructions: data.instructions,
           consent: true,
           sourcePlatform: Platform.OS === 'ios' ? 'IOS' : 'ANDROID',
         },
         key,
       );
+
       const ref = res?.reference || `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`;
       idempotencyKey.current = null;
 
       Alert.alert(
         'Enquiry Received!',
-        `Thank you ${data.fullName}! Your enquiry reference is ${ref}.\n\nWould you like to forward these details to our WhatsApp desk for an instant quotation?`,
+        `Thank you ${data.fullName}! Your enquiry reference is ${ref}.\n\nService: ${serviceLabel}\nTravelers: ${numAdults} Adults, ${numChildren} Children, ${numInfants} Infants.\n\nWould you like to forward these details to our WhatsApp desk for instant assistance?`,
         [
           {
             text: 'Forward to WhatsApp',
@@ -112,213 +143,77 @@ export function EnquiryScreen({ route, navigation }: any) {
                 `Hello SkyRay Holidays! I just submitted an enquiry on the mobile app.\n` +
                 `• Reference: ${ref}\n` +
                 `• Name: ${data.fullName}\n` +
-                `• Phone: ${data.phone}\n` +
-                `• Package: ${data.packageName}\n` +
-                `• Travel Date: ${data.preferredDate}\n` +
-                `• Travelers: ${data.members} people\n` +
+                `• Phone/WhatsApp: ${data.phone}\n` +
+                `• Service: ${serviceLabel}\n` +
+                `• Date: ${data.preferredDate}\n` +
+                `• Travelers: ${numAdults} Adults (12+ yrs), ${numChildren} Children (<12 yrs), ${numInfants} Infants (0-2 yrs)\n` +
                 (data.instructions ? `• Notes: ${data.instructions}\n` : '') +
                 `Please provide quotation and itinerary details.`
               );
               Linking.openURL(`https://wa.me/919176357791?text=${text}`).catch(() => {});
-              navigation?.goBack?.();
+              navigation.goBack();
             },
           },
-          { text: 'Done', onPress: () => navigation?.goBack?.() },
+          { text: 'Done', style: 'cancel', onPress: () => navigation.goBack() },
         ],
       );
-    } catch {
-      const fallbackRef = `SRH${new Date().getFullYear()}${Math.floor(1000 + Math.random() * 9000)}`;
-      Alert.alert(
-        'Enquiry Received!',
-        `Thank you ${data.fullName}! Your reference is ${fallbackRef}.\n\nWould you like to forward these details to our WhatsApp desk for an instant quotation?`,
-        [
-          {
-            text: 'Forward to WhatsApp',
-            onPress: () => {
-              const text = encodeURIComponent(
-                `Hello SkyRay Holidays! I just submitted an enquiry on the mobile app.\n` +
-                `• Reference: ${fallbackRef}\n` +
-                `• Name: ${data.fullName}\n` +
-                `• Phone: ${data.phone}\n` +
-                `• Package: ${data.packageName}\n` +
-                `• Travel Date: ${data.preferredDate}\n` +
-                `• Travelers: ${data.members} people\n` +
-                (data.instructions ? `• Notes: ${data.instructions}\n` : '') +
-                `Please provide quotation and itinerary details.`
-              );
-              Linking.openURL(`https://wa.me/919176357791?text=${text}`).catch(() => {});
-              navigation?.goBack?.();
-            },
-          },
-          { text: 'Done', onPress: () => navigation?.goBack?.() },
-        ],
-      );
+    } catch (err: any) {
+      Alert.alert('Submission Error', err.message || 'Unable to submit enquiry. Please check connection.');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <View style={s.container}>
-      <BrandHeader subtitle="Request Custom Itinerary" />
+    <ScrollView style={s.screen} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <BrandHeader subtitle="Tour packages, Umrah, and Global Visa services" />
 
-      <ScrollView
-        style={s.scrollView}
-        contentContainerStyle={s.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={s.hero}>
-          <Text style={s.eyebrow}>LET&apos;S PLAN TOGETHER</Text>
-          <Text style={s.title}>Request a Custom Quote</Text>
-          <Text style={s.sub}>
-            Share your travel vision. Our destination experts will craft a personalized itinerary and best pricing for you.
-          </Text>
+      <View style={s.card}>
+        {/* Full Name */}
+        <View style={s.field}>
+          <Text style={s.label}>Full Name *</Text>
+          <TextInput
+            style={s.input}
+            value={data.fullName}
+            onChangeText={(v) => set('fullName', v)}
+            placeholder="e.g. Syed Rahamathullah"
+            placeholderTextColor="#94a3b8"
+          />
         </View>
 
-        <View style={s.formCard}>
-          {/* Full Name */}
-          <View style={s.field}>
-            <Text style={s.label}>Full Name *</Text>
-            <TextInput
-              style={s.input}
-              value={data.fullName}
-              onChangeText={(v) => set('fullName', v)}
-              placeholder="e.g. John Doe"
-              placeholderTextColor="#94a3b8"
-            />
-          </View>
+        {/* Email Address */}
+        <View style={s.field}>
+          <Text style={s.label}>Email Address *</Text>
+          <TextInput
+            style={s.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={data.email}
+            onChangeText={(v) => set('email', v)}
+            placeholder="you@example.com"
+            placeholderTextColor="#94a3b8"
+          />
+        </View>
 
-          {/* Phone */}
-          <View style={s.field}>
-            <Text style={s.label}>Phone Number (with WhatsApp) *</Text>
-            <TextInput
-              style={s.input}
-              keyboardType="phone-pad"
-              value={data.phone}
-              onChangeText={(v) => set('phone', v)}
-              placeholder="+91 91763 57791"
-              placeholderTextColor="#94a3b8"
-            />
-          </View>
+        {/* Contact Number / WhatsApp */}
+        <View style={s.field}>
+          <Text style={s.label}>Contact Number / WhatsApp *</Text>
+          <TextInput
+            style={s.input}
+            keyboardType="phone-pad"
+            value={data.phone}
+            onChangeText={(v) => set('phone', v)}
+            placeholder="+91 91763 57791"
+            placeholderTextColor="#94a3b8"
+          />
+        </View>
 
-          {/* Email */}
-          <View style={s.field}>
-            <Text style={s.label}>Email Address</Text>
-            <TextInput
-              style={s.input}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={data.email}
-              onChangeText={(v) => set('email', v)}
-              placeholder="you@example.com"
-              placeholderTextColor="#94a3b8"
-            />
-          </View>
-
-          {/* Package Selector */}
-          <View style={s.field}>
-            <Text style={s.label}>Selected Tour Package *</Text>
-            <TouchableOpacity
-              style={[s.input, s.pickerBtn]}
-              onPress={() => setShowPkgPicker(!showPkgPicker)}
-              activeOpacity={0.8}
-            >
-              <Text style={s.pickerText} numberOfLines={1}>{data.packageName}</Text>
-              <Ionicons
-                name={showPkgPicker ? 'chevron-up' : 'chevron-down'}
-                size={18}
-                color="#64748b"
-              />
-            </TouchableOpacity>
-
-            {showPkgPicker && (
-              <View style={s.dropdownList}>
-                <TextInput
-                  style={[s.input, { margin: 8, paddingVertical: 8, fontSize: 13, backgroundColor: '#f1f5f9' }]}
-                  placeholder="🔍 Type country or package..."
-                  placeholderTextColor="#94a3b8"
-                  value={pkgSearch}
-                  onChangeText={setPkgSearch}
-                  autoCapitalize="none"
-                />
-                <ScrollView nestedScrollEnabled style={{ maxHeight: 240 }}>
-                  {ALL_DESTINATIONS.filter((d) =>
-                    !pkgSearch || d.toLowerCase().includes(pkgSearch.toLowerCase())
-                  ).map((pkg) => (
-                    <TouchableOpacity
-                      key={pkg}
-                      style={[
-                        s.dropdownItem,
-                        pkg === data.packageName && s.dropdownItemActive,
-                      ]}
-                      onPress={() => {
-                        set('packageName', pkg);
-                        setShowPkgPicker(false);
-                        setPkgSearch('');
-                      }}
-                    >
-                      <Text
-                        style={[
-                          s.dropdownText,
-                          pkg === data.packageName && s.dropdownTextActive,
-                        ]}
-                      >
-                        {pkg}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-          </View>
-
-          {/* Package Category / Tier */}
-          <View style={s.field}>
-            <Text style={s.label}>Package Category / Tier *</Text>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <TouchableOpacity
-                style={[
-                  s.input,
-                  { flex: 1, alignItems: 'center', justifyContent: 'center' },
-                  data.tier === 'Premium' && { backgroundColor: '#0284c7', borderColor: '#0284c7' },
-                ]}
-                onPress={() => set('tier', 'Premium')}
-              >
-                <Text style={{ fontWeight: '800', color: data.tier === 'Premium' ? '#ffffff' : '#334155', fontSize: 13 }}>
-                  ★ Premium (5-Star / VIP)
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  s.input,
-                  { flex: 1, alignItems: 'center', justifyContent: 'center' },
-                  data.tier === 'Economy' && { backgroundColor: '#0284c7', borderColor: '#0284c7' },
-                ]}
-                onPress={() => set('tier', 'Economy')}
-              >
-                <Text style={{ fontWeight: '800', color: data.tier === 'Economy' ? '#ffffff' : '#334155', fontSize: 13 }}>
-                  Economy (Comfort)
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Travel Date */}
-          <View style={s.field}>
-            <Text style={s.label}>Preferred Travel Date / Month *</Text>
-            <TextInput
-              style={s.input}
-              value={data.preferredDate}
-              onChangeText={(v) => set('preferredDate', v)}
-              placeholder="e.g. December 2026 or DD/MM/YYYY"
-              placeholderTextColor="#94a3b8"
-            />
-          </View>
-
-          {/* Travelers Breakdown (Adults & Kids) */}
-          <View style={[s.field, { flexDirection: 'row', gap: 10 }]}>
+        {/* Number of Members Breakdown */}
+        <View style={s.field}>
+          <Text style={[s.label, { color: '#0284c7' }]}>NUMBER OF MEMBERS</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
             <View style={{ flex: 1 }}>
-              <Text style={s.label}>No. of Adults (12+ yrs) *</Text>
+              <Text style={s.subLabel}>Adult (12+ yrs) *</Text>
               <TextInput
                 style={s.input}
                 keyboardType="number-pad"
@@ -329,159 +224,436 @@ export function EnquiryScreen({ route, navigation }: any) {
               />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.label}>No. of Kids (Under 12)</Text>
+              <Text style={s.subLabel}>Child (&lt;12 yrs)</Text>
               <TextInput
                 style={s.input}
                 keyboardType="number-pad"
-                value={data.kids}
-                onChangeText={(v) => set('kids', v)}
+                value={data.children}
+                onChangeText={(v) => set('children', v)}
+                placeholder="0"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.subLabel}>Infant (0-2 yrs)</Text>
+              <TextInput
+                style={s.input}
+                keyboardType="number-pad"
+                value={data.infants}
+                onChangeText={(v) => set('infants', v)}
                 placeholder="0"
                 placeholderTextColor="#94a3b8"
               />
             </View>
           </View>
+        </View>
 
-          {/* Special Requests */}
-          <View style={s.field}>
-            <Text style={s.label}>Special Preferences / Hotel Tier</Text>
-            <TextInput
-              style={[s.input, s.textArea]}
-              multiline
-              numberOfLines={3}
-              value={data.instructions}
-              onChangeText={(v) => set('instructions', v)}
-              placeholder="e.g. 5-star hotel upgrade, honeymoon decorations, dietary requirements..."
-              placeholderTextColor="#94a3b8"
-            />
-          </View>
-
-          <View style={{ marginTop: 8 }}>
-            <PrimaryButton
-              title={busy ? 'Submitting Enquiry...' : 'Submit Enquiry Now →'}
-              onPress={submit}
-            />
+        {/* Select Service (Umrah, Tour, Visa) */}
+        <View style={s.field}>
+          <Text style={[s.label, { color: '#17496b' }]}>SELECT SERVICE *</Text>
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            {(['tour', 'umrah', 'visa'] as ServiceType[]).map((st) => {
+              const active = data.serviceType === st;
+              const labels = {
+                tour: 'Tour Package',
+                umrah: 'Umrah Enquiry',
+                visa: 'Visa Enquiry',
+              };
+              return (
+                <TouchableOpacity
+                  key={st}
+                  style={[s.serviceBtn, active && s.serviceBtnActive]}
+                  onPress={() => set('serviceType', st)}
+                >
+                  <Text style={[s.serviceBtnText, active && s.serviceBtnTextActive]}>
+                    {labels[st]}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
-      </ScrollView>
-    </View>
+
+        {/* CONDITIONAL SECTION: VISA ENQUIRY */}
+        {data.serviceType === 'visa' && (
+          <View style={s.conditionalBox}>
+            <Text style={s.sectionTitle}>VISA SPECIFIC DETAILS</Text>
+
+            {/* Country for Visa */}
+            <View style={s.field}>
+              <Text style={s.label}>Country for Visa *</Text>
+              <TouchableOpacity
+                style={[s.input, s.pickerBtn]}
+                onPress={() => setShowCountryPicker(!showCountryPicker)}
+              >
+                <Text style={s.pickerText} numberOfLines={1}>{data.visaCountry}</Text>
+                <Ionicons name={showCountryPicker ? 'chevron-up' : 'chevron-down'} size={18} color="#64748b" />
+              </TouchableOpacity>
+
+              {showCountryPicker && (
+                <View style={s.dropdownList}>
+                  <TextInput
+                    style={[s.input, { margin: 6, paddingVertical: 6, fontSize: 13, backgroundColor: '#f1f5f9' }]}
+                    placeholder="🔍 Search country (US, UK, Schengen...)"
+                    placeholderTextColor="#94a3b8"
+                    value={countrySearch}
+                    onChangeText={setCountrySearch}
+                    autoCapitalize="none"
+                  />
+                  <ScrollView nestedScrollEnabled style={{ maxHeight: 200 }}>
+                    {['United States', 'United Kingdom', ...SCHENGEN_COUNTRIES.map((c) => `${c} (Schengen)`), ...EVISA_COUNTRIES.map((c) => `${c} (E-Visa)`), ...ORDERED_COUNTRIES]
+                      .filter((c, i, arr) => arr.indexOf(c) === i)
+                      .filter((c) => !countrySearch || c.toLowerCase().includes(countrySearch.toLowerCase()))
+                      .map((c) => (
+                        <TouchableOpacity
+                          key={c}
+                          style={[s.dropdownItem, c === data.visaCountry && s.dropdownItemActive]}
+                          onPress={() => {
+                            set('visaCountry', c);
+                            setShowCountryPicker(false);
+                            setCountrySearch('');
+                          }}
+                        >
+                          <Text style={[s.dropdownText, c === data.visaCountry && s.dropdownTextActive]}>{c}</Text>
+                        </TouchableOpacity>
+                      ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+
+            {/* Type of Visa: ONLY Tourist, Business, Medical */}
+            <View style={s.field}>
+              <Text style={s.label}>Type of Visa * (Tourist, Business, Medical Only)</Text>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
+                {(['Tourist Visa', 'Business Visa', 'Medical Visa'] as const).map((vt) => {
+                  const active = data.visaType === vt;
+                  return (
+                    <TouchableOpacity
+                      key={vt}
+                      style={[s.optionChip, active && s.optionChipActive]}
+                      onPress={() => set('visaType', vt)}
+                    >
+                      <Text style={[s.optionChipText, active && s.optionChipTextActive]}>{vt}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Expected Date of Travel */}
+            <View style={s.field}>
+              <Text style={s.label}>Expected Date of Travel *</Text>
+              <TextInput
+                style={s.input}
+                value={data.preferredDate}
+                onChangeText={(v) => set('preferredDate', v)}
+                placeholder="e.g. YYYY-MM-DD or Month 2026"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+          </View>
+        )}
+
+        {/* CONDITIONAL SECTION: TOUR PACKAGE ENQUIRY */}
+        {data.serviceType === 'tour' && (
+          <View style={s.conditionalBox}>
+            <Text style={s.sectionTitle}>TOUR PACKAGE DETAILS</Text>
+
+            {/* Select Destination / Country */}
+            <View style={s.field}>
+              <Text style={s.label}>Select Destination / Country *</Text>
+              <TouchableOpacity
+                style={[s.input, s.pickerBtn]}
+                onPress={() => setShowCountryPicker(!showCountryPicker)}
+              >
+                <Text style={s.pickerText} numberOfLines={1}>{data.tourCountry}</Text>
+                <Ionicons name={showCountryPicker ? 'chevron-up' : 'chevron-down'} size={18} color="#64748b" />
+              </TouchableOpacity>
+
+              {showCountryPicker && (
+                <View style={s.dropdownList}>
+                  <TextInput
+                    style={[s.input, { margin: 6, paddingVertical: 6, fontSize: 13, backgroundColor: '#f1f5f9' }]}
+                    placeholder="🔍 Search international countries..."
+                    placeholderTextColor="#94a3b8"
+                    value={countrySearch}
+                    onChangeText={setCountrySearch}
+                    autoCapitalize="none"
+                  />
+                  <ScrollView nestedScrollEnabled style={{ maxHeight: 200 }}>
+                    {['Reunion Island', 'Russia', 'Turkey', 'Mauritius', 'Maldives', 'Seychelles', 'Armenia', 'Georgia', 'Azerbaijan', ...ORDERED_COUNTRIES]
+                      .filter((c, i, arr) => arr.indexOf(c) === i)
+                      .filter((c) => !countrySearch || c.toLowerCase().includes(countrySearch.toLowerCase()))
+                      .map((c) => (
+                        <TouchableOpacity
+                          key={c}
+                          style={[s.dropdownItem, c === data.tourCountry && s.dropdownItemActive]}
+                          onPress={() => {
+                            set('tourCountry', c);
+                            setShowCountryPicker(false);
+                            setCountrySearch('');
+                          }}
+                        >
+                          <Text style={[s.dropdownText, c === data.tourCountry && s.dropdownTextActive]}>{c}</Text>
+                        </TouchableOpacity>
+                      ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+
+            {/* Preferred Date of Travel */}
+            <View style={s.field}>
+              <Text style={s.label}>Preferred Date of Travel *</Text>
+              <TextInput
+                style={s.input}
+                value={data.preferredDate}
+                onChangeText={(v) => set('preferredDate', v)}
+                placeholder="e.g. YYYY-MM-DD or Month 2026"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+
+            {/* Number of Nights */}
+            <View style={s.field}>
+              <Text style={s.label}>Number of Nights (Traveling Days) *</Text>
+              <TextInput
+                style={s.input}
+                keyboardType="number-pad"
+                value={data.nights}
+                onChangeText={(v) => set('nights', v)}
+                placeholder="e.g. 5"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+
+            {/* Tour Type Option (Private or Group) */}
+            <View style={s.field}>
+              <Text style={s.label}>Tour Package Option *</Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                {(['Private Tour', 'Group Tour'] as const).map((mode) => {
+                  const active = data.tourType === mode;
+                  return (
+                    <TouchableOpacity
+                      key={mode}
+                      style={[s.optionChip, { flex: 1 }, active && s.optionChipActive]}
+                      onPress={() => set('tourType', mode)}
+                    >
+                      <Text style={[s.optionChipText, active && s.optionChipTextActive]}>{mode}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* CONDITIONAL SECTION: UMRAH ENQUIRY */}
+        {data.serviceType === 'umrah' && (
+          <View style={s.conditionalBox}>
+            <Text style={s.sectionTitle}>UMRAH PILGRIMAGE DETAILS</Text>
+
+            <View style={s.field}>
+              <Text style={s.label}>Umrah Package Tier *</Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity
+                  style={[s.optionChip, { flex: 1 }, data.umrahTier === 'economy' && s.optionChipActive]}
+                  onPress={() => set('umrahTier', 'economy')}
+                >
+                  <Text style={[s.optionChipText, data.umrahTier === 'economy' && s.optionChipTextActive]}>
+                    Economy (Comfort)
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[s.optionChip, { flex: 1 }, data.umrahTier === 'premium' && s.optionChipActive]}
+                  onPress={() => set('umrahTier', 'premium')}
+                >
+                  <Text style={[s.optionChipText, data.umrahTier === 'premium' && s.optionChipTextActive]}>
+                    ★ Premium (5-Star VIP)
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={s.field}>
+              <Text style={s.label}>Preferred Travel Date *</Text>
+              <TextInput
+                style={s.input}
+                value={data.preferredDate}
+                onChangeText={(v) => set('preferredDate', v)}
+                placeholder="e.g. Ramadan 2026 or DD/MM/YYYY"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+
+            <View style={s.field}>
+              <Text style={s.label}>Duration (Days / Nights) *</Text>
+              <TextInput
+                style={s.input}
+                keyboardType="number-pad"
+                value={data.nights}
+                onChangeText={(v) => set('nights', v)}
+                placeholder="e.g. 15"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Additional Notes / Requirements */}
+        <View style={s.field}>
+          <Text style={s.label}>Additional Notes / Requirements</Text>
+          <TextInput
+            style={[s.input, s.textArea]}
+            multiline
+            numberOfLines={3}
+            value={data.instructions}
+            onChangeText={(v) => set('instructions', v)}
+            placeholder="Room preferences, flight departure city, dietary requests..."
+            placeholderTextColor="#94a3b8"
+          />
+        </View>
+
+        <PrimaryButton
+          title={busy ? 'Submitting Enquiry...' : 'Submit Enquiry ↗'}
+          onPress={submit}
+        />
+
+        <Text style={s.disclaimer}>
+          🔒 Official booking enquiry. Availability, visa rules and quotes are confirmed directly by our concierge.
+        </Text>
+      </View>
+    </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 40,
-  },
-  hero: {
-    marginBottom: 16,
-  },
-  eyebrow: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    letterSpacing: 1.2,
-    color: C.skyDark,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: C.deep,
-    lineHeight: 30,
-  },
-  sub: {
-    fontSize: 13,
-    color: C.muted,
-    lineHeight: 19,
-    marginTop: 6,
-  },
-  formCard: {
+  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  content: { padding: 16, paddingBottom: 40 },
+  card: {
     backgroundColor: '#ffffff',
-    borderRadius: 18,
-    padding: 20,
+    borderRadius: 14,
+    padding: 18,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: '#e2edf3',
     shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  field: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#334155',
-    marginBottom: 6,
-  },
+  field: { marginBottom: 14 },
+  label: { fontSize: 12, fontWeight: '800', color: '#17496b', marginBottom: 6, letterSpacing: 0.3 },
+  subLabel: { fontSize: 10.5, fontWeight: '700', color: '#64748b', marginBottom: 4 },
   input: {
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 13.5,
-    color: C.deep,
-  },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: 'top',
+    borderColor: '#cbd5e1',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#0f172a',
+    backgroundColor: '#ffffff',
   },
   pickerBtn: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f8fafc',
   },
-  pickerText: {
-    fontSize: 13.5,
-    color: C.deep,
-    fontWeight: '600',
-    flex: 1,
-  },
-  pickerArrow: {
-    fontSize: 11,
-    color: C.skyDark,
-    marginLeft: 8,
-  },
+  pickerText: { fontSize: 13.5, fontWeight: '700', color: '#0f172a', flex: 1 },
   dropdownList: {
     marginTop: 6,
-    backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    borderRadius: 12,
-    maxHeight: 220,
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
     overflow: 'hidden',
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 4,
   },
   dropdownItem: {
-    paddingVertical: 11,
     paddingHorizontal: 14,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  dropdownItemActive: {
-    backgroundColor: '#f0f9ff',
+  dropdownItemActive: { backgroundColor: '#e0f2fe' },
+  dropdownText: { fontSize: 13, color: '#334155' },
+  dropdownTextActive: { color: '#0284c7', fontWeight: '800' },
+  serviceBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  dropdownText: {
-    fontSize: 12.5,
-    color: '#334155',
+  serviceBtnActive: {
+    backgroundColor: '#0284c7',
+    borderColor: '#0284c7',
   },
-  dropdownTextActive: {
-    color: '#0284c7',
+  serviceBtnText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  serviceBtnTextActive: {
+    color: '#ffffff',
     fontWeight: '800',
+  },
+  conditionalBox: {
+    backgroundColor: '#f8fbfe',
+    borderWidth: 1,
+    borderColor: '#dbeafe',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#0284c7',
+    letterSpacing: 0.8,
+    marginBottom: 10,
+  },
+  optionChip: {
+    flex: 1,
+    paddingVertical: 9,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  optionChipActive: {
+    backgroundColor: '#0284c7',
+    borderColor: '#0284c7',
+  },
+  optionChipText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#334155',
+    textAlign: 'center',
+  },
+  optionChipTextActive: {
+    color: '#ffffff',
+    fontWeight: '800',
+  },
+  textArea: { minHeight: 70, textAlignVertical: 'top' },
+  disclaimer: {
+    fontSize: 11,
+    color: '#64748b',
+    textAlign: 'center',
+    marginTop: 12,
+    lineHeight: 16,
   },
 });

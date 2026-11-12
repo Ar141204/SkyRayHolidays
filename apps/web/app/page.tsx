@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import PackageGrid from '@/components/PackageGrid';
 import GoogleReviews from '@/components/GoogleReviews';
+import VisaExplorer from '@/components/VisaExplorer';
 
 export default function Home() {
   return (
@@ -135,6 +136,23 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* 5. Visa Services Section arranged in boxes matching holiday packages */}
+      <section className="section container">
+        <div className="section-head">
+          <div>
+            <div className="eyebrow">GLOBAL VISA CONCIERGE</div>
+            <h2>International <em>Visa Services</em></h2>
+            <p>
+              Arranged visa assistance for US B1/B2, UK Visitor, all 29 Schengen European countries, and 50+ Fast-Track Global E-Visas.
+            </p>
+          </div>
+          <Link href="/visa" className="text-link">
+            Explore All Visa Services <ArrowRight size={16} />
+          </Link>
+        </div>
+        <VisaExplorer />
       </section>
 
       {/* 5. Features: The SkyRay Way */}

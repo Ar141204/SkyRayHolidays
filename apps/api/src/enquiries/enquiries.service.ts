@@ -41,22 +41,49 @@ export class EnquiriesService {
     }
 
     const tierLabel = d.tier && d.tier !== 'any' ? ` [${d.tier.toUpperCase()}]` : '';
-    const packageNameSnapshot =
+    let packageNameSnapshot =
       (pkg?.title ? `${pkg.title}${tierLabel}` : null) ||
       (d.country ? `${d.country} Tour Package${tierLabel}` : null) ||
       (d.packageName ? `${d.packageName}${tierLabel}` : null) ||
-      (d.packageSlug === 'not-sure' ? 'Custom Planning Request' : 'Not sure yet');
+      (d.packageSlug === 'not-sure' ? 'Custom Planning Request' : 'General Enquiry');
+
+    if (d.serviceType === 'visa' || d.visaType) {
+      const vCountry = d.country || 'International';
+      const vType = d.visaType || 'Tourist Visa';
+      packageNameSnapshot = `Visa: ${vCountry} (${vType})`;
+    } else if (d.serviceType === 'umrah') {
+      packageNameSnapshot = `Umrah: ${d.packageName || 'Umrah Pilgrimage'}${tierLabel}`;
+    } else if (d.serviceType === 'tour') {
+      const tourMode = d.tourType ? ` [${d.tourType}]` : '';
+      const dest = d.country ? `${d.country} Tour` : (pkg?.title || d.packageName || 'Holiday Package');
+      packageNameSnapshot = `Tour: ${dest}${tourMode}`;
+    }
 
     let finalInstructions = d.instructions?.trim() || null;
     const extraDetails: string[] = [];
+    if (d.serviceType) {
+      extraDetails.push(`Service: ${d.serviceType.toUpperCase()}`);
+    }
+    if (d.visaType) {
+      extraDetails.push(`Visa Type: ${d.visaType}`);
+    }
+    if (d.tourType) {
+      extraDetails.push(`Tour Mode: ${d.tourType}`);
+    }
     if (d.country && (!finalInstructions || !finalInstructions.includes(d.country))) {
-      extraDetails.push(`Destination: ${d.country}`);
+      extraDetails.push(`Destination/Country: ${d.country}`);
     }
     if (d.tier && d.tier !== 'any') {
       extraDetails.push(`Package Tier: ${d.tier.toUpperCase()}`);
     }
-    if (d.adults !== undefined || d.kids !== undefined) {
-      extraDetails.push(`Travelers: ${d.adults || 1} Adults, ${d.kids || 0} Kids`);
+    if (d.adults !== undefined || d.children !== undefined || d.kids !== undefined || d.infants !== undefined) {
+      const numAdults = d.adults !== undefined ? d.adults : 1;
+      const numChildren = d.children !== undefined ? d.children : (d.kids || 0);
+      const numInfants = d.infants !== undefined ? d.infants : 0;
+      extraDetails.push(`Travelers: ${numAdults} Adults (12+ yrs), ${numChildren} Children (<12 yrs), ${numInfants} Infants (0-2 yrs)`);
+    }
+    if (d.nights) {
+      extraDetails.push(`Duration: ${d.nights} Nights`);
     }
 
     if (extraDetails.length > 0) {
