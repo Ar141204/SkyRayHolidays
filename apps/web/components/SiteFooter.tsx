@@ -49,8 +49,10 @@ export default function SiteFooter() {
         </div>
 
         <div>
-          <h4>Explore</h4>
-          <Link href="/packages">Tour Packages</Link>
+          <h4>Services &amp; Explore</h4>
+          <Link href="/services">All Services Hub</Link>
+          <Link href="/services?tab=packages">Tour Packages</Link>
+          <Link href="/services?tab=visa">Visa Services (US, UK, Schengen, E-Visa)</Link>
           <Link href="/hajj-umrah">Hajj &amp; Umrah</Link>
           <Link href="/visa">Visa Services (US, UK, Schengen, E-Visa)</Link>
           <Link href="/packages?category=Specialized">Specialized Key Destinations</Link>
