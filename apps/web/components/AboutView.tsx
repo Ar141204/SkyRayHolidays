@@ -32,12 +32,11 @@ export default function AboutView() {
             <div className="plane-art-card">
               <div className="plane-tag">SkyRay Travel</div>
               <Image
-                src={a.image || '/images/hero.jpg'}
+                src={a.image && !a.image.startsWith('/uploads') ? a.image : '/images/hero.jpg'}
                 alt="Scenic holiday destination travel"
                 fill
                 style={{ objectFit: 'cover' }}
                 priority
-                unoptimized={a.image?.startsWith('data:') || a.image?.startsWith('/uploads')}
               />
             </div>
           </div>

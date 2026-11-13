@@ -22,11 +22,12 @@ export default function Home() {
   const { content } = useWebsiteContent();
   const h = content.home;
 
-  const heroStyle = h.heroImage
-    ? {
-        backgroundImage: `linear-gradient(90deg, rgba(7, 38, 63, 0.88) 0%, rgba(12, 62, 88, 0.72) 44%, rgba(13, 70, 95, 0.22) 100%), url('${h.heroImage}')`,
-      }
-    : undefined;
+  const heroStyle =
+    h.heroImage && h.heroImage !== '/images/hero.jpg'
+      ? {
+          backgroundImage: `linear-gradient(90deg, rgba(7, 38, 63, 0.88) 0%, rgba(12, 62, 88, 0.72) 44%, rgba(13, 70, 95, 0.22) 100%), url('${h.heroImage}')`,
+        }
+      : undefined;
 
   return (
     <>

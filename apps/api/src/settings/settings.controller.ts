@@ -16,7 +16,7 @@ export const DEFAULT_WEBSITE_CONTENT = {
     title: 'Your Journey Begins with SkyRay Holidays',
     subtitle:
       'Discover unforgettable destinations, thoughtfully planned holidays and meaningful pilgrimage journeys.',
-    heroImage: '/images/destinations/dubai.jpg',
+    heroImage: '/images/hero.jpg',
     badge1Title: 'Thoughtful Planning',
     badge1Desc: 'Itineraries tailored to your pace, dates & budget.',
     badge2Title: 'Personal Guidance',

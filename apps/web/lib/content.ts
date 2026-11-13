@@ -62,7 +62,7 @@ export const defaultWebsiteContent: WebsiteContent = {
     eyebrow: 'WHERE EVERY TRIP BECOMES A MEMORY',
     title: 'Your Journey Begins with SkyRay Holidays',
     subtitle: 'Discover unforgettable destinations, thoughtfully planned holidays and meaningful pilgrimage journeys.',
-    heroImage: '/images/destinations/dubai.jpg',
+    heroImage: '/images/hero.jpg',
     badge1Title: 'Curated Itineraries',
     badge1Desc: 'Handcrafted travel plans tailored to your exact pace and preferences.',
     badge2Title: 'Verified Stays',

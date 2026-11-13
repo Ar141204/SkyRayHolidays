@@ -69,14 +69,13 @@ export default function PilgrimageExplorer() {
           // Premium Umrah: Sacred Madinah Green Dome
           // Economy Umrah: Madinah Courtyard Umbrellas
           const cardImage =
-            pkg.image ||
-            (activeTab === 'HAJJ'
+            activeTab === 'HAJJ'
               ? isPremium
                 ? '/images/destinations/makkah-night.jpg'
                 : '/images/destinations/makkah-kaaba.jpg'
               : isPremium
               ? '/images/destinations/madinah-green-dome.jpg'
-              : '/images/destinations/madinah-courtyard.jpg');
+              : '/images/destinations/madinah-courtyard.jpg';
 
           const eyebrowText =
             activeTab === 'HAJJ'
