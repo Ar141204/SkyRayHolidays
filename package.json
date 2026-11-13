@@ -13,6 +13,7 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
+    "build": "npm --workspace @skyray/web run build",
     "dev:web": "npm --workspace @skyray/web run dev",
     "dev:api": "npm --workspace @skyray/api run start:dev",
     "dev:mobile": "npm --workspace @skyray/mobile run start",
