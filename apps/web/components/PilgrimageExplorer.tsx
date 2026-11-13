@@ -16,9 +16,17 @@ export default function PilgrimageExplorer() {
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           const published = data.filter((p: any) => p.status !== 'DRAFT');
-          if (published.some((p: any) => p.kind === 'HAJJ' || p.kind === 'UMRAH')) {
-            setItems(published);
-          }
+          // Merge API data with demo packages so both Economy and Premium tiers are always present
+          const merged = [...demoPackages];
+          published.forEach((apiPkg: any) => {
+            const idx = merged.findIndex((m) => m.slug === apiPkg.slug || m.id === apiPkg.id);
+            if (idx >= 0) {
+              merged[idx] = { ...merged[idx], ...apiPkg };
+            } else if (apiPkg.kind === 'HAJJ' || apiPkg.kind === 'UMRAH') {
+              merged.push(apiPkg);
+            }
+          });
+          setItems(merged);
         }
       })
       .catch(() => {});
