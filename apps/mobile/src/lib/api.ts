@@ -1,31 +1,16 @@
 import { Platform, NativeModules } from 'react-native';
 import { VISA_SERVICES, VisaServiceItem } from './visas';
 
-function resolveApiUrl(): string {
-  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hostname) {
-    const host = window.location.hostname;
-    return `http://${host}:4000/api/v1`;
-  }
+const PRODUCTION_API = 'https://skyray-holidays-api.onrender.com/api/v1';
 
+function resolveApiUrl(): string {
   const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+  if (envUrl) {
     return envUrl;
   }
 
-  // When running on a physical phone via Expo Go, scriptURL points to Metro on the Mac (e.g. http://192.168.1.3:8081/...)
-  const scriptURL = (NativeModules as any)?.SourceCode?.scriptURL;
-  if (scriptURL && typeof scriptURL === 'string') {
-    const match = scriptURL.match(/^https?:\/\/([^:/]+)/);
-    if (match && match[1] && match[1] !== 'localhost' && match[1] !== '127.0.0.1') {
-      return `http://${match[1]}:4000/api/v1`;
-    }
-  }
-
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:4000/api/v1';
-  }
-
-  return envUrl || 'http://localhost:4000/api/v1';
+  // Live production API deployed on Render so changes in web admin reflect on mobile immediately
+  return PRODUCTION_API;
 }
 
 export const API = resolveApiUrl();

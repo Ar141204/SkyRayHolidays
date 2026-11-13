@@ -29,7 +29,9 @@ async function bootstrap() {
     app.set('trust proxy', 1);
   }
 
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['/'],
+  });
   app.use(helmet());
   app.use(cookieParser());
 
@@ -42,6 +44,9 @@ async function bootstrap() {
       if (!origin || allowed.includes(origin)) return cb(null, true);
       if (
         process.env.NODE_ENV !== 'production' ||
+        /\.vercel\.app$/.test(origin) ||
+        /\.onrender\.com$/.test(origin) ||
+        /skyrayholidays\.com$/.test(origin) ||
         /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$/.test(origin)
       ) {
         return cb(null, true);

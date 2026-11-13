@@ -1,7 +1,7 @@
 export const API_URL =
   typeof window === 'undefined'
-    ? process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
-    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+    ? process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || 'https://skyray-holidays-api.onrender.com/api/v1'
+    : process.env.NEXT_PUBLIC_API_URL || 'https://skyray-holidays-api.onrender.com/api/v1';
 
 export const contactDefaults = {
   phone: '+91 91763 57791',
