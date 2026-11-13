@@ -17,6 +17,25 @@ const DEFAULT_EMAIL = 'syedrahamathullah@skyrayholidays.com';
 const DEFAULT_WHATSAPP = '+91 91763 57791';
 
 export function AboutScreen() {
+  const [content, setContent] = useState<any>(null);
+
+  useEffect(() => {
+    fetch(`${API}/content`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c) => {
+        if (c && c.about) setContent(c);
+      })
+      .catch(() => {});
+  }, []);
+
+  const about = content?.about || {};
+  const promises = [
+    about.promise1 || 'Verified 4-star and 5-star handpicked accommodations',
+    about.promise2 || 'Dedicated Hajj & Umrah religious guides & scholars',
+    about.promise3 || 'Transparent pricing with zero hidden charges',
+    about.promise4 || 'Custom tailored private or group travel itineraries',
+  ];
+
   return (
     <View style={s.container}>
       <BrandHeader subtitle="About SkyRay Holidays" />
@@ -28,31 +47,36 @@ export function AboutScreen() {
       >
         <View style={s.aboutHero}>
           <View style={s.kickerBadge}>
-            <Text style={s.kickerText}>YOUR TRUSTED TRAVEL PARTNER</Text>
+            <Text style={s.kickerText}>{about.eyebrow || 'YOUR TRUSTED TRAVEL PARTNER'}</Text>
           </View>
-          <Text style={s.aboutTitle}>About SkyRay Holidays</Text>
+          <Text style={s.aboutTitle}>{about.title || 'About SkyRay Holidays'}</Text>
           <Text style={s.aboutBody}>
-            We believe travel is more than reaching a destination — it is an enriching experience that connects you with new cultures, creates cherished family memories, and offers spiritual renewal.
+            {about.lead || about.story ||
+              'We believe travel is more than reaching a destination — it is an enriching experience that connects you with new cultures, creates cherished family memories, and offers spiritual renewal.'}
           </Text>
         </View>
 
         {/* 4 Trust Metrics */}
-        <View style={s.statsGrid}>
-          <View style={s.statCard}>
-            <Text style={s.statNum}>10,000+</Text>
-            <Text style={s.statLabel}>Happy Travellers</Text>
+        <View style={{ gap: 10, marginBottom: 20 }}>
+          <View style={s.statsRow}>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>10,000+</Text>
+              <Text style={s.statLabel}>Happy Travellers</Text>
+            </View>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>50+</Text>
+              <Text style={s.statLabel}>Destinations</Text>
+            </View>
           </View>
-          <View style={s.statCard}>
-            <Text style={s.statNum}>50+</Text>
-            <Text style={s.statLabel}>Destinations</Text>
-          </View>
-          <View style={s.statCard}>
-            <Text style={s.statNum}>4.9 ★</Text>
-            <Text style={s.statLabel}>Google Rating</Text>
-          </View>
-          <View style={s.statCard}>
-            <Text style={s.statNum}>24/7</Text>
-            <Text style={s.statLabel}>Concierge Support</Text>
+          <View style={s.statsRow}>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>4.9 ★</Text>
+              <Text style={s.statLabel}>Google Rating</Text>
+            </View>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>24/7</Text>
+              <Text style={s.statLabel}>Concierge Support</Text>
+            </View>
           </View>
         </View>
 
@@ -62,10 +86,11 @@ export function AboutScreen() {
             <View style={s.pillarIconBox}>
               <Ionicons name="compass-outline" size={18} color="#0ea5e9" />
             </View>
-            <Text style={s.pillarTitle}>Our Mission</Text>
+            <Text style={s.pillarTitle}>{about.missionTitle || 'Our Mission'}</Text>
           </View>
           <Text style={s.pillarBody}>
-            To make travel accessible, enjoyable, and effortless for every traveler through thoughtful planning, transparent pricing, and personalized itineraries.
+            {about.missionDesc ||
+              'To make travel accessible, enjoyable, and effortless for every traveler through thoughtful planning, transparent pricing, and personalized itineraries.'}
           </Text>
         </View>
 
@@ -74,10 +99,11 @@ export function AboutScreen() {
             <View style={s.pillarIconBox}>
               <Ionicons name="sparkles-outline" size={18} color="#f59e0b" />
             </View>
-            <Text style={s.pillarTitle}>Our Vision</Text>
+            <Text style={s.pillarTitle}>{about.visionTitle || 'Our Vision'}</Text>
           </View>
           <Text style={s.pillarBody}>
-            To be the most trusted global travel and pilgrimage facilitator, celebrated for unwavering reliability, customer warmth, and spiritual integrity.
+            {about.visionDesc ||
+              'To be the most trusted global travel and pilgrimage facilitator, celebrated for unwavering reliability, customer warmth, and spiritual integrity.'}
           </Text>
         </View>
 
@@ -86,31 +112,55 @@ export function AboutScreen() {
             <View style={s.pillarIconBox}>
               <Ionicons name="shield-checkmark-outline" size={18} color="#10b981" />
             </View>
-            <Text style={s.pillarTitle}>Why Choose Us</Text>
+            <Text style={s.pillarTitle}>{about.whyUsTitle || 'Why Choose Us'}</Text>
           </View>
           <Text style={s.pillarBody}>
-            Handpicked 4-star and 5-star hotels, verified private chauffeurs, on-ground tour guides, transparent custom quotes, and dedicated 24/7 concierge support.
+            {about.whyUsDesc ||
+              'Handpicked 4-star and 5-star hotels, verified private chauffeurs, on-ground tour guides, transparent custom quotes, and dedicated 24/7 concierge support.'}
           </Text>
+        </View>
+
+        {/* The SkyRay Promise (Peace of Mind on Every Step) */}
+        <View style={s.promiseCard}>
+          <Text style={s.promiseEyebrow}>THE SKYRAY PROMISE</Text>
+          <Text style={s.promiseTitle}>Peace of Mind on Every Step</Text>
+          <Text style={s.promiseSubtitle}>
+            From initial enquiry to your safe return home, we handle every detail with precision and care.
+          </Text>
+
+          <View style={s.promiseList}>
+            {promises.map((p: string, idx: number) => (
+              <View key={idx} style={s.promiseItem}>
+                <Ionicons name="checkmark-circle" size={17} color="#0284c7" style={{ marginRight: 8, marginTop: 1 }} />
+                <Text style={s.promiseItemText}>{p}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </View>
   );
 }
 
-// SCREEN 7: Contact Screen
-export function ContactScreen() {
+// SCREEN 7: Contact Screen (NO physical address display)
+export function ContactScreen({ navigation }: any) {
   const [data, setData] = useState<any>({
     phone: DEFAULT_PHONE,
+    phoneSecondary: DEFAULT_PHONE_SA,
     whatsapp: DEFAULT_WHATSAPP,
     email: DEFAULT_EMAIL,
-    address: '',
   });
 
   useEffect(() => {
     fetch(`${API}/settings/public`)
       .then((r) => (r.ok ? r.json() : {}))
       .then((res: any) => {
-        if (res && (res.phone || res.email)) setData(res);
+        if (res && (res.phone || res.email)) {
+          setData((prev: any) => ({
+            ...prev,
+            ...res,
+          }));
+        }
       })
       .catch(() => {});
   }, []);
@@ -144,8 +194,8 @@ export function ContactScreen() {
           activeOpacity={0.9}
           onPress={() =>
             openUrl(
-              `https://wa.me/919176357791?text=${encodeURIComponent(
-                'Hello SkyRay Holidays! I would like to enquire about your tour packages.',
+              `https://wa.me/${whatsappNumber || '919176357791'}?text=${encodeURIComponent(
+                data.whatsappMessage || 'Hello SkyRay Holidays! I would like to enquire about your tour packages.',
               )}`,
             )
           }
@@ -160,20 +210,20 @@ export function ContactScreen() {
           <Ionicons name="arrow-forward" size={17} color="#ffffff" />
         </TouchableOpacity>
 
-        {/* Contact Methods */}
+        {/* Contact Methods (Direct Channels - No physical address) */}
         <View style={s.contactListCard}>
           {/* Phone - India */}
           <TouchableOpacity
             style={s.contactItem}
             activeOpacity={0.7}
-            onPress={() => openUrl(`tel:${DEFAULT_PHONE}`)}
+            onPress={() => openUrl(`tel:${data.phone || DEFAULT_PHONE}`)}
           >
             <View style={s.contactIconBox}>
               <Ionicons name="call" size={17} color="#0ea5e9" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={s.contactFieldLabel}>India Concierge Desk</Text>
-              <Text style={s.contactFieldVal}>{DEFAULT_PHONE}</Text>
+              <Text style={s.contactFieldVal}>{data.phone || DEFAULT_PHONE}</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
           </TouchableOpacity>
@@ -182,19 +232,19 @@ export function ContactScreen() {
           <TouchableOpacity
             style={s.contactItem}
             activeOpacity={0.7}
-            onPress={() => openUrl(`tel:${DEFAULT_PHONE_SA}`)}
+            onPress={() => openUrl(`tel:${data.phoneSecondary || DEFAULT_PHONE_SA}`)}
           >
             <View style={s.contactIconBox}>
               <Ionicons name="call" size={17} color="#0ea5e9" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={s.contactFieldLabel}>Saudi Arabia &amp; Pilgrimage Desk</Text>
-              <Text style={s.contactFieldVal}>{DEFAULT_PHONE_SA}</Text>
+              <Text style={s.contactFieldVal}>{data.phoneSecondary || DEFAULT_PHONE_SA}</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
           </TouchableOpacity>
 
-          {/* Email */}
+          {/* Email (Last item - clean finish with borderBottomWidth: 0, NO address below) */}
           <TouchableOpacity
             style={[s.contactItem, { borderBottomWidth: 0 }]}
             activeOpacity={0.7}
@@ -206,11 +256,27 @@ export function ContactScreen() {
             <View style={{ flex: 1 }}>
               <Text style={s.contactFieldLabel}>Official Email Address</Text>
               <Text style={s.contactFieldVal}>{data.email || DEFAULT_EMAIL}</Text>
-              <Text style={s.hoursText}>24/7 Dedicated Concierge Support</Text>
+              <Text style={s.hoursText}>{data.hours || '24/7 Dedicated Concierge Support'}</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
           </TouchableOpacity>
         </View>
+
+        {/* Send Online Message / Enquiry Banner */}
+        <TouchableOpacity
+          style={s.enquiryHeroCard}
+          activeOpacity={0.9}
+          onPress={() => (navigation?.getParent?.() || navigation)?.navigate('Enquiry')}
+        >
+          <View style={s.enquiryIconCircle}>
+            <Ionicons name="document-text" size={22} color="#ffffff" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.enquiryCardTitle}>Send Online Enquiry</Text>
+            <Text style={s.enquiryCardSub}>Submit tour, visa, or Hajj &amp; Umrah requests</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#ffffff" />
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -446,15 +512,12 @@ const s = StyleSheet.create({
     lineHeight: 20,
     marginTop: 8,
   },
-  statsGrid: {
+  statsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 10,
-    marginBottom: 20,
   },
   statCard: {
     flex: 1,
-    minWidth: '45%',
     backgroundColor: '#ffffff',
     borderRadius: 14,
     padding: 14,
@@ -514,6 +577,48 @@ const s = StyleSheet.create({
     lineHeight: 20,
     color: '#475569',
   },
+  promiseCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  promiseEyebrow: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#0284c7',
+    letterSpacing: 0.8,
+    marginBottom: 4,
+  },
+  promiseTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#0f2942',
+    letterSpacing: -0.2,
+    marginBottom: 6,
+  },
+  promiseSubtitle: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: '#64748b',
+    marginBottom: 14,
+  },
+  promiseList: {
+    gap: 10,
+  },
+  promiseItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  promiseItemText: {
+    flex: 1,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: '#334155',
+    fontWeight: '500',
+  },
   contactHero: {
     marginBottom: 18,
   },
@@ -548,6 +653,40 @@ const s = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 3,
+  },
+  enquiryHeroCard: {
+    backgroundColor: '#0284c7',
+    borderRadius: 18,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 18,
+    marginBottom: 10,
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  enquiryIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  enquiryCardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
+  enquiryCardSub: {
+    fontSize: 11.5,
+    color: '#ffffff',
+    opacity: 0.9,
+    marginTop: 2,
   },
   waIconCircle: {
     width: 44,

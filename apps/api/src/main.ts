@@ -40,6 +40,12 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, cb) => {
       if (!origin || allowed.includes(origin)) return cb(null, true);
+      if (
+        process.env.NODE_ENV !== 'production' ||
+        /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$/.test(origin)
+      ) {
+        return cb(null, true);
+      }
       cb(new Error('Origin not allowed'));
     },
     credentials: true,

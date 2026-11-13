@@ -12,6 +12,93 @@ import { C, BrandHeader, Badge } from '../components/UI';
 import { getPackageImage } from '../lib/api';
 import { Ionicons } from '@expo/vector-icons';
 
+const PILGRIMAGE_PACKAGES = [
+  {
+    slug: 'premium-umrah',
+    type: 'UMRAH' as const,
+    tier: 'PREMIUM' as const,
+    title: 'Premium Umrah Package',
+    badge: 'BLESSED JOURNEY',
+    badgeVariant: 'gold' as const,
+    duration: '10 Days / 9 Nights',
+    destination: 'Makkah Al Mukarramah & Madinah Al Munawwarah',
+    imageKey: 'premium-umrah',
+    rating: '5.0',
+    priceLabel: 'Custom Quotation',
+    priceValue: 'Price on Enquiry',
+    priceSub: '5-Star hotels directly facing Haram',
+    inclusions: [
+      '5-Star Hotels directly facing Haram / walking distance',
+      'VIP Private / Haramain High-Speed Train Transfers',
+      'Complete Saudi eVisa / Umrah Permit Processing',
+      'Guided Ziyarat to Historical Holy Sites in Makkah & Madinah',
+    ],
+  },
+  {
+    slug: 'economy-umrah-package',
+    type: 'UMRAH' as const,
+    tier: 'ECONOMY' as const,
+    title: 'Economy Umrah Package',
+    badge: 'AFFORDABLE DEVOTION',
+    badgeVariant: 'sky' as const,
+    duration: '15 Days / 14 Nights',
+    destination: 'Makkah & Madinah Holy Sanctuaries',
+    imageKey: 'economy-umrah-package',
+    rating: '4.9',
+    priceLabel: 'All-Inclusive Value',
+    priceValue: 'Price on Enquiry',
+    priceSub: 'Comfortable 3/4-star stays with 24/7 shuttle',
+    inclusions: [
+      'Clean 3/4-Star Hotels with 24/7 continuous shuttle to Haram',
+      'Air-conditioned group transfers between Jeddah, Makkah & Madinah',
+      'Dedicated religious scholar guidance & historical site Ziyarat',
+      'Saudi Umrah Visa processing & comprehensive medical insurance',
+    ],
+  },
+  {
+    slug: 'premium-hajj-package',
+    type: 'HAJJ' as const,
+    tier: 'PREMIUM' as const,
+    title: 'Premium Hajj Package',
+    badge: 'ANNUAL OBLIGATION',
+    badgeVariant: 'gold' as const,
+    duration: '14 - 21 Days',
+    destination: 'Makkah, Mina, Arafat, Muzdalifah & Madinah',
+    imageKey: 'premium-hajj-package',
+    rating: '5.0',
+    priceLabel: 'Official Hajj Allocation',
+    priceValue: 'Price on Enquiry',
+    priceSub: '5-Star Clock Tower & VIP tents near Jamarat',
+    inclusions: [
+      'Pre-allotted luxury air-conditioned tents in Mina & Arafat near Jamarat',
+      '5-Star Hotel in Makkah & Madinah Clock Tower facing Haram',
+      'Dedicated Islamic scholars accompanying every group ritual',
+      'Full Nusuk VIP portal registration assistance and private coaches',
+    ],
+  },
+  {
+    slug: 'economy-hajj-package',
+    type: 'HAJJ' as const,
+    tier: 'ECONOMY' as const,
+    title: 'Economy Hajj Package',
+    badge: 'FULFILL YOUR PILLAR',
+    badgeVariant: 'sky' as const,
+    duration: '21 - 28 Days',
+    destination: 'Makkah, Mina Camp, Arafat & Madinah',
+    imageKey: 'economy-hajj-package',
+    rating: '4.8',
+    priceLabel: 'Official Quota Package',
+    priceValue: 'Price on Enquiry',
+    priceSub: 'Standard AC tents & verified shifting buildings',
+    inclusions: [
+      'Standard air-conditioned camps in Mina & Arafat with full bedding',
+      'Clean shifting building accommodations near holy sites',
+      'Full-board hygienic buffet meals throughout ritual days',
+      'Complete Nusuk registration assistance & group religious guide',
+    ],
+  },
+];
+
 export function PilgrimageScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState<'ALL' | 'HAJJ' | 'UMRAH'>('ALL');
   const [tierFilter, setTierFilter] = useState<'ALL' | 'PREMIUM' | 'ECONOMY'>('ALL');
@@ -37,8 +124,11 @@ export function PilgrimageScreen({ navigation }: any) {
     Linking.openURL(`https://wa.me/919176357791?text=${text}`).catch(() => {});
   };
 
-  const meccaImg = getPackageImage('premium-hajj-package');
-  const madinahImg = getPackageImage('premium-umrah');
+  const filteredPackages = PILGRIMAGE_PACKAGES.filter((pkg) => {
+    const matchesTab = activeTab === 'ALL' || pkg.type === activeTab;
+    const matchesTier = tierFilter === 'ALL' || pkg.tier === tierFilter;
+    return matchesTab && matchesTier;
+  });
 
   return (
     <View style={s.container}>
@@ -115,73 +205,118 @@ export function PilgrimageScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        {/* Card 1: Umrah Package (Shown when ALL or UMRAH selected) */}
-        {(activeTab === 'ALL' || activeTab === 'UMRAH') && (
-          <View style={s.card}>
+        {/* Tier Filter Selector (Economy vs Premium) */}
+        <View style={s.tierRow}>
+          <TouchableOpacity
+            style={[s.tierBtn, tierFilter === 'ALL' && s.tierBtnActive]}
+            onPress={() => setTierFilter('ALL')}
+            activeOpacity={0.8}
+          >
+            <Text style={[s.tierBtnText, tierFilter === 'ALL' && s.tierBtnTextActive]}>
+              All Tiers
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[s.tierBtn, tierFilter === 'ECONOMY' && s.tierBtnActive]}
+            onPress={() => setTierFilter('ECONOMY')}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={12}
+              color={tierFilter === 'ECONOMY' ? '#ffffff' : '#0284c7'}
+              style={{ marginRight: 4 }}
+            />
+            <Text style={[s.tierBtnText, tierFilter === 'ECONOMY' && s.tierBtnTextActive]}>
+              Economy
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[s.tierBtn, tierFilter === 'PREMIUM' && s.tierBtnActive]}
+            onPress={() => setTierFilter('PREMIUM')}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="star"
+              size={11}
+              color={tierFilter === 'PREMIUM' ? '#ffffff' : '#f59e0b'}
+              style={{ marginRight: 4 }}
+            />
+            <Text style={[s.tierBtnText, tierFilter === 'PREMIUM' && s.tierBtnTextActive]}>
+              Premium 5-Star
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Dynamic Package Cards */}
+        {filteredPackages.map((pkg, idx) => (
+          <View key={pkg.slug} style={[s.card, { marginTop: idx > 0 ? 18 : 0 }]}>
             <View style={s.imageFrame}>
               <Image
-                source={madinahImg}
+                source={getPackageImage(pkg.slug)}
                 style={s.coverImage}
                 resizeMode="cover"
               />
               <View style={s.imageGradientOverlay} />
               <View style={s.floatingTopRow}>
-                <View style={[s.categoryTag, s.categoryTagGold]}>
-                  <Ionicons name="moon" size={10} color="#ffffff" style={{ marginRight: 4 }} />
-                  <Text style={s.categoryTagText}>BLESSED JOURNEY</Text>
+                <View
+                  style={[
+                    s.categoryTag,
+                    pkg.tier === 'PREMIUM' ? s.categoryTagGold : s.categoryTagSky,
+                  ]}
+                >
+                  <Ionicons
+                    name={pkg.type === 'HAJJ' ? 'cube' : 'moon'}
+                    size={10}
+                    color="#ffffff"
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text style={s.categoryTagText}>{pkg.badge}</Text>
                 </View>
                 <View style={s.ratingBadge}>
                   <Ionicons name="star" size={12} color="#f59e0b" style={{ marginRight: 3 }} />
-                  <Text style={s.ratingScore}>5.0</Text>
+                  <Text style={s.ratingScore}>{pkg.rating}</Text>
                 </View>
               </View>
               <View style={s.floatingBottomRow}>
                 <View style={s.durationPill}>
                   <Ionicons name="time-outline" size={12} color="#ffffff" style={{ marginRight: 4 }} />
-                  <Text style={s.durationText}>10 Days / 9 Nights</Text>
+                  <Text style={s.durationText}>{pkg.duration}</Text>
                 </View>
               </View>
             </View>
 
             <View style={s.cardBody}>
-              <Text style={s.cardTitle}>Premium Umrah Package</Text>
+              <Text style={s.cardTitle}>{pkg.title}</Text>
               <View style={s.destinationRow}>
                 <Ionicons name="location-outline" size={14} color="#0ea5e9" style={{ marginRight: 4 }} />
-                <Text style={s.cardDestination}>Makkah Al Mukarramah &amp; Madinah Al Munawwarah</Text>
+                <Text style={s.cardDestination}>{pkg.destination}</Text>
               </View>
 
               {/* Key Inclusions Checklist */}
               <View style={s.checklist}>
-                <View style={s.checkRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" style={s.checkMark} />
-                  <Text style={s.checkLabel}>5-Star Hotels directly facing Haram / walking distance</Text>
-                </View>
-                <View style={s.checkRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" style={s.checkMark} />
-                  <Text style={s.checkLabel}>VIP Private / Haramain High-Speed Train Transfers</Text>
-                </View>
-                <View style={s.checkRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" style={s.checkMark} />
-                  <Text style={s.checkLabel}>Complete Saudi eVisa / Umrah Permit Processing</Text>
-                </View>
-                <View style={s.checkRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" style={s.checkMark} />
-                  <Text style={s.checkLabel}>Guided Ziyarat to Historical Holy Sites in Makkah &amp; Madinah</Text>
-                </View>
+                {pkg.inclusions.map((inc, i) => (
+                  <View key={i} style={s.checkRow}>
+                    <Ionicons name="checkmark-circle" size={16} color="#10b981" style={s.checkMark} />
+                    <Text style={s.checkLabel}>{inc}</Text>
+                  </View>
+                ))}
               </View>
 
               <View style={s.cardFooter}>
                 <View>
-                  <Text style={s.priceLabel}>Custom Quotation</Text>
-                  <Text style={s.priceValue}>Price on Enquiry</Text>
-                  <Text style={s.priceSub}>Personalized quotes based on hotel tier &amp; dates</Text>
+                  <Text style={s.priceLabel}>{pkg.priceLabel}</Text>
+                  <Text style={s.priceValue}>{pkg.priceValue}</Text>
+                  <Text style={s.priceSub}>{pkg.priceSub}</Text>
                 </View>
               </View>
 
               <View style={s.btnRow}>
                 <TouchableOpacity
                   style={s.viewDetailsBtn}
-                  onPress={() => navigateToPackage('premium-umrah')}
+                  onPress={() => navigateToPackage(pkg.slug)}
                   activeOpacity={0.85}
                 >
                   <Text style={s.viewDetailsText}>View Details</Text>
@@ -189,7 +324,7 @@ export function PilgrimageScreen({ navigation }: any) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={s.enquireBtn}
-                  onPress={() => navigateToEnquiry('Premium Umrah Package')}
+                  onPress={() => navigateToEnquiry(pkg.title)}
                   activeOpacity={0.85}
                 >
                   <Ionicons name="chatbubble-ellipses" size={13} color="#ffffff" style={{ marginRight: 4 }} />
@@ -198,91 +333,7 @@ export function PilgrimageScreen({ navigation }: any) {
               </View>
             </View>
           </View>
-        )}
-
-        {/* Card 2: Hajj Package (Shown when ALL or HAJJ selected) */}
-        {(activeTab === 'ALL' || activeTab === 'HAJJ') && (
-          <View style={[s.card, { marginTop: activeTab === 'ALL' ? 18 : 0 }]}>
-            <View style={s.imageFrame}>
-              <Image
-                source={meccaImg}
-                style={s.coverImage}
-                resizeMode="cover"
-              />
-              <View style={s.imageGradientOverlay} />
-              <View style={s.floatingTopRow}>
-                <View style={[s.categoryTag, s.categoryTagGold]}>
-                  <Ionicons name="sparkles" size={10} color="#ffffff" style={{ marginRight: 4 }} />
-                  <Text style={s.categoryTagText}>ANNUAL OBLIGATION</Text>
-                </View>
-                <View style={s.ratingBadge}>
-                  <Ionicons name="star" size={12} color="#f59e0b" style={{ marginRight: 3 }} />
-                  <Text style={s.ratingScore}>5.0</Text>
-                </View>
-              </View>
-              <View style={s.floatingBottomRow}>
-                <View style={s.durationPill}>
-                  <Ionicons name="time-outline" size={12} color="#ffffff" style={{ marginRight: 4 }} />
-                  <Text style={s.durationText}>14 - 21 Days</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={s.cardBody}>
-              <Text style={s.cardTitle}>Premium Hajj Package</Text>
-              <View style={s.destinationRow}>
-                <Ionicons name="location-outline" size={14} color="#0ea5e9" style={{ marginRight: 4 }} />
-                <Text style={s.cardDestination}>Makkah, Mina, Arafat, Muzdalifah &amp; Madinah</Text>
-              </View>
-
-              <View style={s.checklist}>
-                <View style={s.checkRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" style={s.checkMark} />
-                  <Text style={s.checkLabel}>Pre-allotted luxury air-conditioned tents in Mina &amp; Arafat</Text>
-                </View>
-                <View style={s.checkRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" style={s.checkMark} />
-                  <Text style={s.checkLabel}>Dedicated Islamic scholars accompanying every group ritual</Text>
-                </View>
-                <View style={s.checkRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" style={s.checkMark} />
-                  <Text style={s.checkLabel}>Full Nusuk portal registration assistance and documentation</Text>
-                </View>
-                <View style={s.checkRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" style={s.checkMark} />
-                  <Text style={s.checkLabel}>Full-board hygienic buffet meals throughout ritual days</Text>
-                </View>
-              </View>
-
-              <View style={s.cardFooter}>
-                <View>
-                  <Text style={s.priceLabel}>Official Hajj Allocation</Text>
-                  <Text style={s.priceValue}>Price on Enquiry</Text>
-                  <Text style={s.priceSub}>Subject to Saudi Ministry Hajj quotas</Text>
-                </View>
-              </View>
-
-              <View style={s.btnRow}>
-                <TouchableOpacity
-                  style={s.viewDetailsBtn}
-                  onPress={() => navigateToPackage('premium-hajj-package')}
-                  activeOpacity={0.85}
-                >
-                  <Text style={s.viewDetailsText}>View Details</Text>
-                  <Ionicons name="arrow-forward" size={14} color="#0284c7" style={{ marginLeft: 4 }} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={s.enquireBtn}
-                  onPress={() => navigateToEnquiry('Premium Hajj Package')}
-                  activeOpacity={0.85}
-                >
-                  <Ionicons name="chatbubble-ellipses" size={13} color="#ffffff" style={{ marginRight: 4 }} />
-                  <Text style={s.enquireBtnText}>Enquire Now</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
+        ))}
 
         {/* WhatsApp Consultation Assistance Card */}
         <TouchableOpacity
@@ -371,7 +422,36 @@ const s = StyleSheet.create({
   tabRow: {
     flexDirection: 'row',
     gap: 8,
+    marginBottom: 10,
+  },
+  tierRow: {
+    flexDirection: 'row',
+    gap: 8,
     marginBottom: 18,
+  },
+  tierBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+  },
+  tierBtnActive: {
+    backgroundColor: '#0f2942',
+    borderColor: '#0f2942',
+  },
+  tierBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  tierBtnTextActive: {
+    color: '#ffffff',
   },
   tabBtn: {
     flex: 1,
@@ -444,6 +524,9 @@ const s = StyleSheet.create({
   },
   categoryTagGold: {
     backgroundColor: 'rgba(217, 119, 6, 0.94)',
+  },
+  categoryTagSky: {
+    backgroundColor: 'rgba(2, 132, 199, 0.94)',
   },
   categoryTagText: {
     color: '#ffffff',

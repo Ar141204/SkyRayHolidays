@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,12 +9,20 @@ import {
   TextInput,
   Image,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
-import { getPackagesWithStatus, TourPackage, getPackageImage, DESTINATION_IMAGES } from '../lib/api';
+import {
+  getPackagesWithStatus,
+  TourPackage,
+  getPackageImage,
+  DESTINATION_IMAGES,
+  getVisaServices,
+} from '../lib/api';
 import {
   VISA_SERVICES,
   SCHENGEN_MEMBER_COUNTRIES,
   POPULAR_EVISA_COUNTRIES,
+  GCC_COUNTRIES,
   VisaServiceItem,
 } from '../lib/visas';
 import { C, BrandHeader } from '../components/UI';
@@ -33,14 +41,17 @@ export function ServicesScreen({ route, navigation }: any) {
   const initialTabParam = route.params?.initialTab;
   const [activeTab, setActiveTab] = useState<'all' | 'packages' | 'visa'>('all');
   const [items, setItems] = useState<TourPackage[]>([]);
+  const [visas, setVisas] = useState<VisaServiceItem[]>(VISA_SERVICES);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [isOffline, setIsOffline] = useState(false);
 
   // Accordion toggles for visa country lists
   const [showSchengenList, setShowSchengenList] = useState(false);
+  const [showGccList, setShowGccList] = useState(false);
   const [showEvisaList, setShowEvisaList] = useState(false);
 
   useEffect(() => {
@@ -53,18 +64,41 @@ export function ServicesScreen({ route, navigation }: any) {
     }
   }, [initialTabParam]);
 
-  useEffect(() => {
-    getPackagesWithStatus()
-      .then((res) => {
-        setItems(res.packages);
-        setIsOffline(res.isOffline);
-      })
-      .catch((e) => {
-        setError(e.message);
-        setIsOffline(true);
-      })
-      .finally(() => setLoading(false));
+  const loadData = useCallback(async () => {
+    try {
+      const pkgPromise = getPackagesWithStatus()
+        .then((res) => {
+          setItems(res.packages);
+          setIsOffline(res.isOffline);
+        })
+        .catch((e) => {
+          setError(e.message);
+          setIsOffline(true);
+        });
+
+      const visaPromise = getVisaServices()
+        .then((vList) => {
+          if (Array.isArray(vList) && vList.length > 0) {
+            setVisas(vList);
+          }
+        })
+        .catch(() => {});
+
+      await Promise.allSettled([pkgPromise, visaPromise]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
 
   const filteredPackages = useMemo(() => {
     return items.filter((p) => {
@@ -192,6 +226,7 @@ export function ServicesScreen({ route, navigation }: any) {
         style={s.mainScrollView}
         contentContainerStyle={s.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0284c7']} />}
       >
         {/* ========================================================================= */}
         {/* SECTION A: TOUR PACKAGES                                                  */}
@@ -306,7 +341,7 @@ export function ServicesScreen({ route, navigation }: any) {
                 </TouchableOpacity>
               </View>
             ) : (
-              filteredPackages.map((item) => {
+              filteredPackages.map((item, idx) => {
                 const isDomestic =
                   item.category === 'Domestic' ||
                   item.destination.includes('India') ||
@@ -323,7 +358,7 @@ export function ServicesScreen({ route, navigation }: any) {
                 const cardImage = getPackageImage(item.slug);
 
                 return (
-                  <View key={item.id} style={s.packageCard}>
+                  <View key={`${item.id || item.slug}-${idx}`} style={s.packageCard}>
                     {/* Visual Photography Header */}
                     <TouchableOpacity
                       activeOpacity={0.92}
@@ -474,7 +509,7 @@ export function ServicesScreen({ route, navigation }: any) {
                 </View>
                 <Text style={s.sectionTitle}>International Visa Services</Text>
                 <Text style={s.sectionSubtitle}>
-                  Arranged in visual cards just like our holiday packages. Choose from US B1/B2, UK Visitor, all 29 Schengen nations, and 50+ Global E-Visas.
+                  Arranged in visual cards just like our holiday packages. Choose from US B1/B2, UK Visitor, all 29 Schengen nations, Canada Visa, GCC Visas (Saudi, UAE, Oman, Kuwait, Qatar), and 50+ Global E-Visas.
                 </Text>
               </View>
               {activeTab === 'all' && (
@@ -489,11 +524,13 @@ export function ServicesScreen({ route, navigation }: any) {
               )}
             </View>
 
-            {/* 4 Dedicated Visa Service Cards */}
-            {VISA_SERVICES.map((v: VisaServiceItem) => {
+            {/* Dedicated Visa Service Cards (US, UK, Schengen, Canada, GCC, E-Visa) */}
+            {visas.map((v: VisaServiceItem) => {
               const isUS = v.slug === 'us-visa';
               const isUK = v.slug === 'uk-visa';
               const isSchengen = v.slug === 'schengen-visa';
+              const isCanada = v.slug === 'canada-visa';
+              const isGcc = v.slug === 'gcc-visa';
               const isEvisa = v.slug === 'e-visa';
 
               const visaImage = DESTINATION_IMAGES[v.imageKey] || DESTINATION_IMAGES['dubai-holiday'];
@@ -609,7 +646,57 @@ export function ServicesScreen({ route, navigation }: any) {
                       </View>
                     )}
 
-                    {/* Accordion 2: Global E-Visa Countries */}
+                    {/* Accordion 2: GCC Countries & Resident Scheme */}
+                    {isGcc && (
+                      <View style={s.accordionWrap}>
+                        <TouchableOpacity
+                          style={s.accordionToggle}
+                          onPress={() => setShowGccList(!showGccList)}
+                          activeOpacity={0.8}
+                        >
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Ionicons name="sunny" size={14} color="#0284c7" style={{ marginRight: 6 }} />
+                            <Text style={s.accordionTitle}>
+                              GCC Countries &amp; Resident Option ({GCC_COUNTRIES.length})
+                            </Text>
+                          </View>
+                          <Ionicons
+                            name={showGccList ? 'chevron-up' : 'chevron-down'}
+                            size={16}
+                            color="#64748b"
+                          />
+                        </TouchableOpacity>
+
+                        {showGccList && (
+                          <View style={s.countriesGrid}>
+                            <Text style={s.countriesExplainer}>
+                              Single/Multiple Entry &amp; GCC Resident Visa option for Iqama holders:
+                            </Text>
+                            <View style={s.countriesPillsContainer}>
+                              {GCC_COUNTRIES.map((c) => (
+                                <TouchableOpacity
+                                  key={c}
+                                  style={s.countryPill}
+                                  onPress={() =>
+                                    navigateToEnquiry({
+                                      service: 'visa',
+                                      country: c,
+                                      visaCategory: 'gcc',
+                                    })
+                                  }
+                                  activeOpacity={0.7}
+                                >
+                                  <Text style={s.countryPillText}>{c}</Text>
+                                  <Ionicons name="arrow-forward" size={10} color="#0284c7" style={{ marginLeft: 3 }} />
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                          </View>
+                        )}
+                      </View>
+                    )}
+
+                    {/* Accordion 3: Global E-Visa Countries */}
                     {isEvisa && (
                       <View style={s.accordionWrap}>
                         <TouchableOpacity
@@ -663,8 +750,20 @@ export function ServicesScreen({ route, navigation }: any) {
                     <TouchableOpacity
                       style={s.visaPrimaryBtn}
                       onPress={() => {
-                        let country = v.defaultCountry || (isSchengen ? 'France' : 'United Arab Emirates');
-                        let visaCategory = isUS ? 'us' : isUK ? 'uk' : isSchengen ? 'schengen' : 'evisa';
+                        let country =
+                          v.defaultCountry ||
+                          (isSchengen ? 'France' : isGcc ? 'Saudi Arabia' : isCanada ? 'Canada' : 'United Arab Emirates');
+                        let visaCategory = isUS
+                          ? 'us'
+                          : isUK
+                          ? 'uk'
+                          : isSchengen
+                          ? 'schengen'
+                          : isCanada
+                          ? 'canada'
+                          : isGcc
+                          ? 'gcc'
+                          : 'evisa';
                         navigateToEnquiry({
                           service: 'visa',
                           country,
@@ -691,37 +790,41 @@ export function ServicesScreen({ route, navigation }: any) {
           <Text style={s.assuranceEyebrow}>THE SKYRAY ASSURANCE</Text>
           <Text style={s.assuranceTitle}>Travel with Complete Confidence</Text>
 
-          <View style={s.assuranceGrid}>
-            <View style={s.assuranceCell}>
-              <View style={[s.assuranceIconCircle, { backgroundColor: '#e0f2fe' }]}>
-                <Ionicons name="ribbon-outline" size={18} color="#0284c7" />
+          <View style={{ gap: 10 }}>
+            <View style={s.assuranceRow}>
+              <View style={s.assuranceCell}>
+                <View style={[s.assuranceIconCircle, { backgroundColor: '#e0f2fe' }]}>
+                  <Ionicons name="ribbon-outline" size={18} color="#0284c7" />
+                </View>
+                <Text style={s.assuranceCellTitle}>Transparent Pricing</Text>
+                <Text style={s.assuranceCellBody}>Clear inclusions, upfront fees &amp; zero hidden charges.</Text>
               </View>
-              <Text style={s.assuranceCellTitle}>Transparent Pricing</Text>
-              <Text style={s.assuranceCellBody}>Clear inclusions, upfront fees &amp; zero hidden charges.</Text>
+
+              <View style={s.assuranceCell}>
+                <View style={[s.assuranceIconCircle, { backgroundColor: '#e0f2fe' }]}>
+                  <Ionicons name="shield-checkmark-outline" size={18} color="#0284c7" />
+                </View>
+                <Text style={s.assuranceCellTitle}>99% Audit Accuracy</Text>
+                <Text style={s.assuranceCellBody}>Pre-screening verification for maximum approval confidence.</Text>
+              </View>
             </View>
 
-            <View style={s.assuranceCell}>
-              <View style={[s.assuranceIconCircle, { backgroundColor: '#e0f2fe' }]}>
-                <Ionicons name="shield-checkmark-outline" size={18} color="#0284c7" />
+            <View style={s.assuranceRow}>
+              <View style={s.assuranceCell}>
+                <View style={[s.assuranceIconCircle, { backgroundColor: '#e0f2fe' }]}>
+                  <Ionicons name="time-outline" size={18} color="#0284c7" />
+                </View>
+                <Text style={s.assuranceCellTitle}>Fast Response Desk</Text>
+                <Text style={s.assuranceCellBody}>Direct assistance via WhatsApp, phone &amp; email support.</Text>
               </View>
-              <Text style={s.assuranceCellTitle}>99% Audit Accuracy</Text>
-              <Text style={s.assuranceCellBody}>Pre-screening verification for maximum approval confidence.</Text>
-            </View>
 
-            <View style={s.assuranceCell}>
-              <View style={[s.assuranceIconCircle, { backgroundColor: '#e0f2fe' }]}>
-                <Ionicons name="time-outline" size={18} color="#0284c7" />
+              <View style={s.assuranceCell}>
+                <View style={[s.assuranceIconCircle, { backgroundColor: '#e0f2fe' }]}>
+                  <Ionicons name="sparkles-outline" size={18} color="#0284c7" />
+                </View>
+                <Text style={s.assuranceCellTitle}>Customized For You</Text>
+                <Text style={s.assuranceCellBody}>Tailored private or group packages designed to your pace.</Text>
               </View>
-              <Text style={s.assuranceCellTitle}>Fast Response Desk</Text>
-              <Text style={s.assuranceCellBody}>Direct assistance via WhatsApp, phone &amp; email support.</Text>
-            </View>
-
-            <View style={s.assuranceCell}>
-              <View style={[s.assuranceIconCircle, { backgroundColor: '#e0f2fe' }]}>
-                <Ionicons name="sparkles-outline" size={18} color="#0284c7" />
-              </View>
-              <Text style={s.assuranceCellTitle}>Customized For You</Text>
-              <Text style={s.assuranceCellBody}>Tailored private or group packages designed to your pace.</Text>
             </View>
           </View>
         </View>
@@ -1428,14 +1531,12 @@ const s = StyleSheet.create({
     letterSpacing: -0.2,
     marginBottom: 14,
   },
-  assuranceGrid: {
+  assuranceRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
     gap: 10,
   },
   assuranceCell: {
-    width: (width - 32 - 32 - 10) / 2,
+    flex: 1,
     backgroundColor: '#f8fafc',
     borderRadius: 12,
     padding: 12,

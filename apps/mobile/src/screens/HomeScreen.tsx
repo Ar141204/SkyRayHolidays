@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   ScrollView,
   View,
@@ -9,13 +9,19 @@ import {
   Linking,
   ImageBackground,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
 import { BrandHeader } from '../components/UI';
 import { Ionicons } from '@expo/vector-icons';
-import { DESTINATION_IMAGES, SPECIALIZED_DESTINATIONS } from '../lib/api';
+import {
+  DESTINATION_IMAGES,
+  SPECIALIZED_DESTINATIONS,
+  API,
+  getVisaServices,
+} from '../lib/api';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 44) / 2;
+const CARD_WIDTH = Math.floor((width - 46) / 2);
 
 const GOOGLE_REVIEWS_URL = 'https://maps.app.goo.gl/mzoUCar9aFRcQumW8';
 
@@ -40,11 +46,11 @@ const REAL_GOOGLE_REVIEWS = [
   },
 ];
 
-const VISA_SERVICES = [
+const DEFAULT_VISA_SERVICES = [
   {
     id: 'us',
     title: 'US Visa',
-    category: 'B1 / B2 Tourist & Business',
+    category: 'Tourist, Business & Education',
     imageKey: 'us-visa',
     desc: 'DS-160, slot tracking & interview prep',
     country: 'United States',
@@ -52,46 +58,113 @@ const VISA_SERVICES = [
   {
     id: 'uk',
     title: 'UK Visa',
-    category: 'Standard Visitor (6M - 10Y)',
+    category: 'Tourist, Business & Education',
     imageKey: 'uk-visa',
-    desc: 'Document verification & biometrics',
+    desc: 'Standard visitor & student application',
     country: 'United Kingdom',
   },
   {
     id: 'schengen',
     title: 'Schengen Visa',
-    category: 'All 29 Member Nations',
+    category: 'Tourist & Business (29 Nations)',
     imageKey: 'schengen-visa',
-    desc: 'France, Germany, Switzerland & more',
+    desc: 'France, Germany, Switzerland & 29 states',
     country: 'France',
+  },
+  {
+    id: 'canada',
+    title: 'Canada Visa',
+    category: 'Tourist (V1) & Business',
+    imageKey: 'us-visa',
+    desc: 'Visitor visa, Super Visa & biometrics',
+    country: 'Canada',
+  },
+  {
+    id: 'gcc',
+    title: 'GCC Visas',
+    category: 'Saudi, UAE, Oman, Kuwait, Qatar',
+    imageKey: 'dubai-holiday',
+    desc: 'Single/multiple entry & GCC Resident visa',
+    country: 'Saudi Arabia',
   },
   {
     id: 'evisa',
     title: 'Global E-Visas',
     category: '50+ Fast-Track Countries',
     imageKey: 'dubai-holiday',
-    desc: 'UAE, Saudi, Malaysia, Singapore',
+    desc: 'UAE, Singapore, Malaysia, Vietnam & more',
     country: 'United Arab Emirates',
   },
 ];
 
 export function HomeScreen({ navigation }: any) {
-  const navigateToEnquiry = (params?: { packageName?: string; service?: string; country?: string }) => {
+  const [content, setContent] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(null);
+  const [visas, setVisas] = useState<any[]>(DEFAULT_VISA_SERVICES);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadAllData = useCallback(async () => {
+    try {
+      // 1. Fetch live website & mobile content from Supabase backend
+      fetch(`${API}/content`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((c) => {
+          if (c && c.home) setContent(c);
+        })
+        .catch(() => {});
+
+      // 2. Fetch live settings (phone, WhatsApp, reviews URL)
+      fetch(`${API}/settings/public`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((s) => {
+          if (s) setSettings(s);
+        })
+        .catch(() => {});
+
+      // 3. Fetch live visa services from Supabase backend
+      getVisaServices()
+        .then((vList) => {
+          if (Array.isArray(vList) && vList.length > 0) {
+            setVisas(vList);
+          }
+        })
+        .catch(() => {});
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadAllData();
+    setRefreshing(false);
+  };
+
+  const homeContent = content?.home || {};
+  const currentPhone = settings?.phone || '+91 91763 57791';
+  const currentWhatsApp = (settings?.whatsapp || '919176357791').replace(/\D/g, '');
+  const currentReviewsUrl = settings?.googleReviewsUrl || GOOGLE_REVIEWS_URL;
+
+  const navigateToEnquiry = (params?: { packageName?: string; service?: string; country?: string; visaCategory?: string }) => {
     (navigation.getParent?.() || navigation).navigate('Enquiry', params || {});
   };
 
   const handleWhatsApp = () => {
     Linking.openURL(
-      'https://wa.me/919176357791?text=Hello%20SkyRay%20Holidays!%20I%20would%20like%20to%20plan%20a%20trip.',
+      `https://wa.me/${currentWhatsApp || '919176357791'}?text=${encodeURIComponent(
+        settings?.whatsappMessage || 'Hello SkyRay Holidays! I would like to plan a trip.',
+      )}`,
     ).catch(() => {});
   };
 
   const handleCall = () => {
-    Linking.openURL('tel:+919176357791').catch(() => {});
+    Linking.openURL(`tel:${currentPhone}`).catch(() => {});
   };
 
   const handleReviews = () => {
-    Linking.openURL(GOOGLE_REVIEWS_URL).catch(() => {});
+    Linking.openURL(currentReviewsUrl).catch(() => {});
   };
 
   return (
@@ -105,6 +178,7 @@ export function HomeScreen({ navigation }: any) {
         style={s.scrollView}
         contentContainerStyle={s.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0284c7']} />}
       >
         {/* 1. Hero Visual Banner with Photo Background */}
         <View style={s.heroCardWrapper}>
@@ -116,16 +190,17 @@ export function HomeScreen({ navigation }: any) {
             <View style={s.heroOverlay}>
               <View style={s.heroBadge}>
                 <Ionicons name="sparkles" size={12} color="#38bdf8" style={{ marginRight: 6 }} />
-                <Text style={s.heroBadgeText}>WHERE EVERY TRIP BECOMES A MEMORY</Text>
+                <Text style={s.heroBadgeText}>{homeContent.eyebrow || 'WHERE EVERY TRIP BECOMES A MEMORY'}</Text>
               </View>
 
               <Text style={s.heroTitle}>
-                Your Journey Begins{'\n'}
-                <Text style={s.heroTitleAccent}>with SkyRay Holidays</Text>
+                {homeContent.title ? homeContent.title : (
+                  <>Your Journey Begins{'\n'}<Text style={s.heroTitleAccent}>with SkyRay Holidays</Text></>
+                )}
               </Text>
 
               <Text style={s.heroTagline}>
-                Thoughtfully planned holidays, specialized world destinations, and sacred pilgrimage journeys.
+                {homeContent.subtitle || 'Thoughtfully planned holidays, specialized world destinations, and sacred pilgrimage journeys.'}
               </Text>
 
               <View style={s.heroActions}>
@@ -307,10 +382,10 @@ export function HomeScreen({ navigation }: any) {
         </View>
 
         <View style={s.visaGrid}>
-          {VISA_SERVICES.map((v) => {
+          {visas.slice(0, 6).map((v: any) => {
             const imgSource = DESTINATION_IMAGES[v.imageKey] || DESTINATION_IMAGES['dubai-holiday'];
             return (
-              <View key={v.id} style={s.visaBox}>
+              <View key={v.id || v.slug} style={s.visaBox}>
                 <ImageBackground
                   source={imgSource}
                   style={s.visaBoxBg}
@@ -326,13 +401,14 @@ export function HomeScreen({ navigation }: any) {
                 </ImageBackground>
 
                 <View style={s.visaBoxBody}>
-                  <Text style={s.visaBoxDesc}>{v.desc}</Text>
+                  <Text style={s.visaBoxDesc}>{v.shortDesc || v.desc || 'Comprehensive international visa assistance & document verification.'}</Text>
                   <TouchableOpacity
                     style={s.visaEnquireBtn}
                     onPress={() =>
                       navigateToEnquiry({
                         service: 'visa',
-                        country: v.country,
+                        country: v.defaultCountry || v.country || 'Global',
+                        visaCategory: v.slug || v.id,
                       })
                     }
                     activeOpacity={0.85}
@@ -346,42 +422,46 @@ export function HomeScreen({ navigation }: any) {
           })}
         </View>
 
-        {/* 6. The SkyRay Way (Clean 4-feature grid) */}
+        {/* 6. The SkyRay Way (Clean 2x2 Balanced Grid - Live sync with Admin) */}
         <View style={s.skyrayWayCard}>
           <Text style={s.skyrayWayEyebrow}>THE SKYRAY WAY</Text>
           <Text style={s.skyrayWayTitle}>Travel with Complete Confidence</Text>
 
-          <View style={s.featuresGrid}>
-            <View style={s.featureCell}>
-              <View style={[s.featureIcon, { backgroundColor: '#e0f2fe' }]}>
-                <Ionicons name="compass-outline" size={18} color="#0284c7" />
+          <View style={{ gap: 10 }}>
+            <View style={s.featuresRow}>
+              <View style={s.featureCell}>
+                <View style={[s.featureIcon, { backgroundColor: '#e0f2fe' }]}>
+                  <Ionicons name="compass-outline" size={18} color="#0284c7" />
+                </View>
+                <Text style={s.featureTitle}>{homeContent.badge1Title || 'Thoughtful Planning'}</Text>
+                <Text style={s.featureBody}>{homeContent.badge1Desc || 'Itineraries tailored to your pace, dates & budget.'}</Text>
               </View>
-              <Text style={s.featureTitle}>Thoughtful Planning</Text>
-              <Text style={s.featureBody}>Itineraries tailored to your pace, dates &amp; budget.</Text>
+
+              <View style={s.featureCell}>
+                <View style={[s.featureIcon, { backgroundColor: '#fef3c7' }]}>
+                  <Ionicons name="person-outline" size={18} color="#d97706" />
+                </View>
+                <Text style={s.featureTitle}>{homeContent.badge2Title || 'Personal Guidance'}</Text>
+                <Text style={s.featureBody}>{homeContent.badge2Desc || 'Dedicated team with you before, during & after.'}</Text>
+              </View>
             </View>
 
-            <View style={s.featureCell}>
-              <View style={[s.featureIcon, { backgroundColor: '#fef3c7' }]}>
-                <Ionicons name="person-outline" size={18} color="#d97706" />
+            <View style={s.featuresRow}>
+              <View style={s.featureCell}>
+                <View style={[s.featureIcon, { backgroundColor: '#f0fdf4' }]}>
+                  <Ionicons name="shield-checkmark-outline" size={18} color="#16a34a" />
+                </View>
+                <Text style={s.featureTitle}>{homeContent.badge3Title || 'Clear Information'}</Text>
+                <Text style={s.featureBody}>{homeContent.badge3Desc || 'No hidden surprises. Transparent quotes upfront.'}</Text>
               </View>
-              <Text style={s.featureTitle}>Personal Guidance</Text>
-              <Text style={s.featureBody}>Dedicated team with you before, during &amp; after.</Text>
-            </View>
 
-            <View style={s.featureCell}>
-              <View style={[s.featureIcon, { backgroundColor: '#f0fdf4' }]}>
-                <Ionicons name="shield-checkmark-outline" size={18} color="#16a34a" />
+              <View style={s.featureCell}>
+                <View style={[s.featureIcon, { backgroundColor: '#fae8ff' }]}>
+                  <Ionicons name="sparkles-outline" size={18} color="#9333ea" />
+                </View>
+                <Text style={s.featureTitle}>{homeContent.badge4Title || 'Memories That Last'}</Text>
+                <Text style={s.featureBody}>{homeContent.badge4Desc || 'Spiritual renewal, family joy & cultural wonder.'}</Text>
               </View>
-              <Text style={s.featureTitle}>Clear Information</Text>
-              <Text style={s.featureBody}>No hidden surprises. Transparent quotes upfront.</Text>
-            </View>
-
-            <View style={s.featureCell}>
-              <View style={[s.featureIcon, { backgroundColor: '#fae8ff' }]}>
-                <Ionicons name="sparkles-outline" size={18} color="#9333ea" />
-              </View>
-              <Text style={s.featureTitle}>Memories That Last</Text>
-              <Text style={s.featureBody}>Spiritual renewal, family joy &amp; cultural wonder.</Text>
             </View>
           </View>
         </View>
@@ -477,7 +557,7 @@ export function HomeScreen({ navigation }: any) {
           <View style={s.conciergeRow}>
             <Ionicons name="time-outline" size={15} color="#0284c7" style={{ marginRight: 8 }} />
             <Text style={s.conciergeText}>
-              Mon – Sat: 9:30 AM – 8:30 PM (24/7 Dedicated Concierge)
+              {settings?.hours || 'Mon – Sat: 9:30 AM – 8:30 PM (24/7 Dedicated Concierge)'}
             </Text>
           </View>
         </View>
@@ -984,36 +1064,35 @@ const s = StyleSheet.create({
     letterSpacing: -0.3,
     marginBottom: 14,
   },
-  featuresGrid: {
+  featuresRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
   featureCell: {
-    width: (width - 80) / 2,
+    flex: 1,
     backgroundColor: '#f8fafc',
-    padding: 12,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#edf2f7',
   },
   featureIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   featureTitle: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '800',
     color: '#0f2942',
-    marginBottom: 3,
+    marginBottom: 4,
   },
   featureBody: {
-    fontSize: 10.5,
-    lineHeight: 14,
+    fontSize: 11,
+    lineHeight: 15,
     color: '#64748b',
   },
 

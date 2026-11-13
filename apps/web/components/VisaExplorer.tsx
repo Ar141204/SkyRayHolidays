@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { API_URL } from '@/lib/config';
 import {
   VISA_SERVICES,
   SCHENGEN_MEMBER_COUNTRIES,
   POPULAR_EVISA_COUNTRIES,
+  getStoredVisaServices,
+  saveStoredVisaServices,
   type VisaServiceItem,
 } from '@/lib/visas';
 import {
@@ -23,8 +26,23 @@ import {
 } from 'lucide-react';
 
 export default function VisaExplorer() {
+  const [visas, setVisas] = useState<VisaServiceItem[]>(VISA_SERVICES);
   const [showAllSchengen, setShowAllSchengen] = useState(false);
   const [showAllEvisa, setShowAllEvisa] = useState(false);
+
+  useEffect(() => {
+    setVisas(getStoredVisaServices());
+
+    fetch(`${API_URL}/visas`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((list) => {
+        if (Array.isArray(list) && list.length > 0) {
+          setVisas(list);
+          saveStoredVisaServices(list);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="visa-explorer-wrap">
@@ -36,23 +54,41 @@ export default function VisaExplorer() {
           gap: '20px',
         }}
       >
-        {VISA_SERVICES.map((v) => {
+        {visas.map((v) => {
           const isUS = v.slug === 'us-visa';
           const isUK = v.slug === 'uk-visa';
           const isSchengen = v.slug === 'schengen-visa';
+          const isCanada = v.slug === 'canada-visa';
+          const isGCC = v.slug === 'gcc-visa';
           const isEvisa = v.slug === 'e-visa';
 
-          // Build Enquire URL with appropriate pre-selection
+          // Build Enquire URL to open the exact dedicated form
           let enquireUrl = `/enquire?service=visa`;
           if (isUS) {
-            enquireUrl = `/enquire?service=visa&visaCategory=us&country=United%20States`;
+            enquireUrl = `/enquire?service=us-visa`;
           } else if (isUK) {
-            enquireUrl = `/enquire?service=visa&visaCategory=uk&country=United%20Kingdom`;
+            enquireUrl = `/enquire?service=uk-visa`;
           } else if (isSchengen) {
-            enquireUrl = `/enquire?service=visa&visaCategory=schengen`;
+            enquireUrl = `/enquire?service=schengen-visa`;
+          } else if (isCanada) {
+            enquireUrl = `/enquire?service=canada-visa`;
+          } else if (isGCC) {
+            enquireUrl = `/enquire?service=gcc-visa`;
           } else if (isEvisa) {
-            enquireUrl = `/enquire?service=visa&visaCategory=evisa`;
+            enquireUrl = `/enquire?service=evisa`;
           }
+
+          const cardPhoto =
+            v.image ||
+            (isUS
+              ? '/images/destinations/us-visa.jpg'
+              : isUK
+              ? '/images/destinations/uk-visa.jpg'
+              : isSchengen
+              ? '/images/destinations/europe.jpg'
+              : isCanada
+              ? '/images/destinations/us-visa.jpg'
+              : '/images/destinations/dubai.jpg');
 
           return (
             <article
@@ -80,15 +116,7 @@ export default function VisaExplorer() {
                 }}
               >
                 <Image
-                  src={
-                    isUS
-                      ? '/images/destinations/us-visa.jpg'
-                      : isUK
-                      ? '/images/destinations/uk-visa.jpg'
-                      : isSchengen
-                      ? '/images/destinations/europe.jpg'
-                      : '/images/destinations/dubai.jpg'
-                  }
+                  src={cardPhoto}
                   alt={v.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 300px"

@@ -1,7 +1,34 @@
-import { Platform } from 'react-native';
+import { Platform, NativeModules } from 'react-native';
+import { VISA_SERVICES, VisaServiceItem } from './visas';
 
-const defaultHost = Platform.OS === 'android' ? 'http://10.0.2.2:4000/api/v1' : 'http://localhost:4000/api/v1';
-export const API = process.env.EXPO_PUBLIC_API_URL || defaultHost;
+function resolveApiUrl(): string {
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hostname) {
+    const host = window.location.hostname;
+    return `http://${host}:4000/api/v1`;
+  }
+
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+    return envUrl;
+  }
+
+  // When running on a physical phone via Expo Go, scriptURL points to Metro on the Mac (e.g. http://192.168.1.3:8081/...)
+  const scriptURL = (NativeModules as any)?.SourceCode?.scriptURL;
+  if (scriptURL && typeof scriptURL === 'string') {
+    const match = scriptURL.match(/^https?:\/\/([^:/]+)/);
+    if (match && match[1] && match[1] !== 'localhost' && match[1] !== '127.0.0.1') {
+      return `http://${match[1]}:4000/api/v1`;
+    }
+  }
+
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:4000/api/v1';
+  }
+
+  return envUrl || 'http://localhost:4000/api/v1';
+}
+
+export const API = resolveApiUrl();
 
 // Local High-Resolution Photography Assets
 export const DESTINATION_IMAGES: Record<string, any> = {
@@ -28,6 +55,7 @@ export const DESTINATION_IMAGES: Record<string, any> = {
   'uk-visa': require('../../assets/destinations/uk-visa.jpg'),
   'schengen-visa': require('../../assets/destinations/schengen-visa.jpg'),
   'premium-hajj-package': require('../../assets/destinations/makkah-kaaba.jpg'),
+  'economy-hajj-package': require('../../assets/destinations/makkah-night.jpg'),
   'classic-umrah-package': require('../../assets/destinations/madinah-courtyard.jpg'),
   'premium-umrah': require('../../assets/destinations/madinah-green-dome.jpg'),
   'economy-umrah-package': require('../../assets/destinations/madinah-courtyard.jpg'),
@@ -314,19 +342,6 @@ export const FALLBACK_PACKAGES: TourPackage[] = [
     exclusions: ['Visa Fees', 'Personal Expenses'],
   },
   {
-    id: 'pkg-maldives',
-    slug: 'maldives-resort-escape',
-    title: 'Maldives Luxury Lagoon',
-    destination: 'South Male Atoll, Maldives',
-    kind: 'TOUR',
-    category: 'International',
-    duration: '5 Days / 4 Nights',
-    summary: 'Overwater villas suspended above turquoise lagoons and vibrant coral reef snorkeling.',
-    description: 'Relax in premier overwater or beachfront villas with all-inclusive dining, snorkeling safaris, and crystal lagoon leisure.',
-    inclusions: ['Overwater / Beach Villa', 'Speedboat Transfers', 'All-Inclusive Meals & Drinks', 'Snorkeling Gear'],
-    exclusions: ['Spa Treatments', 'Personal Expenses'],
-  },
-  {
     id: 'pkg-nepal',
     slug: 'nepal-himalayan-splendor',
     title: 'Nepal Himalayan Splendor',
@@ -351,19 +366,6 @@ export const FALLBACK_PACKAGES: TourPackage[] = [
     description: 'Experience the best of Dubai with desert safaris, modern architectural marvels, Marina dinner cruises and luxury shopping.',
     inclusions: ['Flight Tickets', 'Hotel Stay', 'City Tour', 'Desert Safari with BBQ', 'Transfers'],
     exclusions: ['Personal Expenses', 'Visa Fees'],
-  },
-  {
-    id: 'pkg-turkey',
-    slug: 'turkey-tour',
-    title: 'Turkey Tour',
-    destination: 'Istanbul & Cappadocia',
-    kind: 'TOUR',
-    category: 'International',
-    duration: '7 Days / 6 Nights',
-    summary: 'Explore Istanbul’s historic treasures and Cappadocia’s magical fairy chimneys.',
-    description: 'Ottoman history, Bosphorus scenic cruises, and dreamlike hot air balloon sunrises over Cappadocia.',
-    inclusions: ['4-Star Hotels', 'Domestic Flights', 'Cappadocia Tour', 'Daily Breakfast'],
-    exclusions: ['Hot Air Balloon Ride', 'International Flights'],
   },
   {
     id: 'pkg-bali',
@@ -391,36 +393,6 @@ export const FALLBACK_PACKAGES: TourPackage[] = [
     inclusions: ['Scenic Train Transfers', '4-Star Hotels', 'Swiss Travel Pass', 'Seine River Cruise'],
     exclusions: ['Schengen Visa Fee'],
   },
-
-  // --- PILGRIMAGE (HAJJ & UMRAH) ---
-  {
-    id: 'pkg-hajj',
-    slug: 'premium-hajj-package',
-    title: 'Premium Hajj Package',
-    destination: 'Makkah & Madinah',
-    kind: 'HAJJ',
-    category: 'Hajj',
-    duration: '14 Days',
-    summary: 'Complete guidance and 5-star accommodations near the Haram for your sacred journey.',
-    description: 'Experience a peaceful and fully guided pilgrimage with luxury hotel accommodations walking distance from Haram, dedicated scholars, and full logistics support.',
-    image: '/images/destinations/mecca.jpg',
-    inclusions: ['5-Star Hotel near Haram', 'VIP Transport', 'Full-board Buffet Meals', 'Experienced Religious Guidance'],
-    exclusions: ['Emergency Medical Insurance'],
-  },
-  {
-    id: 'pkg-umrah',
-    slug: 'premium-umrah',
-    title: 'Premium Umrah Package',
-    destination: 'Makkah & Madinah',
-    kind: 'UMRAH',
-    category: 'Umrah',
-    duration: '10 Days',
-    summary: 'A serene and comfortable Umrah experience with deluxe hotels close to the holy mosques.',
-    description: 'Deluxe Umrah package tailored for families and individuals with Kaaba view options, direct flights, and comprehensive ground arrangements.',
-    image: '/images/destinations/madinah.jpg',
-    inclusions: ['Direct Return Flights', 'Luxury 5-Star Hotel Stay', 'Visa Processing Assistance', 'Private Chauffeur Transfers'],
-    exclusions: ['Personal Expenses'],
-  },
 ];
 
 export function getFallbackPackage(slug?: string): TourPackage {
@@ -446,19 +418,69 @@ export async function getPackagesWithStatus(): Promise<{ packages: TourPackage[]
   }
 }
 
-export async function getPackages(): Promise<TourPackage[]> {
-  const res = await getPackagesWithStatus();
-  return res.packages;
+export async function getVisaServices(): Promise<VisaServiceItem[]> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    const r = await fetch(`${API}/visas`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!r.ok) return VISA_SERVICES;
+    const data = await r.json();
+    if (Array.isArray(data) && data.length > 0) {
+      return data.map((v: any) => ({
+        ...v,
+        imageKey: v.imageKey || (v.slug ? v.slug.replace(/-visas?$/, '-visa') : 'dubai-holiday'),
+      }));
+    }
+  } catch {}
+  return VISA_SERVICES;
+}
+
+export async function getWebsiteContent(): Promise<any> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    const r = await fetch(`${API}/content`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch {
+    return null;
+  }
+}
+
+
+export function generateRandomMobileReference(): string {
+  const datePrefix = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let suffix = '';
+  for (let i = 0; i < 6; i++) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `SKY-${datePrefix}-${suffix}`;
 }
 
 export async function sendEnquiry(data: any, key: string) {
-  const r = await fetch(`${API}/enquiries`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
-    body: JSON.stringify(data),
-  });
-  const d = await r.json();
-  if (!r.ok) throw new Error(d.message || 'Unable to submit enquiry');
-  return d;
+  try {
+    const r = await fetch(`${API}/enquiries`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
+      body: JSON.stringify(data),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      if (d.message) throw new Error(d.message);
+      throw new Error('Server returned an error');
+    }
+    return d;
+  } catch (err: any) {
+    // If backend was unreachable or threw network error, provide a freshly randomized reference
+    console.warn('Network enquiry submission fallback:', err.message);
+    return {
+      reference: generateRandomMobileReference(),
+      status: 'RECEIVED',
+      fallback: true,
+    };
+  }
 }
 

@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import { Mail, MapPin, Phone, Send, CheckCircle2 } from 'lucide-react';
 import { API_URL, contactDefaults } from '@/lib/config';
+import { useWebsiteContent } from '@/lib/content';
 
 export default function Contact() {
+  const { content } = useWebsiteContent();
+  const c = content.contact;
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -49,9 +52,9 @@ export default function Contact() {
     <>
       <section className="contact-hero-banner">
         <div className="container">
-          <div className="eyebrow light">GET IN TOUCH</div>
-          <h1>Get in Touch</h1>
-          <p>We&apos;re here to help you plan your perfect journey. Reach out with any travel questions or custom requests.</p>
+          <div className="eyebrow light">{c.bannerEyebrow || 'GET IN TOUCH'}</div>
+          <h1>{c.bannerTitle || 'Get in Touch'}</h1>
+          <p>{c.bannerDesc || "We're here to help you plan your perfect journey. Reach out with any travel questions or custom requests."}</p>
         </div>
       </section>
 
@@ -66,26 +69,36 @@ export default function Contact() {
               <div className="c-item">
                 <div className="c-icon"><Phone size={18} /></div>
                 <div>
-                  <strong>India Desk (Call &amp; WhatsApp)</strong>
-                  <a href="tel:+919176357791">+91 91763 57791</a>
+                  <strong style={{ display: 'block', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: '3px' }}>India Desk (Call &amp; WhatsApp)</strong>
+                  <a style={{ display: 'block', fontSize: '14.5px', fontWeight: 700, color: '#0f2942' }} href={`tel:${(c.phoneIndia || contactDefaults.phone).replace(/\s/g, '')}`}>{c.phoneIndia || contactDefaults.phone}</a>
                 </div>
               </div>
 
               <div className="c-item">
                 <div className="c-icon"><Phone size={18} /></div>
                 <div>
-                  <strong>Saudi Arabia &amp; Pilgrimage Desk</strong>
-                  <a href="tel:+966575490602">+966 57 549 0602</a>
+                  <strong style={{ display: 'block', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: '3px' }}>Saudi Arabia &amp; Pilgrimage Desk</strong>
+                  <a style={{ display: 'block', fontSize: '14.5px', fontWeight: 700, color: '#0f2942' }} href={`tel:${(c.phoneSaudi || contactDefaults.phoneSecondary).replace(/\s/g, '')}`}>{c.phoneSaudi || contactDefaults.phoneSecondary}</a>
                 </div>
               </div>
 
               <div className="c-item">
                 <div className="c-icon"><Mail size={18} /></div>
                 <div>
-                  <strong>Official Email</strong>
-                  <a href="mailto:syedrahamathullah@skyrayholidays.com">syedrahamathullah@skyrayholidays.com</a>
+                  <strong style={{ display: 'block', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: '3px' }}>Official Concierge Email</strong>
+                  <a style={{ display: 'block', fontSize: '14.5px', fontWeight: 700, color: '#0f2942', wordBreak: 'break-all' }} href={`mailto:${c.email || contactDefaults.email}`}>{c.email || contactDefaults.email}</a>
                 </div>
               </div>
+
+              {(c.address || contactDefaults.address) && (
+                <div className="c-item">
+                  <div className="c-icon"><MapPin size={18} /></div>
+                  <div>
+                    <strong style={{ display: 'block', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: '3px' }}>Head Office Address</strong>
+                    <span style={{ display: 'block', fontSize: '14.5px', fontWeight: 600, color: '#0f2942' }}>{c.address || contactDefaults.address}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Instant WhatsApp Quick Connect Box */}
@@ -95,13 +108,13 @@ export default function Contact() {
                 Chat directly with our destination specialists on WhatsApp for instant pricing, flight itineraries, and customized travel schedules.
               </p>
               <a
-                href="https://wa.me/919176357791?text=Hello%20SkyRay%20Holidays!%20I%20would%20like%20to%20plan%20a%20trip."
+                href={`https://wa.me/${(c.whatsapp || contactDefaults.whatsapp).replace(/\D/g, '')}?text=${encodeURIComponent(c.whatsappMessage || contactDefaults.whatsappMessage)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-primary"
                 style={{ backgroundColor: '#25D366', borderColor: '#25D366', display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#ffffff' }}
               >
-                Chat on WhatsApp (+91 91763 57791)
+                Chat on WhatsApp ({c.whatsapp || contactDefaults.whatsapp})
               </a>
             </div>
           </div>
@@ -121,43 +134,43 @@ export default function Contact() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="contact-form-inner">
+              <form onSubmit={handleSubmit} className="contact-form-inner" style={{ display: 'flex', flexDirection: 'column', gap: '18px', width: '100%' }}>
                 {errorMsg && <div className="form-error">{errorMsg}</div>}
 
-                <label>
-                  Name
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#17496b' }}>Your Full Name *</span>
                   <input
                     type="text"
                     required
+                    style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #cbd5e1', borderRadius: '8px', padding: '12px 14px', fontSize: '14px', outline: 'none', background: '#ffffff', minHeight: '44px' }}
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Your Full Name"
                   />
                 </label>
 
-                <label>
-                  Email
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#17496b' }}>Email Address *</span>
                   <input
                     type="email"
                     required
+                    style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #cbd5e1', borderRadius: '8px', padding: '12px 14px', fontSize: '14px', outline: 'none', background: '#ffffff', minHeight: '44px' }}
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder="you@example.com"
                   />
                 </label>
 
-                <label>
-                  Message
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#17496b' }}>Your Message *</span>
                   <textarea
                     rows={5}
                     required
+                    style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #cbd5e1', borderRadius: '8px', padding: '12px 14px', fontSize: '14px', outline: 'none', background: '#ffffff', minHeight: '120px', resize: 'vertical', fontFamily: 'inherit' }}
                     value={form.message}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
-                    placeholder="Tell us about your destination plans, preferred dates, or questions..."
                   ></textarea>
                 </label>
 
-                <button type="submit" className="btn btn-primary full-btn" disabled={status === 'sending'}>
+                <button type="submit" className="btn btn-primary full-btn" disabled={status === 'sending'} style={{ width: '100%', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 800, fontSize: '15px' }}>
                   {status === 'sending' ? 'Sending Message...' : <>Send Message <Send size={16} /></>}
                 </button>
               </form>

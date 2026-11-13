@@ -66,6 +66,10 @@ apps/api/prisma/*.db-journal
 *.sqlite
 *.sqlite-journal
 
+# User uploaded content
+apps/web/public/uploads/*
+!apps/web/public/uploads/.gitkeep
+
 # Logs & Temporary files
 *.log
 logs/

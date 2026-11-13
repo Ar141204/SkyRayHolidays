@@ -160,6 +160,8 @@ model SiteSettings {
   mapUrl String?
   whatsappMessage String?
   googleReviewsUrl String?
+  contentJson Json?
+  visasJson Json?
   updatedAt DateTime @updatedAt
 }
 model IntegrationSecret {

@@ -44,15 +44,8 @@ const HOLY_CITIES_GALLERY = [
 export default function Pilgrimage() {
   return (
     <>
-      <section className="pilgrim-hero-banner">
-        <div className="container">
-          <div className="eyebrow light">A JOURNEY OF FAITH</div>
-          <h1>Hajj &amp; Umrah Services</h1>
-          <p>A Blessed Journey. Experience spiritual peace with personalized guidance, comfort and care.</p>
-        </div>
-      </section>
-
-      <section className="section container">
+      {/* Top Main Showcase Section (Directly underneath Navbar matching user's view) */}
+      <section className="section container" style={{ paddingTop: '28px', paddingBottom: '36px' }}>
         <PilgrimageExplorer />
       </section>
 

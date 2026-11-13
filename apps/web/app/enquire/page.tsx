@@ -26,13 +26,12 @@ export default function Enquire() {
 
       <section className="section container form-layout">
         <div>
-          <div className="eyebrow">SERVICE ENQUIRY</div>
+          <div className="eyebrow">SPECIALIZED SERVICE ENQUIRY</div>
           <h2>
             Start with the <em>details.</em>
           </h2>
           <p>
-            Select your service — <strong>Tour Package Enquiry</strong>, <strong>Umrah Enquiry</strong>, or <strong>Visa Enquiry</strong>.
-            Our team will promptly follow up with accurate quotations, available dates, and required document checklists.
+            Choose your dedicated enquiry form above: <strong>General Holiday Tours</strong>, <strong>Hajj &amp; Umrah</strong>, <strong>USA Visa</strong>, <strong>UK Visa</strong>, <strong>Schengen Visa</strong>, <strong>Canada Visa</strong>, <strong>GCC Visas</strong>, or <strong>Global E-Visa</strong>. Each form is tailored with exact dropdown options and visa rules for rapid quotation.
           </p>
 
           <div className="form-side-note">

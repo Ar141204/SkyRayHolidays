@@ -225,12 +225,17 @@ export default async function PackageDetail({
           </div>
 
           <div className="detail-price-badge">
-            <span className="price-amount" style={{ fontSize: '20px' }}>Price on Enquiry</span>
-            <span className="meta-pills">
-              <span className="pill-item"><Clock3 size={13} /> {p.duration}</span>
-              <span className="pill-item"><Moon size={13} /> {p.duration.includes('Night') ? p.duration.split('/')[1]?.trim() : '4 Nights'}</span>
-              <span className="pill-item"><MapPin size={13} /> {p.destination}</span>
-            </span>
+            <div className="price-val-row">
+              <div>
+                <span className="price-amount">Price on Enquiry</span>
+                <span className="price-subtext">Tailored Private &amp; Group Travel Itinerary</span>
+              </div>
+            </div>
+            <div className="meta-pills">
+              <span className="pill-item"><Clock3 size={14} /> {p.duration}</span>
+              <span className="pill-item"><MapPin size={14} /> {p.destination}</span>
+              <span className="pill-item"><Sparkles size={14} /> 100% Customisable</span>
+            </div>
           </div>
 
           <div className="detail-overview-box">
@@ -250,10 +255,12 @@ export default async function PackageDetail({
             </ul>
           </div>
 
-          <Link href={`/enquire?package=${p.slug}`} className="btn btn-primary full-btn">
-            Enquire Now <ArrowRight size={17} />
-          </Link>
-          <small className="enquire-hint">No payment required. Our travel experts will get in touch with you.</small>
+          <div className="detail-cta-wrap">
+            <Link href={`/enquire?package=${p.slug}`} className="btn btn-primary full-btn">
+              Enquire Now <ArrowRight size={17} />
+            </Link>
+            <small className="enquire-hint">No payment required. Our travel experts will get in touch with you.</small>
+          </div>
         </div>
       </section>
 
@@ -297,19 +304,25 @@ export default async function PackageDetail({
 
           <aside className="inclusions-exclusions-sidebar">
             <div className="sidebar-box">
-              <h3><CheckCircle2 className="check-green" size={20} /> Included</h3>
-              <ul>
+              <h3><CheckCircle2 className="check-green" size={18} /> Included</h3>
+              <ul className="clean-check-list">
                 {inclusions.map((x, i) => (
-                  <li key={i}>{x}</li>
+                  <li key={i}>
+                    <CheckCircle2 size={15} color="#0284c7" className="item-icon" />
+                    <span>{x}</span>
+                  </li>
                 ))}
               </ul>
             </div>
 
             <div className="sidebar-box">
-              <h3><XCircle className="cross-red" size={20} /> Not Included</h3>
-              <ul>
+              <h3><XCircle className="cross-red" size={18} /> Not Included</h3>
+              <ul className="clean-x-list">
                 {exclusions.map((x, i) => (
-                  <li key={i}>{x}</li>
+                  <li key={i}>
+                    <XCircle size={15} color="#ef4444" className="item-icon" />
+                    <span>{x}</span>
+                  </li>
                 ))}
               </ul>
             </div>

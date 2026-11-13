@@ -72,8 +72,8 @@ export default async function PackageGrid({
 
             <div className="package-bottom">
               <span className="package-price">
-                <small>Custom Quote</small>
-                <strong>Price on Enquiry</strong>
+                <strong>{p.priceFrom ? `${p.currency || '$'}${p.priceFrom}` : 'Price on Enquiry'}</strong>
+                {p.priceFrom && <small>per person</small>}
               </span>
               <Link href={`/packages/${p.slug}`} className="view-detail-btn" aria-label={`View ${p.title}`}>
                 View Details <ArrowUpRight size={14} />

@@ -42,8 +42,21 @@ import {
   Lock,
   Unlock,
   KeyRound,
+  Globe2,
 } from 'lucide-react';
 import { API_URL, contactDefaults } from '@/lib/config';
+import {
+  VISA_SERVICES,
+  getStoredVisaServices,
+  saveStoredVisaServices,
+  type VisaServiceItem,
+} from '@/lib/visas';
+import {
+  type WebsiteContent,
+  defaultWebsiteContent,
+  getWebsiteContent,
+  saveWebsiteContent,
+} from '@/lib/content';
 
 type Enquiry = {
   id: string;
@@ -69,16 +82,18 @@ export default function AdminConsole() {
   const [email, setEmail] = useState('syedrahamathullah@skyrayholidays.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [tab, setTab] = useState<'Dashboard' | 'Enquiries' | 'Packages' | 'Content' | 'Settings'>('Dashboard');
+  const [tab, setTab] = useState<'Dashboard' | 'Enquiries' | 'Packages' | 'Visas' | 'Content' | 'Settings'>('Dashboard');
 
   // Data states
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
+  const [visas, setVisas] = useState<VisaServiceItem[]>([]);
   const [stats, setStats] = useState<any>({ total: 0, new: 0, pending: 0, contacted: 0, quoted: 0, confirmed: 0 });
   const [staff, setStaff] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVisaImage, setUploadingVisaImage] = useState(false);
 
   // Lockout & Security states (5 wrong password lock)
   const [isLocked, setIsLocked] = useState(false);
@@ -86,16 +101,55 @@ export default function AdminConsole() {
   const [unlockCodeInput, setUnlockCodeInput] = useState('');
   const [unlockStatus, setUnlockStatus] = useState('');
   const [unlockBusy, setUnlockBusy] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(false);
 
   // Filtering states
   const [enquiryStatusFilter, setEnquiryStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [visaSearchQuery, setVisaSearchQuery] = useState('');
   const [copiedPkgId, setCopiedPkgId] = useState<string | null>(null);
 
   // File upload input refs
   const packageFileInputRef = useRef<HTMLInputElement | null>(null);
   const heroFileInputRef = useRef<HTMLInputElement | null>(null);
+  const aboutFileInputRef = useRef<HTMLInputElement | null>(null);
+  const visaFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingAboutImage, setUploadingAboutImage] = useState(false);
+
+  // Visa Package Modal State
+  const [showVisaModal, setShowVisaModal] = useState(false);
+  const [editingVisa, setEditingVisa] = useState<VisaServiceItem | null>(null);
+  const [visaFormData, setVisaFormData] = useState<{
+    id: string;
+    slug: string;
+    title: string;
+    category: string;
+    badge: string;
+    shortDesc: string;
+    processingTime: string;
+    validity: string;
+    entryType: string;
+    defaultCountry: string;
+    image: string;
+    highlights: string;
+    applicableCountries: string;
+    status: string;
+  }>({
+    id: '',
+    slug: '',
+    title: '',
+    category: 'Standard Embassy Visa',
+    badge: 'Embassy Visitor Visa',
+    shortDesc: '',
+    processingTime: '15 working days',
+    validity: 'Up to 10 Years',
+    entryType: 'Multiple Entry',
+    defaultCountry: '',
+    image: '/images/destinations/us-visa.jpg',
+    highlights: 'Document Pre-Screening & Verification\nAppointment Scheduling\nPersonal Guidance',
+    applicableCountries: '',
+    status: 'PUBLISHED',
+  });
 
   function copyPackageQuote(pkg: any) {
     const inclusions = Array.isArray(pkg.inclusions)
@@ -148,6 +202,7 @@ export default function AdminConsole() {
 
   // Content Management State
   const [contentTab, setContentTab] = useState<'Home' | 'About' | 'Contact' | 'Footer'>('Home');
+  const [websiteContent, setWebsiteContent] = useState<WebsiteContent>(defaultWebsiteContent);
   const [heroForm, setHeroForm] = useState({
     eyebrow: 'WHERE EVERY TRIP BECOMES A MEMORY',
     title: 'Your Journey Begins with SkyRay Holidays',
@@ -244,6 +299,28 @@ export default function AdminConsole() {
           googleReviewsUrl: setts.googleReviewsUrl || prev.googleReviewsUrl,
         }));
       }
+
+      // 6. Visa Services
+      const vList = await request('/visas').catch(() => null);
+      if (Array.isArray(vList) && vList.length > 0) {
+        setVisas(vList);
+        saveStoredVisaServices(vList);
+      } else {
+        setVisas(getStoredVisaServices());
+      }
+
+      // 7. Dynamic Website Content
+      const cData = await request('/content').catch(() => null);
+      if (cData && cData.home) {
+        setWebsiteContent(cData);
+        saveWebsiteContent(cData);
+        setHeroForm({
+          eyebrow: cData.home.eyebrow,
+          title: cData.home.title,
+          subtitle: cData.home.subtitle,
+          heroImage: cData.home.heroImage,
+        });
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -256,33 +333,78 @@ export default function AdminConsole() {
     const cachedToken = typeof window !== 'undefined' ? localStorage.getItem('skyray_admin_token') : null;
     const cachedUser = typeof window !== 'undefined' ? localStorage.getItem('skyray_admin_user') : null;
 
-    if (cachedToken && cachedUser) {
-      try {
-        setToken(cachedToken);
-        setUser(JSON.parse(cachedUser));
-      } catch {}
+    if (cachedToken) {
+      setCheckingAuth(true);
+
+      if (cachedUser) {
+        try {
+          setUser(JSON.parse(cachedUser));
+          setToken(cachedToken);
+        } catch {}
+      }
+
+      // Fast safety timeout: never hang more than 1 second
+      const safetyTimer = setTimeout(() => {
+        setCheckingAuth(false);
+      }, 1000);
+
+      const controller = new AbortController();
+      const abortTimer = setTimeout(() => controller.abort(), 1200);
+
+      fetch(`${API_URL}/auth/me`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${cachedToken}`,
+        },
+        signal: controller.signal,
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((u) => {
+          clearTimeout(abortTimer);
+          clearTimeout(safetyTimer);
+          if (u && u.id) {
+            setUser(u);
+            setToken(cachedToken);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('skyray_admin_user', JSON.stringify(u));
+            }
+          } else {
+            // Token is invalid/expired - clear stale storage
+            setToken('');
+            setUser(null);
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('skyray_admin_token');
+              localStorage.removeItem('skyray_admin_user');
+            }
+          }
+        })
+        .catch(() => {
+          // In case of network timeout, keep local session if user was valid
+          if (!cachedUser) {
+            setToken('');
+            setUser(null);
+          }
+        })
+        .finally(() => {
+          clearTimeout(abortTimer);
+          clearTimeout(safetyTimer);
+          setCheckingAuth(false);
+        });
+    } else {
+      setCheckingAuth(false);
+      setToken('');
+      setUser(null);
     }
 
-    // Verify session with server using HTTP-only cookie
-    request('/auth/me', {
-      headers: cachedToken ? { Authorization: `Bearer ${cachedToken}` } : {},
-    })
-      .then((u) => {
-        setUser(u);
-        setToken((prev) => prev || 'cookie-session');
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('skyray_admin_user', JSON.stringify(u));
-        }
-      })
-      .catch(() => {
-        if (!cachedToken) {
-          setToken('');
-          setUser(null);
-        }
-      })
-      .finally(() => {
-        setCheckingAuth(false);
-      });
+    const loaded = getWebsiteContent();
+    setWebsiteContent(loaded);
+    setHeroForm({
+      eyebrow: loaded.home.eyebrow,
+      title: loaded.home.title,
+      subtitle: loaded.home.subtitle,
+      heroImage: loaded.home.heroImage,
+    });
   }, []);
 
   useEffect(() => {
@@ -545,6 +667,10 @@ export default function AdminConsole() {
       if (res.ok) {
         const data = await res.json();
         if (data.url) {
+          setWebsiteContent((prev) => ({
+            ...prev,
+            home: { ...prev.home, heroImage: data.url },
+          }));
           setHeroForm((prev) => ({ ...prev, heroImage: data.url }));
           setSavedMsg('Hero image uploaded successfully!');
           setTimeout(() => setSavedMsg(''), 3000);
@@ -556,6 +682,10 @@ export default function AdminConsole() {
       reader.onload = (ev) => {
         const dataUrl = ev.target?.result as string;
         if (dataUrl) {
+          setWebsiteContent((prev) => ({
+            ...prev,
+            home: { ...prev.home, heroImage: dataUrl },
+          }));
           setHeroForm((prev) => ({ ...prev, heroImage: dataUrl }));
           setSavedMsg('Hero image loaded from device!');
           setTimeout(() => setSavedMsg(''), 3000);
@@ -566,13 +696,109 @@ export default function AdminConsole() {
       const reader = new FileReader();
       reader.onload = (ev) => {
         const dataUrl = ev.target?.result as string;
-        if (dataUrl) setHeroForm((prev) => ({ ...prev, heroImage: dataUrl }));
+        if (dataUrl) {
+          setWebsiteContent((prev) => ({
+            ...prev,
+            home: { ...prev.home, heroImage: dataUrl },
+          }));
+          setHeroForm((prev) => ({ ...prev, heroImage: dataUrl }));
+        }
       };
       reader.readAsDataURL(file);
     } finally {
       setUploadingImage(false);
     }
   }
+
+  // Device File Upload handler (About Page Cover)
+  async function handleAboutImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAboutImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          setWebsiteContent((prev) => ({
+            ...prev,
+            about: { ...prev.about, image: data.url },
+          }));
+          setSavedMsg('About cover photo uploaded successfully!');
+          setTimeout(() => setSavedMsg(''), 3000);
+          return;
+        }
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) {
+          setWebsiteContent((prev) => ({
+            ...prev,
+            about: { ...prev.about, image: dataUrl },
+          }));
+          setSavedMsg('About photo loaded from device!');
+          setTimeout(() => setSavedMsg(''), 3000);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) {
+          setWebsiteContent((prev) => ({
+            ...prev,
+            about: { ...prev.about, image: dataUrl },
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingAboutImage(false);
+    }
+  }
+
+  // Save Website Content Section Helper
+  const handleSaveContentSection = async (section: 'Home' | 'About' | 'Contact' | 'Footer') => {
+    saveWebsiteContent(websiteContent);
+    try {
+      await request('/content', {
+        method: 'PATCH',
+        body: JSON.stringify(websiteContent),
+      });
+    } catch (err: any) {
+      console.warn('Could not sync content to server:', err);
+    }
+
+    if (section === 'Contact') {
+      try {
+        await request('/settings', {
+          method: 'PATCH',
+          body: JSON.stringify({
+            phone: websiteContent.contact.phoneIndia,
+            whatsapp: websiteContent.contact.whatsapp,
+            email: websiteContent.contact.email,
+            address: websiteContent.contact.address,
+            hours: websiteContent.contact.hours,
+            whatsappMessage: websiteContent.contact.whatsappMessage,
+            googleReviewsUrl: websiteContent.contact.googleReviewsUrl,
+          }),
+        });
+      } catch {}
+    }
+    setSavedMsg(`${section} section updated and live across website and mobile app!`);
+    setTimeout(() => setSavedMsg(''), 4000);
+  };
 
   // Package Save (Add/Edit)
   async function savePackage(e: React.FormEvent) {
@@ -679,11 +905,149 @@ export default function AdminConsole() {
     });
   }, [enquiries, enquiryStatusFilter, searchQuery]);
 
+  // Visa Image Upload handler
+  async function handleVisaImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert('File size exceeds 8MB. Please choose a smaller photo.');
+      return;
+    }
+
+    setUploadingVisaImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          setVisaFormData((prev) => ({ ...prev, image: data.url }));
+          setSavedMsg('Visa destination photo uploaded successfully!');
+          setTimeout(() => setSavedMsg(''), 3000);
+          return;
+        }
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) {
+          setVisaFormData((prev) => ({ ...prev, image: dataUrl }));
+          setSavedMsg('Image loaded from device!');
+          setTimeout(() => setSavedMsg(''), 3000);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) setVisaFormData((prev) => ({ ...prev, image: dataUrl }));
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingVisaImage(false);
+    }
+  }
+
+  // Visa Save (Add/Edit)
+  function saveVisaService(e: React.FormEvent) {
+    e.preventDefault();
+    const highlightsArr = visaFormData.highlights
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const countriesArr = visaFormData.applicableCountries
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const visaItem: VisaServiceItem = {
+      id: visaFormData.id || `visa-${Date.now()}`,
+      slug:
+        visaFormData.slug.trim() ||
+        visaFormData.title.toLowerCase().trim().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, ''),
+      title: visaFormData.title.trim(),
+      category: visaFormData.category,
+      badge: visaFormData.badge.trim() || `${visaFormData.title} Service`,
+      shortDesc: visaFormData.shortDesc.trim(),
+      processingTime: visaFormData.processingTime.trim(),
+      validity: visaFormData.validity.trim(),
+      entryType: visaFormData.entryType.trim(),
+      defaultCountry: visaFormData.defaultCountry.trim() || undefined,
+      image: visaFormData.image || '/images/destinations/dubai.jpg',
+      highlights:
+        highlightsArr.length > 0
+          ? highlightsArr
+          : ['Document Pre-Screening & Verification', 'Official Application Filing Guidance'],
+      applicableCountries: countriesArr.length > 0 ? countriesArr : undefined,
+      status: visaFormData.status || 'PUBLISHED',
+    };
+
+    let updated: VisaServiceItem[];
+    if (editingVisa) {
+      updated = visas.map((v) => (v.id === editingVisa.id ? visaItem : v));
+      setSavedMsg(`Visa package "${visaItem.title}" updated successfully!`);
+    } else {
+      updated = [visaItem, ...visas];
+      setSavedMsg(`New visa package "${visaItem.title}" added to catalogue!`);
+    }
+
+    setVisas(updated);
+    saveStoredVisaServices(updated);
+    try {
+      request('/visas', {
+        method: 'PATCH',
+        body: JSON.stringify(updated),
+      }).catch((e) => console.warn('Could not sync visas to server:', e));
+    } catch {}
+    setShowVisaModal(false);
+    setEditingVisa(null);
+    setTimeout(() => setSavedMsg(''), 4000);
+  }
+
+  // Visa Delete
+  function deleteVisaService(id: string, title: string) {
+    if (!confirm(`Are you sure you want to remove the visa package "${title}"?`)) return;
+    const updated = visas.filter((v) => v.id !== id);
+    setVisas(updated);
+    saveStoredVisaServices(updated);
+    try {
+      request('/visas', {
+        method: 'PATCH',
+        body: JSON.stringify(updated),
+      }).catch((e) => console.warn('Could not sync visas deletion to server:', e));
+    } catch {}
+    setSavedMsg(`Visa package "${title}" deleted.`);
+    setTimeout(() => setSavedMsg(''), 3000);
+  }
+
+  const filteredVisas = useMemo(() => {
+    return visas.filter((v) => {
+      if (!visaSearchQuery.trim()) return true;
+      const q = visaSearchQuery.toLowerCase();
+      return (
+        v.title.toLowerCase().includes(q) ||
+        v.slug.toLowerCase().includes(q) ||
+        v.category.toLowerCase().includes(q) ||
+        (v.defaultCountry && v.defaultCountry.toLowerCase().includes(q))
+      );
+    });
+  }, [visas, visaSearchQuery]);
+
   // Restoring persistent auto sign-in session
   if (checkingAuth && !token) {
     return (
       <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '24px' }}>
           <Image
             src="/brand/skyray-logo.png"
             alt="SkyRay Holidays"
@@ -692,10 +1056,26 @@ export default function AdminConsole() {
             style={{ objectFit: 'contain', margin: '0 auto 16px' }}
             priority
           />
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#64748b', fontSize: '13px', fontWeight: 600, marginBottom: '16px' }}>
             <Loader2 size={16} className="spin" color="#0284c7" />
             <span>Restoring secure session...</span>
           </div>
+          <button
+            type="button"
+            className="btn btn-outline small"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('skyray_admin_token');
+                localStorage.removeItem('skyray_admin_user');
+              }
+              setCheckingAuth(false);
+              setToken('');
+              setUser(null);
+            }}
+            style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '6px', color: '#0284c7', borderColor: '#cbd5e1' }}
+          >
+            Go to Admin Sign In →
+          </button>
         </div>
       </div>
     );
@@ -897,7 +1277,14 @@ export default function AdminConsole() {
       {/* Sidebar Navigation */}
       <aside className="admin-app-sidebar">
         <div className="sidebar-brand">
-          <Image src="/brand/skyray-logo.png" alt="SkyRay Holidays" width={135} height={46} style={{ objectFit: 'contain' }} />
+          <Image
+            src="/brand/skyray-logo.png"
+            alt="SkyRay Holidays"
+            width={210}
+            height={88}
+            style={{ width: '100%', maxWidth: '210px', height: 'auto', maxHeight: '88px', objectFit: 'contain', background: 'transparent' }}
+            priority
+          />
           <span className="sidebar-badge">MANAGEMENT PORTAL</span>
         </div>
 
@@ -910,6 +1297,9 @@ export default function AdminConsole() {
           </button>
           <button className={tab === 'Packages' ? 'active' : ''} onClick={() => setTab('Packages')}>
             <Package size={17} /> Packages
+          </button>
+          <button className={tab === 'Visas' ? 'active' : ''} onClick={() => setTab('Visas')}>
+            <Globe2 size={17} /> Visa Services
           </button>
           <button className={tab === 'Content' ? 'active' : ''} onClick={() => setTab('Content')}>
             <FileText size={17} /> Website Content
@@ -1476,6 +1866,186 @@ export default function AdminConsole() {
         )}
 
         {/* =========================================================================
+            SCREEN: VISA SERVICES & PACKAGES MANAGEMENT
+           ========================================================================= */}
+        {tab === 'Visas' && (
+          <div className="visas-management-screen">
+            <div className="table-toolbar">
+              <div>
+                <h2>International Visa Services Catalogue</h2>
+                <p>Manage embassy visas, global fast-track e-visas, document checklists, and country coverage.</p>
+              </div>
+
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setEditingVisa(null);
+                  setVisaFormData({
+                    id: '',
+                    slug: '',
+                    title: '',
+                    category: 'Standard Embassy Visa',
+                    badge: 'Embassy Visitor Visa',
+                    shortDesc: '',
+                    processingTime: '15 working days standard',
+                    validity: 'Up to 10 Years (Multiple Entry)',
+                    entryType: 'Multiple Entry',
+                    defaultCountry: '',
+                    image: '/images/destinations/us-visa.jpg',
+                    highlights: 'Document Pre-Screening & Verification\nOfficial Application Filing Guidance\nAppointment Scheduling Assistance',
+                    applicableCountries: '',
+                    status: 'PUBLISHED',
+                  });
+                  setShowVisaModal(true);
+                }}
+              >
+                <Plus size={16} /> Add Visa Package
+              </button>
+            </div>
+
+            {/* Visa Search Toolbar */}
+            <div className="table-toolbar" style={{ marginTop: '2px', marginBottom: '14px' }}>
+              <div className="search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search visas by country, title, category..."
+                  value={visaSearchQuery}
+                  onChange={(e) => setVisaSearchQuery(e.target.value)}
+                />
+              </div>
+              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>
+                Showing {filteredVisas.length} visa packages
+              </span>
+            </div>
+
+            <div className="admin-card-panel no-padding">
+              <div className="table-responsive">
+                <table className="admin-clean-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '60px' }}>Image</th>
+                      <th>Visa Service</th>
+                      <th>Category</th>
+                      <th>Processing Time</th>
+                      <th>Validity</th>
+                      <th>Entry Type</th>
+                      <th>Countries</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredVisas.map((v) => (
+                      <tr key={v.id}>
+                        <td>
+                          <div
+                            style={{
+                              width: '48px',
+                              height: '34px',
+                              borderRadius: '6px',
+                              overflow: 'hidden',
+                              position: 'relative',
+                              backgroundColor: '#0f172a',
+                            }}
+                          >
+                            <Image
+                              src={v.image || '/images/destinations/dubai.jpg'}
+                              alt={v.title}
+                              fill
+                              style={{ objectFit: 'cover' }}
+                              unoptimized={v.image?.startsWith('data:') || v.image?.startsWith('/uploads')}
+                            />
+                          </div>
+                        </td>
+                        <td>
+                          <strong>{v.title}</strong>
+                          <small style={{ display: 'block', color: '#64748b' }}>/{v.slug}</small>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#0f2942' }}>
+                            {v.category}
+                          </span>
+                        </td>
+                        <td>{v.processingTime}</td>
+                        <td>{v.validity}</td>
+                        <td>{v.entryType}</td>
+                        <td>
+                          {v.applicableCountries && v.applicableCountries.length > 0 ? (
+                            <span style={{ color: '#0284c7', fontSize: '11px', fontWeight: 700 }}>
+                              {v.applicableCountries.length} Nations
+                            </span>
+                          ) : (
+                            <span>{v.defaultCountry || 'Single Country'}</span>
+                          )}
+                        </td>
+                        <td>
+                          <span
+                            className={`status-pill ${
+                              v.status === 'PUBLISHED' || !v.status
+                                ? 'pill-confirmed'
+                                : 'pill-pending'
+                            }`}
+                          >
+                            {v.status || 'PUBLISHED'}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                              className="btn btn-outline small"
+                              title="Edit Visa Package"
+                              onClick={() => {
+                                setEditingVisa(v);
+                                setVisaFormData({
+                                  id: v.id,
+                                  slug: v.slug,
+                                  title: v.title,
+                                  category: v.category,
+                                  badge: v.badge || '',
+                                  shortDesc: v.shortDesc || '',
+                                  processingTime: v.processingTime || '',
+                                  validity: v.validity || '',
+                                  entryType: v.entryType || 'Multiple Entry',
+                                  defaultCountry: v.defaultCountry || '',
+                                  image: v.image || '/images/destinations/dubai.jpg',
+                                  highlights: Array.isArray(v.highlights) ? v.highlights.join('\n') : '',
+                                  applicableCountries: Array.isArray(v.applicableCountries) ? v.applicableCountries.join(', ') : '',
+                                  status: v.status || 'PUBLISHED',
+                                });
+                                setShowVisaModal(true);
+                              }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <Edit2 size={13} /> Edit
+                            </button>
+                            <button
+                              className="action-icon-btn"
+                              title="Delete Visa Package"
+                              onClick={() => deleteVisaService(v.id, v.title)}
+                              style={{ color: '#dc2626' }}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredVisas.length === 0 && (
+                      <tr>
+                        <td colSpan={9} style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
+                          No visa services found matching your search.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
             SCREEN 5: CONTENT MANAGEMENT
            ========================================================================= */}
         {tab === 'Content' && (
@@ -1492,98 +2062,832 @@ export default function AdminConsole() {
               ))}
             </div>
 
-            {/* Hero Section Editor */}
-            <div className="admin-card-panel">
-              <div className="panel-header">
-                <h3>Hero Section</h3>
-                <p>Customize banner headlines, hero image, and primary call-to-actions.</p>
-              </div>
-
-              <div className="content-hero-preview-box">
-                <div className="hero-img-col">
-                  <div className="img-frame">
-                    <Image
-                      src={heroForm.heroImage || '/images/destinations/dubai.jpg'}
-                      alt="Hero Banner Preview"
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      unoptimized={heroForm.heroImage?.startsWith('data:') || heroForm.heroImage?.startsWith('/uploads')}
-                    />
+            {/* TAB 1: HOME PAGE CONTENT */}
+            {contentTab === 'Home' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="admin-card-panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3>Home Hero Section</h3>
+                      <p>Customize banner headlines, hero image, and primary call-to-actions.</p>
+                    </div>
                   </div>
 
-                  {/* Hidden file input for Hero image */}
-                  <input
-                    type="file"
-                    ref={heroFileInputRef}
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={handleHeroImageUpload}
-                  />
+                  <div className="content-hero-preview-box">
+                    <div className="hero-img-col">
+                      <div className="img-frame">
+                        <Image
+                          src={websiteContent.home.heroImage || '/images/destinations/dubai.jpg'}
+                          alt="Hero Banner Preview"
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          unoptimized={
+                            websiteContent.home.heroImage?.startsWith('data:') ||
+                            websiteContent.home.heroImage?.startsWith('/uploads')
+                          }
+                        />
+                      </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                    <button
-                      type="button"
-                      className="btn btn-primary small full-btn"
-                      disabled={uploadingImage}
-                      onClick={() => heroFileInputRef.current?.click()}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                    >
-                      {uploadingImage ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
-                      {uploadingImage ? 'Uploading...' : 'Upload Image from Device'}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-outline small full-btn"
-                      onClick={() => {
-                        const url = prompt('Or enter image URL:', heroForm.heroImage);
-                        if (url) setHeroForm({ ...heroForm, heroImage: url });
-                      }}
-                    >
-                      Enter Image URL
-                    </button>
+                      {/* Hidden file input for Hero image */}
+                      <input
+                        type="file"
+                        ref={heroFileInputRef}
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={handleHeroImageUpload}
+                      />
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                        <button
+                          type="button"
+                          className="btn btn-primary small full-btn"
+                          disabled={uploadingImage}
+                          onClick={() => heroFileInputRef.current?.click()}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                        >
+                          {uploadingImage ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
+                          {uploadingImage ? 'Uploading...' : 'Upload Image from Device'}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline small full-btn"
+                          onClick={() => {
+                            const url = prompt('Or enter image URL:', websiteContent.home.heroImage);
+                            if (url) {
+                              setWebsiteContent((prev) => ({
+                                ...prev,
+                                home: { ...prev.home, heroImage: url },
+                              }));
+                            }
+                          }}
+                        >
+                          Enter Image URL
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="hero-inputs-col">
+                      <label>
+                        Eyebrow Text
+                        <input
+                          type="text"
+                          value={websiteContent.home.eyebrow}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, eyebrow: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        Main Headline
+                        <input
+                          type="text"
+                          value={websiteContent.home.title}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, title: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        Subtitle Description
+                        <textarea
+                          rows={3}
+                          value={websiteContent.home.subtitle}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, subtitle: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
 
-                <div className="hero-inputs-col">
-                  <label>
-                    Eyebrow Text
-                    <input
-                      type="text"
-                      value={heroForm.eyebrow}
-                      onChange={(e) => setHeroForm({ ...heroForm, eyebrow: e.target.value })}
-                    />
-                  </label>
+                {/* Homepage Trust Badges / Value Highlights */}
+                <div className="admin-card-panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3>Homepage Value Pillars (4 Highlights)</h3>
+                      <p>Showcase why travelers trust SkyRay Holidays for their journeys.</p>
+                    </div>
+                  </div>
 
-                  <label>
-                    Main Headline
-                    <input
-                      type="text"
-                      value={heroForm.title}
-                      onChange={(e) => setHeroForm({ ...heroForm, title: e.target.value })}
-                    />
-                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ border: '1px solid #e2edf3', borderRadius: '8px', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label>
+                        <span>Pillar 1 Title</span>
+                        <input
+                          type="text"
+                          value={websiteContent.home.badge1Title}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, badge1Title: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Description</span>
+                        <input
+                          type="text"
+                          value={websiteContent.home.badge1Desc}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, badge1Desc: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
 
-                  <label>
-                    Subtitle Description
-                    <textarea
-                      rows={3}
-                      value={heroForm.subtitle}
-                      onChange={(e) => setHeroForm({ ...heroForm, subtitle: e.target.value })}
-                    />
-                  </label>
+                    <div style={{ border: '1px solid #e2edf3', borderRadius: '8px', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label>
+                        <span>Pillar 2 Title</span>
+                        <input
+                          type="text"
+                          value={websiteContent.home.badge2Title}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, badge2Title: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Description</span>
+                        <input
+                          type="text"
+                          value={websiteContent.home.badge2Desc}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, badge2Desc: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
 
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => {
-                      setSavedMsg('Hero Section changes saved successfully!');
-                      setTimeout(() => setSavedMsg(''), 3000);
-                    }}
-                  >
-                    Save Changes
-                  </button>
+                    <div style={{ border: '1px solid #e2edf3', borderRadius: '8px', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label>
+                        <span>Pillar 3 Title</span>
+                        <input
+                          type="text"
+                          value={websiteContent.home.badge3Title}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, badge3Title: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Description</span>
+                        <input
+                          type="text"
+                          value={websiteContent.home.badge3Desc}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, badge3Desc: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+
+                    <div style={{ border: '1px solid #e2edf3', borderRadius: '8px', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label>
+                        <span>Pillar 4 Title</span>
+                        <input
+                          type="text"
+                          value={websiteContent.home.badge4Title}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, badge4Title: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Description</span>
+                        <input
+                          type="text"
+                          value={websiteContent.home.badge4Desc}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, badge4Desc: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                    <button className="btn btn-primary" onClick={() => handleSaveContentSection('Home')}>
+                      Save Home Page Changes
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* TAB 2: ABOUT PAGE CONTENT */}
+            {contentTab === 'About' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="admin-card-panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3>About Us Hero &amp; Brand Story</h3>
+                      <p>Customize the narrative, cover photograph, and company introduction on /about.</p>
+                    </div>
+                  </div>
+
+                  <div className="content-hero-preview-box">
+                    <div className="hero-img-col">
+                      <div className="img-frame">
+                        <Image
+                          src={websiteContent.about.image || '/images/hero.jpg'}
+                          alt="About Page Cover"
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          unoptimized={
+                            websiteContent.about.image?.startsWith('data:') ||
+                            websiteContent.about.image?.startsWith('/uploads')
+                          }
+                        />
+                      </div>
+
+                      {/* Hidden file input for About image */}
+                      <input
+                        type="file"
+                        ref={aboutFileInputRef}
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={handleAboutImageUpload}
+                      />
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                        <button
+                          type="button"
+                          className="btn btn-primary small full-btn"
+                          disabled={uploadingAboutImage}
+                          onClick={() => aboutFileInputRef.current?.click()}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                        >
+                          {uploadingAboutImage ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
+                          {uploadingAboutImage ? 'Uploading...' : 'Upload Photo from Device'}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline small full-btn"
+                          onClick={() => {
+                            const url = prompt('Or enter image URL:', websiteContent.about.image);
+                            if (url) {
+                              setWebsiteContent((prev) => ({
+                                ...prev,
+                                about: { ...prev.about, image: url },
+                              }));
+                            }
+                          }}
+                        >
+                          Enter Image URL
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="hero-inputs-col">
+                      <label>
+                        Eyebrow Text
+                        <input
+                          type="text"
+                          value={websiteContent.about.eyebrow}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, eyebrow: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        Main Title
+                        <input
+                          type="text"
+                          value={websiteContent.about.title}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, title: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        Lead Introduction
+                        <textarea
+                          rows={2}
+                          value={websiteContent.about.lead}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, lead: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        Detailed Brand Story
+                        <textarea
+                          rows={3}
+                          value={websiteContent.about.story}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, story: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Core Values (Three Pillars) */}
+                <div className="admin-card-panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3>Core Values (The Three Pillars)</h3>
+                      <p>Mission, Vision, and Why Choose Us statements.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+                    <div style={{ border: '1px solid #e2edf3', borderRadius: '8px', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label>
+                        <span>Mission Title</span>
+                        <input
+                          type="text"
+                          value={websiteContent.about.missionTitle}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, missionTitle: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Mission Description</span>
+                        <textarea
+                          rows={3}
+                          value={websiteContent.about.missionDesc}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, missionDesc: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+
+                    <div style={{ border: '1px solid #e2edf3', borderRadius: '8px', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label>
+                        <span>Vision Title</span>
+                        <input
+                          type="text"
+                          value={websiteContent.about.visionTitle}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, visionTitle: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Vision Description</span>
+                        <textarea
+                          rows={3}
+                          value={websiteContent.about.visionDesc}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, visionDesc: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+
+                    <div style={{ border: '1px solid #e2edf3', borderRadius: '8px', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label>
+                        <span>Why Choose Us Title</span>
+                        <input
+                          type="text"
+                          value={websiteContent.about.whyUsTitle}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, whyUsTitle: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Why Choose Us Description</span>
+                        <textarea
+                          rows={3}
+                          value={websiteContent.about.whyUsDesc}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, whyUsDesc: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* The SkyRay Promises */}
+                <div className="admin-card-panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3>The SkyRay Promises (Assurance Checkpoints)</h3>
+                      <p>Key service guarantees highlighted with verified icons on /about.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                    <label>
+                      <span>Promise 1</span>
+                      <input
+                        type="text"
+                        value={websiteContent.about.promise1}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            about: { ...prev.about, promise1: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>Promise 2</span>
+                      <input
+                        type="text"
+                        value={websiteContent.about.promise2}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            about: { ...prev.about, promise2: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>Promise 3</span>
+                      <input
+                        type="text"
+                        value={websiteContent.about.promise3}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            about: { ...prev.about, promise3: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>Promise 4</span>
+                      <input
+                        type="text"
+                        value={websiteContent.about.promise4}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            about: { ...prev.about, promise4: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                    <button className="btn btn-primary" onClick={() => handleSaveContentSection('About')}>
+                      Save About Page Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: CONTACT PAGE CONTENT */}
+            {contentTab === 'Contact' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="admin-card-panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3>Contact Page Hero Banner</h3>
+                      <p>Customize banner headlines and descriptive copy on /contact.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <label>
+                      <span>Eyebrow Text</span>
+                      <input
+                        type="text"
+                        value={websiteContent.contact.bannerEyebrow}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, bannerEyebrow: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>Headline Title</span>
+                      <input
+                        type="text"
+                        value={websiteContent.contact.bannerTitle}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, bannerTitle: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <label>
+                        <span>Subtitle Description</span>
+                        <textarea
+                          rows={2}
+                          value={websiteContent.contact.bannerDesc}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              contact: { ...prev.contact, bannerDesc: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="admin-card-panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3>Direct Helpline Channels &amp; Office Information</h3>
+                      <p>All changes sync live to the database and across the customer portal.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <label>
+                      <span>India Desk Helpline (Call &amp; WhatsApp)</span>
+                      <input
+                        type="text"
+                        value={websiteContent.contact.phoneIndia}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, phoneIndia: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>Saudi Arabia &amp; Pilgrimage Desk</span>
+                      <input
+                        type="text"
+                        value={websiteContent.contact.phoneSaudi}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, phoneSaudi: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>Primary WhatsApp Channel</span>
+                      <input
+                        type="text"
+                        value={websiteContent.contact.whatsapp}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, whatsapp: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>Official Concierge Email</span>
+                      <input
+                        type="email"
+                        value={websiteContent.contact.email}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, email: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>Head Office Address</span>
+                      <input
+                        type="text"
+                        value={websiteContent.contact.address}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, address: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>Support Hours / Availability</span>
+                      <input
+                        type="text"
+                        value={websiteContent.contact.hours}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, hours: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <label>
+                        <span>Pre-filled WhatsApp Instant Message</span>
+                        <input
+                          type="text"
+                          value={websiteContent.contact.whatsappMessage}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              contact: { ...prev.contact, whatsappMessage: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <label>
+                        <span>Google Reviews &amp; Maps Link</span>
+                        <input
+                          type="url"
+                          value={websiteContent.contact.googleReviewsUrl}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              contact: { ...prev.contact, googleReviewsUrl: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                    <button className="btn btn-primary" onClick={() => handleSaveContentSection('Contact')}>
+                      Save Contact Channels &amp; Sync to Database
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: FOOTER CONTENT */}
+            {contentTab === 'Footer' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="admin-card-panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3>Global Footer Branding &amp; Legal Notices</h3>
+                      <p>Customize the bio, review badge, copyright, and official accreditation text.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <label>
+                        <span>Footer Company Bio / Tagline</span>
+                        <textarea
+                          rows={3}
+                          value={websiteContent.footer.companyBio}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              footer: { ...prev.footer, companyBio: e.target.value },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+
+                    <label>
+                      <span>Google Rating Badge Text</span>
+                      <input
+                        type="text"
+                        value={websiteContent.footer.ratingText}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            footer: { ...prev.footer, ratingText: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>Brand Slogan / Tagline</span>
+                      <input
+                        type="text"
+                        value={websiteContent.footer.sloganText}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            footer: { ...prev.footer, sloganText: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>Copyright Line</span>
+                      <input
+                        type="text"
+                        value={websiteContent.footer.copyrightText}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            footer: { ...prev.footer, copyrightText: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>Pilgrim Operator Official License Notice</span>
+                      <input
+                        type="text"
+                        value={websiteContent.footer.pilgrimNotice}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            footer: { ...prev.footer, pilgrimNotice: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                    <button className="btn btn-primary" onClick={() => handleSaveContentSection('Footer')}>
+                      Save Footer Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1718,13 +3022,13 @@ export default function AdminConsole() {
       {/* 1. Add / Edit Package Modal with Device Image Upload & Full Content Editing */}
       {showPackageModal && (
         <div className="modal-backdrop">
-          <div className="modal-dialog wide" style={{ maxHeight: '92vh', overflowY: 'auto' }}>
-            <div className="modal-header">
+          <div className="modal-dialog wide" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div className="modal-header" style={{ flexShrink: 0 }}>
               <h3>{editingPackage ? `Edit Package: ${editingPackage.title}` : 'Add New Package'}</h3>
               <button className="modal-close" onClick={() => setShowPackageModal(false)}><X size={18} /></button>
             </div>
-            <form onSubmit={savePackage}>
-              <div className="modal-body">
+            <form onSubmit={savePackage} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, padding: '20px' }}>
                 {/* Title and Destination */}
                 <div className="form-row">
                   <label>
@@ -1978,7 +3282,7 @@ export default function AdminConsole() {
                 </label>
               </div>
 
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ flexShrink: 0 }}>
                 <button type="button" className="btn btn-ghost" onClick={() => setShowPackageModal(false)}>
                   Cancel
                 </button>
@@ -1991,18 +3295,280 @@ export default function AdminConsole() {
         </div>
       )}
 
+      {/* 1b. Add / Edit Visa Package Modal */}
+      {showVisaModal && (
+        <div className="modal-backdrop">
+          <div className="modal-dialog wide" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div className="modal-header" style={{ flexShrink: 0 }}>
+              <h3>{editingVisa ? 'Edit Visa Service Package' : 'Create New Visa Service Package'}</h3>
+              <button
+                className="modal-close"
+                onClick={() => {
+                  setShowVisaModal(false);
+                  setEditingVisa(null);
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={saveVisaService} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, padding: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <label>
+                    Visa Title *
+                    <input
+                      required
+                      value={visaFormData.title}
+                      onChange={(e) => {
+                        const title = e.target.value;
+                        setVisaFormData((prev) => ({
+                          ...prev,
+                          title,
+                          slug: editingVisa
+                            ? prev.slug
+                            : title
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, '-')
+                                .replace(/^-|-$/g, ''),
+                        }));
+                      }}
+                      placeholder="e.g. United States B1/B2 Tourist Visa"
+                    />
+                  </label>
+
+                  <label>
+                    Slug (URL Key) *
+                    <input
+                      required
+                      value={visaFormData.slug}
+                      onChange={(e) => setVisaFormData({ ...visaFormData, slug: e.target.value })}
+                      placeholder="e.g. us-tourist-visa"
+                    />
+                  </label>
+
+                  <label>
+                    Category
+                    <select
+                      value={visaFormData.category}
+                      onChange={(e) => setVisaFormData({ ...visaFormData, category: e.target.value })}
+                    >
+                      <option value="Standard Embassy Visa">Standard Embassy Visa</option>
+                      <option value="Fast-Track eVisa">Fast-Track eVisa</option>
+                      <option value="Pilgrim Visa (Umrah/Hajj)">Pilgrim Visa (Umrah/Hajj)</option>
+                      <option value="Business & Investment">Business & Investment</option>
+                      <option value="Family & Tourist Visa">Family & Tourist Visa</option>
+                      <option value="Transit Visa">Transit Visa</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Badge Label
+                    <input
+                      value={visaFormData.badge}
+                      onChange={(e) => setVisaFormData({ ...visaFormData, badge: e.target.value })}
+                      placeholder="e.g. Embassy Visitor Visa / Fast-Track eVisa"
+                    />
+                  </label>
+
+                  <label>
+                    Default / Target Country
+                    <input
+                      value={visaFormData.defaultCountry}
+                      onChange={(e) => setVisaFormData({ ...visaFormData, defaultCountry: e.target.value })}
+                      placeholder="e.g. United States, United Kingdom, Schengen"
+                    />
+                  </label>
+
+                  <label>
+                    Status
+                    <select
+                      value={visaFormData.status}
+                      onChange={(e) => setVisaFormData({ ...visaFormData, status: e.target.value })}
+                    >
+                      <option value="PUBLISHED">PUBLISHED (Live on Website)</option>
+                      <option value="DRAFT">DRAFT (Hidden)</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Processing Time
+                    <input
+                      value={visaFormData.processingTime}
+                      onChange={(e) => setVisaFormData({ ...visaFormData, processingTime: e.target.value })}
+                      placeholder="e.g. 10 - 15 working days"
+                    />
+                  </label>
+
+                  <label>
+                    Visa Validity
+                    <input
+                      value={visaFormData.validity}
+                      onChange={(e) => setVisaFormData({ ...visaFormData, validity: e.target.value })}
+                      placeholder="e.g. Up to 10 Years / 30 to 90 Days"
+                    />
+                  </label>
+
+                  <label>
+                    Entry Type
+                    <input
+                      value={visaFormData.entryType}
+                      onChange={(e) => setVisaFormData({ ...visaFormData, entryType: e.target.value })}
+                      placeholder="e.g. Multiple Entry / Single Entry"
+                    />
+                  </label>
+                </div>
+
+                {/* DEVICE IMAGE UPLOAD SECTION */}
+                <div style={{ marginBottom: '18px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
+                    Visa Destination / Flag Cover Image
+                  </label>
+
+                  {/* Hidden native file input */}
+                  <input
+                    type="file"
+                    ref={visaFileInputRef}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleVisaImageUpload}
+                  />
+
+                  <div
+                    style={{
+                      border: '2px dashed #cbd5e1',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      backgroundColor: '#f8fafc',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '20px',
+                    }}
+                  >
+                    {/* Image Preview Box */}
+                    <div
+                      style={{
+                        width: '120px',
+                        height: '80px',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        backgroundColor: '#e2e8f0',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {visaFormData.image ? (
+                        <Image
+                          src={visaFormData.image}
+                          alt="Visa Preview"
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          unoptimized={visaFormData.image.startsWith('data:') || visaFormData.image.startsWith('/uploads')}
+                        />
+                      ) : (
+                        <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#94a6b2' }}>
+                          <ImageIcon size={24} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#334155', fontWeight: 600 }}>
+                        Upload photo directly from your device (phone/computer)
+                      </p>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="btn btn-primary small"
+                          disabled={uploadingVisaImage}
+                          onClick={() => visaFileInputRef.current?.click()}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          {uploadingVisaImage ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
+                          {uploadingVisaImage ? 'Uploading Image...' : 'Choose File from Device'}
+                        </button>
+                        <span style={{ fontSize: '12px', color: '#64748b' }}>Supports JPG, PNG, WEBP (Max 8MB)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '8px' }}>
+                    <small style={{ color: '#64748b' }}>Or enter image URL manually:</small>
+                    <input
+                      style={{ marginTop: '4px' }}
+                      value={visaFormData.image}
+                      onChange={(e) => setVisaFormData({ ...visaFormData, image: e.target.value })}
+                      placeholder="/images/destinations/us-visa.jpg or https://..."
+                    />
+                  </div>
+                </div>
+
+                {/* Short Description */}
+                <label>
+                  Short Summary &amp; Scope *
+                  <textarea
+                    rows={2}
+                    required
+                    value={visaFormData.shortDesc}
+                    onChange={(e) => setVisaFormData({ ...visaFormData, shortDesc: e.target.value })}
+                    placeholder="Brief description of the visa requirements, convenience, and advisory support..."
+                  />
+                </label>
+
+                {/* Key Inclusions & Highlights */}
+                <label>
+                  Key Inclusions &amp; Service Highlights (One per line)
+                  <textarea
+                    rows={3}
+                    value={visaFormData.highlights}
+                    onChange={(e) => setVisaFormData({ ...visaFormData, highlights: e.target.value })}
+                    placeholder="Document Pre-Screening & Verification&#10;Appointment Scheduling&#10;Complete Application Filing Guidance"
+                  />
+                </label>
+
+                {/* Applicable Countries (for Schengen / grouped visas) */}
+                <label>
+                  Applicable Countries (comma-separated, optional)
+                  <input
+                    value={visaFormData.applicableCountries}
+                    onChange={(e) => setVisaFormData({ ...visaFormData, applicableCountries: e.target.value })}
+                    placeholder="e.g. France, Germany, Italy, Switzerland, Spain, Netherlands"
+                  />
+                </label>
+              </div>
+
+              <div className="modal-footer" style={{ flexShrink: 0 }}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setShowVisaModal(false);
+                    setEditingVisa(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  {editingVisa ? 'Update Visa Package' : 'Save Visa Package'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* 2. Full Enquiry Details Modal */}
       {showEnquiryDetailsModal && activeEnquiry && (
         <div className="modal-backdrop">
-          <div className="modal-dialog wide">
-            <div className="modal-header">
+          <div className="modal-dialog wide" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div className="modal-header" style={{ flexShrink: 0 }}>
               <div>
                 <h3 style={{ margin: 0 }}>Enquiry Details</h3>
                 <span style={{ fontSize: '12px', color: '#64748b' }}>Reference: <strong>{activeEnquiry.reference}</strong></span>
               </div>
               <button className="modal-close" onClick={() => setShowEnquiryDetailsModal(false)}><X size={18} /></button>
             </div>
-            <div className="modal-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, padding: '24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
                 <h4 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>Customer Information</h4>
                 <div style={{ display: 'grid', gap: '8px', fontSize: '13px' }}>
@@ -2067,7 +3633,7 @@ export default function AdminConsole() {
                 </p>
               </div>
             </div>
-            <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+            <div className="modal-footer" style={{ justifyContent: 'space-between', flexShrink: 0 }}>
               <button
                 type="button"
                 className="btn btn-outline"

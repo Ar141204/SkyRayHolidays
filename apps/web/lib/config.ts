@@ -442,7 +442,12 @@ export const demoPackages: PackageItem[] = [
     rating: 4.8,
     reviewCount: 145,
     featured: true,
-    inclusions: ['Comfortable Hotels with Shuttle', 'Air-Conditioned Coach Transfers', 'Full-board Buffet in Tents', 'Religious Scholars Guidance', 'Ziyarat in Makkah & Madinah', 'Qurbani Assistance'],
+    inclusions: [
+      'Comfortable Hotel Accommodation with Shuttle',
+      'Air-conditioned Bus Transport & Transfers',
+      'Experienced Scholar & Religious Guidance',
+      'Complete Visa Assistance & Permits',
+    ],
     exclusions: ['Emergency Medical Expenses', 'Excess Baggage Fees'],
     details: {
       tier: 'Economy',
@@ -460,7 +465,7 @@ export const demoPackages: PackageItem[] = [
     kind: 'HAJJ',
     category: 'Premium',
     duration: '14 Days',
-    summary: 'Complete guidance and luxury 5-star accommodations walking distance from the Haram for your sacred journey of a lifetime.',
+    summary: 'Complete guidance and 5-star accommodations near the Haram for your sacred journey of a lifetime.',
     description: 'Experience a peaceful and fully guided pilgrimage with luxury hotel accommodations walking distance from Haram, dedicated scholars, air-conditioned transport, VIP Haramain high-speed train, and full logistics support.',
     priceFrom: null,
     currency: '$',
@@ -470,7 +475,12 @@ export const demoPackages: PackageItem[] = [
     rating: 5.0,
     reviewCount: 210,
     featured: true,
-    inclusions: ['5-Star Hotel near Haram', 'VIP Air-conditioned Transport & Train', 'Full-board Buffet Meals', 'Experienced Religious Guidance', 'Ziyarat in Makkah & Madinah', 'Qurbani Included'],
+    inclusions: [
+      '5-Star Hotel Accommodation near Haram',
+      'VIP Air-conditioned Transport & Transfers',
+      'Dedicated Scholar & Religious Guidance',
+      'Complete Visa Assistance & Permits',
+    ],
     exclusions: ['Emergency Medical Insurance', 'Excess Baggage Fees'],
     details: {
       tier: 'Premium',
@@ -500,7 +510,12 @@ export const demoPackages: PackageItem[] = [
     rating: 4.8,
     reviewCount: 198,
     featured: true,
-    inclusions: ['Verified 3/4-Star Hotels with Shuttle', 'Air-Conditioned Coach Transfers', 'Complete Umrah Visa Assistance', 'Daily Breakfast', 'Guided Holy Site Visits (Ziyarat)'],
+    inclusions: [
+      'Comfortable Hotel Accommodation with Shuttle',
+      'Air-conditioned Bus Transport & Transfers',
+      'Dedicated Scholar & Religious Guidance',
+      'Complete Visa Assistance & Permits',
+    ],
     exclusions: ['Personal Expenses', 'Room Service'],
     details: {
       tier: 'Economy',
@@ -524,10 +539,15 @@ export const demoPackages: PackageItem[] = [
     image: '/images/destinations/madinah-green-dome.jpg',
     meccaImage: '/images/destinations/makkah-night.jpg',
     madinahImage: '/images/destinations/madinah-green-dome.jpg',
-    rating: 4.9,
+    rating: 5.0,
     reviewCount: 320,
     featured: true,
-    inclusions: ['Direct Return Flights', 'Luxury 5-Star Hotel Stay near Haram', 'Visa Processing Assistance', 'Private Chauffeur Transfers & Train', 'Daily Breakfast Buffet', 'Guided Holy Site Visits (Ziyarat)'],
+    inclusions: [
+      '5-Star Hotel Accommodation near Haram',
+      'VIP Air-conditioned Transport & Transfers',
+      'Dedicated Scholar & Religious Guidance',
+      'Complete Visa Assistance & Permits',
+    ],
     exclusions: ['Personal Expenses', 'Room Service'],
     details: {
       tier: 'Premium',

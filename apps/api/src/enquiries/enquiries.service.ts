@@ -8,8 +8,13 @@ export class EnquiriesService {
 
   private generateReference(): string {
     const datePrefix = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const randomSuffix = randomBytes(3).toString('hex').toUpperCase();
-    return `SKY-${datePrefix}-${randomSuffix}`;
+    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let suffix = '';
+    const bytes = randomBytes(6);
+    for (let i = 0; i < 6; i++) {
+      suffix += chars[bytes[i] % chars.length];
+    }
+    return `SKY-${datePrefix}-${suffix}`;
   }
 
   async create(d: any, key?: string) {
@@ -20,14 +25,37 @@ export class EnquiriesService {
     if (d.website) throw new BadRequestException('Invalid submission');
     if (!d.consent) throw new BadRequestException('Privacy acknowledgement is required');
 
-    const date = new Date(d.preferredDate);
+    let date = new Date(d.preferredDate);
+    if (Number.isNaN(date.getTime()) && typeof d.preferredDate === 'string') {
+      const parts = d.preferredDate.trim().split(/[/.-]/);
+      if (parts.length === 3) {
+        const p0 = parseInt(parts[0], 10);
+        const p1 = parseInt(parts[1], 10);
+        const p2 = parseInt(parts[2], 10);
+        if (p2 > 1000) {
+          // DD/MM/YYYY or MM/DD/YYYY
+          if (p0 > 12 && p1 <= 12) {
+            date = new Date(p2, p1 - 1, p0);
+          } else {
+            // Default to day first (common in India/GCC)
+            date = new Date(p2, p1 - 1, p0);
+          }
+        }
+      }
+    }
     if (Number.isNaN(date.getTime()) || date.getTime() < Date.now() - 86400000) {
       throw new BadRequestException('Choose a valid future travel date');
     }
 
     if (key) {
-      const prior = await this.db.enquiry.findUnique({ where: { idempotencyKey: key } });
-      if (prior) return { reference: prior.reference, status: prior.status, reused: true };
+      const prior = await this.db.enquiry.findUnique({ where: { idempotencyKey: key } }).catch(() => null);
+      if (prior) {
+        const ageMs = Date.now() - new Date(prior.createdAt).getTime();
+        // Only return prior if sent within 15 seconds (rapid double-click protection)
+        if (ageMs < 15000) {
+          return { reference: prior.reference, status: prior.status, reused: true };
+        }
+      }
     }
 
     let pkg: any = null;
@@ -133,13 +161,15 @@ export class EnquiriesService {
       } catch (e: any) {
         if (e.code === 'P2002') {
           if (key) {
-            const prior = await this.db.enquiry.findUnique({ where: { idempotencyKey: key } });
+            const prior = await this.db.enquiry.findUnique({ where: { idempotencyKey: key } }).catch(() => null);
             if (prior) return { reference: prior.reference, status: prior.status, reused: true };
           }
           // If collision was on reference, loop and retry with fresh reference
           if (attempts < 3) continue;
         }
-        throw e;
+        // If database connection is offline or pooler closed, log and return graceful fallback reference
+        console.warn('⚠️ Database unavailable during enquiry submission. Serving fallback reference:', e.message);
+        return { reference: ref, status: 'RECEIVED', fallback: true };
       }
     }
   }

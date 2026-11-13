@@ -183,8 +183,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   logoImage: {
-    width: 82,
-    height: 82,
+    width: 108,
+    height: 52,
   },
   headerCta: {
     flexDirection: 'row',
