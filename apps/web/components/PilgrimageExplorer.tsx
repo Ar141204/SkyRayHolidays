@@ -1,16 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, ShieldCheck, Clock, Star } from 'lucide-react';
-import { demoPackages } from '@/lib/config';
+import { API_URL, demoPackages, type PackageItem } from '@/lib/config';
 
 export default function PilgrimageExplorer() {
   const [activeTab, setActiveTab] = useState<'HAJJ' | 'UMRAH'>('HAJJ');
+  const [items, setItems] = useState<PackageItem[]>(demoPackages);
+
+  useEffect(() => {
+    fetch(`${API_URL}/packages`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const published = data.filter((p: any) => p.status !== 'DRAFT');
+          if (published.some((p: any) => p.kind === 'HAJJ' || p.kind === 'UMRAH')) {
+            setItems(published);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Filter packages by kind (HAJJ vs UMRAH) and guarantee Premium is first, followed by Economy
-  const packages = demoPackages
+  const packages = items
     .filter((p) => p.kind === activeTab)
     .sort((a, b) => {
       const aIsPrem = a.category?.toUpperCase() === 'PREMIUM' || a.title.toUpperCase().includes('PREMIUM');
@@ -54,13 +69,14 @@ export default function PilgrimageExplorer() {
           // Premium Umrah: Sacred Madinah Green Dome
           // Economy Umrah: Madinah Courtyard Umbrellas
           const cardImage =
-            activeTab === 'HAJJ'
+            pkg.image ||
+            (activeTab === 'HAJJ'
               ? isPremium
                 ? '/images/destinations/makkah-night.jpg'
                 : '/images/destinations/makkah-kaaba.jpg'
               : isPremium
               ? '/images/destinations/madinah-green-dome.jpg'
-              : '/images/destinations/madinah-courtyard.jpg';
+              : '/images/destinations/madinah-courtyard.jpg');
 
           const eyebrowText =
             activeTab === 'HAJJ'
@@ -139,6 +155,7 @@ export default function PilgrimageExplorer() {
                   sizes="(max-width: 900px) 100vw, 50vw"
                   style={{ objectFit: 'cover' }}
                   priority={isPremium}
+                  unoptimized={Boolean(cardImage?.startsWith('data:') || cardImage?.startsWith('/uploads'))}
                 />
 
                 {/* Subtle vignette gradient overlay */}

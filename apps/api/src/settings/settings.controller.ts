@@ -286,6 +286,7 @@ export class SettingsController {
           phone: true,
           whatsapp: true,
           email: true,
+          address: true,
           hours: true,
           mapUrl: true,
           whatsappMessage: true,
@@ -299,6 +300,7 @@ export class SettingsController {
         whatsapp: s.whatsapp || '+91 91763 57791',
         whatsappSecondary: '+966 57 549 0602',
         email: s.email || 'syedrahamathullah@skyrayholidays.com',
+        address: s.address || 'Chennai, Tamil Nadu, India',
         hours: s.hours || '24/7 Dedicated Support',
         mapUrl: s.mapUrl || '',
         whatsappMessage:

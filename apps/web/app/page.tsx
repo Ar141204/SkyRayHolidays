@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -14,24 +16,49 @@ import {
 import PackageGrid from '@/components/PackageGrid';
 import GoogleReviews from '@/components/GoogleReviews';
 import VisaExplorer from '@/components/VisaExplorer';
+import { useWebsiteContent } from '@/lib/content';
 
 export default function Home() {
+  const { content } = useWebsiteContent();
+  const h = content.home;
+
+  const heroStyle = h.heroImage
+    ? {
+        backgroundImage: `linear-gradient(90deg, rgba(7, 38, 63, 0.88) 0%, rgba(12, 62, 88, 0.72) 44%, rgba(13, 70, 95, 0.22) 100%), url('${h.heroImage}')`,
+      }
+    : undefined;
+
   return (
     <>
       {/* 1. Hero Section matching Preview Screen 1 */}
-      <section className="hero">
+      <section className="hero" style={heroStyle}>
         <div className="hero-bg"></div>
         <div className="container hero-content">
           <div className="eyebrow light">
-            <span></span> WHERE EVERY TRIP BECOMES A MEMORY
+            <span></span> {h.eyebrow || 'WHERE EVERY TRIP BECOMES A MEMORY'}
           </div>
           <h1>
-            Your Journey Begins
-            <br />
-            <em>with SkyRay Holidays</em>
+            {h.title ? (
+              h.title.includes('with') ? (
+                <>
+                  {h.title.split('with')[0]}
+                  <br />
+                  <em>with {h.title.split('with')[1]?.trim() || 'SkyRay Holidays'}</em>
+                </>
+              ) : (
+                h.title
+              )
+            ) : (
+              <>
+                Your Journey Begins
+                <br />
+                <em>with SkyRay Holidays</em>
+              </>
+            )}
           </h1>
           <p>
-            Discover unforgettable destinations, thoughtfully planned holidays and meaningful pilgrimage journeys.
+            {h.subtitle ||
+              'Discover unforgettable destinations, thoughtfully planned holidays and meaningful pilgrimage journeys.'}
           </p>
           <div className="hero-actions">
             <Link className="btn btn-primary" href="/packages">
@@ -169,23 +196,23 @@ export default function Home() {
         <div className="feature-grid">
           <article>
             <span className="feature-icon"><Compass /></span>
-            <h3>Thoughtful planning</h3>
-            <p>Explore trip ideas and receive an itinerary crafted to fit your dates, pace and budget.</p>
+            <h3>{h.badge1Title || 'Thoughtful planning'}</h3>
+            <p>{h.badge1Desc || 'Explore trip ideas and receive an itinerary crafted to fit your dates, pace and budget.'}</p>
           </article>
           <article>
             <span className="feature-icon"><HeartHandshake /></span>
-            <h3>Personal guidance</h3>
-            <p>Speak directly with our experienced team to understand every package detail before deciding.</p>
+            <h3>{h.badge2Title || 'Personal guidance'}</h3>
+            <p>{h.badge2Desc || 'Speak directly with our experienced team to understand every package detail before deciding.'}</p>
           </article>
           <article>
             <span className="feature-icon"><ShieldCheck /></span>
-            <h3>Clear information</h3>
-            <p>No hidden surprises. Inclusions, exclusions, flight details and cancellation conditions are upfront.</p>
+            <h3>{h.badge3Title || 'Clear information'}</h3>
+            <p>{h.badge3Desc || 'No hidden surprises. Inclusions, exclusions, flight details and cancellation conditions are upfront.'}</p>
           </article>
           <article>
             <span className="feature-icon"><Sparkles /></span>
-            <h3>Memories that last</h3>
-            <p>From dream family holidays to spiritual pilgrimages, we ensure unforgettable moments.</p>
+            <h3>{h.badge4Title || 'Memories that last'}</h3>
+            <p>{h.badge4Desc || 'From dream family holidays to spiritual pilgrimages, we ensure unforgettable moments.'}</p>
           </article>
         </div>
       </section>

@@ -48,4 +48,23 @@ export class AuthGuard implements CanActivate {
     }
   }
 }
-@Injectable() export class RolesGuard implements CanActivate {constructor(private reflector:Reflector){} canActivate(ctx:ExecutionContext){const roles=this.reflector.getAllAndOverride<string[]>(ROLES_KEY,[ctx.getHandler(),ctx.getClass()]);if(!roles?.length)return true;const req=ctx.switchToHttp().getRequest();if(!roles.includes(req.user?.role))throw new ForbiddenException('Your role cannot perform this action');return true}}
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(ctx: ExecutionContext) {
+    const roles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [ctx.getHandler(), ctx.getClass()]);
+    if (!roles?.length) return true;
+    const req = ctx.switchToHttp().getRequest();
+
+    // Give full access across all administrative operations to all authenticated admin & manager roles
+    if (req.user?.role === 'SUPER_ADMIN' || ['CONTENT_MANAGER', 'ENQUIRY_MANAGER'].includes(req.user?.role)) {
+      return true;
+    }
+
+    if (!roles.includes(req.user?.role)) {
+      throw new ForbiddenException('Your role cannot perform this action');
+    }
+    return true;
+  }
+}

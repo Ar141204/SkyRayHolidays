@@ -15,6 +15,9 @@ import {
 } from 'lucide-react';
 import { API_URL, demoPackages, type PackageItem } from '@/lib/config';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getPackage(slug: string): Promise<PackageItem | null> {
   try {
     const r = await fetch(`${API_URL}/packages/${slug}`, { next: { revalidate: 60 } });

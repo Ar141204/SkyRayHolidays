@@ -7,7 +7,9 @@ import { API_URL, contactDefaults } from '@/lib/config';
 export type PublicSettings = {
   companyName?: string;
   phone?: string;
+  phoneSecondary?: string;
   whatsapp?: string;
+  whatsappSecondary?: string;
   email?: string;
   address?: string;
   hours?: string;
@@ -36,24 +38,26 @@ export function usePublicSettings() {
 export function ContactDetails() {
   const s = usePublicSettings();
   const phone = s.phone || contactDefaults.phone;
+  const phoneSecondary = s.phoneSecondary || contactDefaults.phoneSecondary;
   const whatsapp = s.whatsapp || contactDefaults.whatsapp;
   const email = s.email || contactDefaults.email;
   const address = s.address || contactDefaults.address;
   const hours = s.hours || contactDefaults.hours;
   const mapUrl = s.mapUrl || contactDefaults.mapUrl;
+  const whatsappMsg = encodeURIComponent(s.whatsappMessage || contactDefaults.whatsappMessage);
 
   const rows = [
-    { icon: Phone, label: 'India Desk', value: '+91 91763 57791', href: 'tel:+919176357791' },
-    { icon: Phone, label: 'Saudi Arabia Desk', value: '+966 57 549 0602', href: 'tel:+966575490602' },
+    { icon: Phone, label: 'India Desk', value: phone, href: `tel:${phone.replace(/\s+/g, '')}` },
+    { icon: Phone, label: 'Saudi Arabia Desk', value: phoneSecondary, href: `tel:${phoneSecondary.replace(/\s+/g, '')}` },
     {
       icon: MessageCircle,
       label: 'WhatsApp',
-      value: '+91 91763 57791',
-      href: 'https://wa.me/919176357791?text=Hello%20SkyRay%20Holidays!',
+      value: whatsapp,
+      href: `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${whatsappMsg}`,
     },
-    { icon: Mail, label: 'Official Email', value: email || 'syedrahamathullah@skyrayholidays.com', href: `mailto:${email || 'syedrahamathullah@skyrayholidays.com'}` },
+    { icon: Mail, label: 'Official Email', value: email, href: `mailto:${email}` },
     ...(address ? [{ icon: MapPin, label: 'Office', value: address, href: mapUrl }] : []),
-    { icon: Clock3, label: 'Concierge hours', value: hours || '24/7 Dedicated Support', href: undefined },
+    { icon: Clock3, label: 'Concierge hours', value: hours, href: undefined },
   ];
 
   return (

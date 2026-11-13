@@ -29,21 +29,21 @@ export class PackagesController {
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles('SUPER_ADMIN', 'CONTENT_MANAGER')
+  @Roles('SUPER_ADMIN', 'CONTENT_MANAGER', 'ENQUIRY_MANAGER')
   @Post()
   create(@Body() body: any, @Req() req: Request) {
     return this.svc.create(body, (req as any).user);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles('SUPER_ADMIN', 'CONTENT_MANAGER')
+  @Roles('SUPER_ADMIN', 'CONTENT_MANAGER', 'ENQUIRY_MANAGER')
   @Patch(':id')
   update(@Param('id') id: string, @Body() body: any, @Req() req: Request) {
     return this.svc.update(id, body, (req as any).user);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles('SUPER_ADMIN', 'CONTENT_MANAGER')
+  @Roles('SUPER_ADMIN', 'CONTENT_MANAGER', 'ENQUIRY_MANAGER')
   @Delete(':id')
   delete(@Param('id') id: string, @Req() req: Request) {
     return this.svc.delete(id, (req as any).user);

@@ -1,35 +1,38 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowUpRight, Clock3, MapPin, Star } from 'lucide-react';
 import { API_URL, demoPackages, type PackageItem } from '@/lib/config';
 
-export default async function PackageGrid({
+export default function PackageGrid({
   featured = false,
   kind,
 }: {
   featured?: boolean;
   kind?: string;
 }) {
-  let items: PackageItem[] = [];
+  const [items, setItems] = useState<PackageItem[]>(() => {
+    let initial = demoPackages.filter((p) => p.published !== false);
+    if (kind) initial = initial.filter((p) => p.kind === kind);
+    if (featured) initial = initial.filter((p) => p.featured).slice(0, 4);
+    return initial;
+  });
 
-  try {
-    const res = await fetch(`${API_URL}/packages${kind ? `?kind=${kind}` : ''}`, {
-      next: { revalidate: 60 },
-    });
-    if (res.ok) items = await res.json();
-  } catch {}
-
-  if (items.length === 0) {
-    items = demoPackages.filter((p) => p.published !== false);
-  }
-
-  if (kind) {
-    items = items.filter((p) => p.kind === kind);
-  }
-
-  if (featured) {
-    items = items.filter((p) => p.featured).slice(0, 4);
-  }
+  useEffect(() => {
+    fetch(`${API_URL}/packages${kind ? `?kind=${kind}` : ''}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          let list = data.filter((p: any) => p.status !== 'DRAFT');
+          if (kind) list = list.filter((p: any) => p.kind === kind);
+          if (featured) list = list.filter((p: any) => p.featured).slice(0, 4);
+          setItems(list);
+        }
+      })
+      .catch(() => {});
+  }, [featured, kind]);
 
   return (
     <div className="package-grid">

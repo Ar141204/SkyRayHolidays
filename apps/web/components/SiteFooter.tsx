@@ -77,8 +77,10 @@ export default function SiteFooter() {
 
         <div>
           <h4>Get In Touch</h4>
-          <a href="tel:+919176357791">+91 91763 57791 (India)</a>
-          <a href="tel:+966575490602">+966 57 549 0602 (Saudi)</a>
+          <a href={`tel:${phone.replace(/\s+/g, '')}`}>{phone} (India)</a>
+          <a href={`tel:${(s.phoneSecondary || '+966 57 549 0602').replace(/\s+/g, '')}`}>
+            {s.phoneSecondary || '+966 57 549 0602'} (Saudi)
+          </a>
           <a href={`mailto:${email}`}>{email}</a>
           {address ? <p>{address}</p> : null}
           <Link href="/contact" className="text-link">

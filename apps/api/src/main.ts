@@ -7,6 +7,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config();
 
 import 'reflect-metadata';
+import express from 'express';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -28,6 +29,9 @@ async function bootstrap() {
   if (process.env.TRUST_PROXY === 'true') {
     app.set('trust proxy', 1);
   }
+
+  app.use(express.json({ limit: '25mb' }));
+  app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
   app.setGlobalPrefix('api/v1', {
     exclude: ['/'],
