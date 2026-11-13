@@ -13,6 +13,7 @@
     "dev:mobile": "npm --workspace @skyray/mobile run start",
     "build:web": "npm --workspace @skyray/web run build",
     "build:api": "npm --workspace @skyray/api run build",
+    "start:api": "node apps/api/dist/src/main.js",
     "typecheck:web": "npm --workspace @skyray/web exec tsc -- --noEmit",
     "typecheck:api": "npm --workspace @skyray/api exec tsc -- --noEmit",
     "typecheck:mobile": "npm --workspace @skyray/mobile exec tsc -- --noEmit",

@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: skyray-holidays-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install && npm run db:generate && npm run build:api
+    startCommand: npm run start:api
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: COOKIE_SAME_SITE
+        value: lax
+      - key: TRUST_PROXY
+        value: "true"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SEED_ADMIN_NAME
+        value: "Syed Rahamathullah"
+      - key: SEED_ADMIN_EMAIL
+        value: syedrahamathullah@skyrayholidays.com
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        value: syedrahamathullah@skyrayholidays.com
+      - key: ENQUIRY_NOTIFICATION_EMAIL
+        value: syedrahamathullah@skyrayholidays.com
