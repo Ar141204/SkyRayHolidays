@@ -164,6 +164,7 @@ export default function PackageExplorer() {
                     alt={p.title}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
+                    unoptimized={Boolean(p.image?.startsWith('data:') || p.image?.startsWith('/uploads'))}
                   />
                   <span className="package-kind">{p.kind === 'TOUR' ? p.category || 'TOUR' : p.kind}</span>
                 </Link>

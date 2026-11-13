@@ -121,6 +121,7 @@ export default function VisaExplorer() {
                   fill
                   sizes="(max-width: 768px) 100vw, 300px"
                   style={{ objectFit: 'cover' }}
+                  unoptimized={Boolean(cardPhoto?.startsWith('data:') || cardPhoto?.startsWith('/uploads'))}
                 />
                 <div
                   style={{

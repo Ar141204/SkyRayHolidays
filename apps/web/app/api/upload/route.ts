@@ -47,25 +47,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Image exceeds maximum allowed size of 8MB' }, { status: 400 });
     }
 
-    // 4. Sanitize extension
+    // 4. Sanitize extension & prepare file path
     const rawExt = path.extname(file.name || '').toLowerCase();
     const cleanExt = ALLOWED_EXTENSIONS.has(rawExt) ? rawExt : '.jpg';
     const filename = `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${cleanExt}`;
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    try {
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      const filepath = path.join(uploadsDir, filename);
+      fs.writeFileSync(filepath, buffer);
+
+      return NextResponse.json({
+        url: `/uploads/${filename}`,
+        filename,
+        size: buffer.length,
+        success: true,
+      });
+    } catch {
+      // Fallback for serverless environments (Vercel) where local disk is read-only
+      const dataUri = `data:${mimeType};base64,${buffer.toString('base64')}`;
+      return NextResponse.json({
+        url: dataUri,
+        filename,
+        size: buffer.length,
+        success: true,
+      });
     }
-
-    const filepath = path.join(uploadsDir, filename);
-    fs.writeFileSync(filepath, buffer);
-
-    return NextResponse.json({
-      url: `/uploads/${filename}`,
-      filename,
-      size: buffer.length,
-      success: true,
-    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Image upload failed' }, { status: 500 });
   }

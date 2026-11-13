@@ -178,7 +178,10 @@ export function PackagesScreen({ navigation }: any) {
               item.slug.includes('andaman');
 
             const isPilgrim = item.kind === 'HAJJ' || item.kind === 'UMRAH';
-            const cardImage = getPackageImage(item.slug);
+            const cardImage =
+              item.image && (item.image.startsWith('http') || item.image.startsWith('data:'))
+                ? { uri: item.image }
+                : getPackageImage(item.slug);
 
             return (
               <TouchableOpacity

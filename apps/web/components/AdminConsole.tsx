@@ -593,57 +593,64 @@ export default function AdminConsole() {
     }
   }
 
+  // Client-side image compression & Data URL generation
+  // Guarantees zero broken images on Vercel serverless, Render, Mobile, and local dev
+  async function compressImageToDataUrl(file: File, maxWidth = 1400, quality = 0.84): Promise<string> {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/') || file.type.includes('svg')) {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve((e.target?.result as string) || '');
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            return resolve(e.target?.result as string);
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   // Device File Upload handler (Packages)
   async function handlePackageImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 8 * 1024 * 1024) {
-      alert('File size exceeds 8MB limit. Please choose a smaller image.');
+    if (file.size > 12 * 1024 * 1024) {
+      alert('File size exceeds 12MB limit. Please choose a smaller image.');
       return;
     }
 
     setUploadingImage(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-          setPackageFormData((prev) => ({ ...prev, image: data.url }));
-          setSavedMsg('Image uploaded successfully from device!');
-          setTimeout(() => setSavedMsg(''), 3000);
-          return;
-        }
+      const dataUrl = await compressImageToDataUrl(file);
+      if (dataUrl) {
+        setPackageFormData((prev) => ({ ...prev, image: dataUrl }));
+        setSavedMsg('Image loaded from device! Click "Save Package" to publish.');
+        setTimeout(() => setSavedMsg(''), 4000);
       }
-
-      // Fallback: Read as Base64 Data URL so upload never fails for the user
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        if (dataUrl) {
-          setPackageFormData((prev) => ({ ...prev, image: dataUrl }));
-          setSavedMsg('Image loaded from device!');
-          setTimeout(() => setSavedMsg(''), 3000);
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (err: any) {
-      // Local fallback
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        if (dataUrl) {
-          setPackageFormData((prev) => ({ ...prev, image: dataUrl }));
-        }
-      };
-      reader.readAsDataURL(file);
+    } catch {
+      alert('Could not read image file. Please try another image.');
     } finally {
       setUploadingImage(false);
     }
@@ -656,55 +663,18 @@ export default function AdminConsole() {
 
     setUploadingImage(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-          setWebsiteContent((prev) => ({
-            ...prev,
-            home: { ...prev.home, heroImage: data.url },
-          }));
-          setHeroForm((prev) => ({ ...prev, heroImage: data.url }));
-          setSavedMsg('Hero image uploaded successfully!');
-          setTimeout(() => setSavedMsg(''), 3000);
-          return;
-        }
+      const dataUrl = await compressImageToDataUrl(file);
+      if (dataUrl) {
+        setWebsiteContent((prev) => ({
+          ...prev,
+          home: { ...prev.home, heroImage: dataUrl },
+        }));
+        setHeroForm((prev) => ({ ...prev, heroImage: dataUrl }));
+        setSavedMsg('Hero image loaded! Click "Save Home Section" below to publish.');
+        setTimeout(() => setSavedMsg(''), 4000);
       }
-
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        if (dataUrl) {
-          setWebsiteContent((prev) => ({
-            ...prev,
-            home: { ...prev.home, heroImage: dataUrl },
-          }));
-          setHeroForm((prev) => ({ ...prev, heroImage: dataUrl }));
-          setSavedMsg('Hero image loaded from device!');
-          setTimeout(() => setSavedMsg(''), 3000);
-        }
-      };
-      reader.readAsDataURL(file);
     } catch {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        if (dataUrl) {
-          setWebsiteContent((prev) => ({
-            ...prev,
-            home: { ...prev.home, heroImage: dataUrl },
-          }));
-          setHeroForm((prev) => ({ ...prev, heroImage: dataUrl }));
-        }
-      };
-      reader.readAsDataURL(file);
+      alert('Could not read image file. Please try another image.');
     } finally {
       setUploadingImage(false);
     }
@@ -717,52 +687,17 @@ export default function AdminConsole() {
 
     setUploadingAboutImage(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-          setWebsiteContent((prev) => ({
-            ...prev,
-            about: { ...prev.about, image: data.url },
-          }));
-          setSavedMsg('About cover photo uploaded successfully!');
-          setTimeout(() => setSavedMsg(''), 3000);
-          return;
-        }
+      const dataUrl = await compressImageToDataUrl(file);
+      if (dataUrl) {
+        setWebsiteContent((prev) => ({
+          ...prev,
+          about: { ...prev.about, image: dataUrl },
+        }));
+        setSavedMsg('About photo loaded! Click "Save About Changes" below to publish.');
+        setTimeout(() => setSavedMsg(''), 4000);
       }
-
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        if (dataUrl) {
-          setWebsiteContent((prev) => ({
-            ...prev,
-            about: { ...prev.about, image: dataUrl },
-          }));
-          setSavedMsg('About photo loaded from device!');
-          setTimeout(() => setSavedMsg(''), 3000);
-        }
-      };
-      reader.readAsDataURL(file);
     } catch {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        if (dataUrl) {
-          setWebsiteContent((prev) => ({
-            ...prev,
-            about: { ...prev.about, image: dataUrl },
-          }));
-        }
-      };
-      reader.readAsDataURL(file);
+      alert('Could not read image file. Please try another image.');
     } finally {
       setUploadingAboutImage(false);
     }
@@ -910,49 +845,21 @@ export default function AdminConsole() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 8 * 1024 * 1024) {
-      alert('File size exceeds 8MB. Please choose a smaller photo.');
+    if (file.size > 12 * 1024 * 1024) {
+      alert('File size exceeds 12MB. Please choose a smaller photo.');
       return;
     }
 
     setUploadingVisaImage(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-          setVisaFormData((prev) => ({ ...prev, image: data.url }));
-          setSavedMsg('Visa destination photo uploaded successfully!');
-          setTimeout(() => setSavedMsg(''), 3000);
-          return;
-        }
+      const dataUrl = await compressImageToDataUrl(file);
+      if (dataUrl) {
+        setVisaFormData((prev) => ({ ...prev, image: dataUrl }));
+        setSavedMsg('Visa photo loaded! Click "Save Visa Service" below to publish.');
+        setTimeout(() => setSavedMsg(''), 4000);
       }
-
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        if (dataUrl) {
-          setVisaFormData((prev) => ({ ...prev, image: dataUrl }));
-          setSavedMsg('Image loaded from device!');
-          setTimeout(() => setSavedMsg(''), 3000);
-        }
-      };
-      reader.readAsDataURL(file);
     } catch {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        if (dataUrl) setVisaFormData((prev) => ({ ...prev, image: dataUrl }));
-      };
-      reader.readAsDataURL(file);
+      alert('Could not read image file. Please try another image.');
     } finally {
       setUploadingVisaImage(false);
     }

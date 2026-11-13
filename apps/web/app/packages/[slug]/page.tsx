@@ -189,6 +189,7 @@ export default async function PackageDetail({
               priority
               style={{ objectFit: 'cover' }}
               sizes="(max-width: 900px) 100vw, 55vw"
+              unoptimized={Boolean(mainImage?.startsWith('data:') || mainImage?.startsWith('/uploads'))}
             />
             <span className="gallery-kind-tag">
               {p.kind === 'TOUR' ? p.category || 'HOLIDAY' : p.kind}
@@ -204,6 +205,7 @@ export default async function PackageDetail({
                   fill
                   style={{ objectFit: 'cover' }}
                   sizes="120px"
+                  unoptimized={Boolean(thumb?.startsWith('data:') || thumb?.startsWith('/uploads'))}
                 />
               </div>
             ))}
