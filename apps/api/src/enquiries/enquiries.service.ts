@@ -148,7 +148,12 @@ export class EnquiriesService {
             data: { enquiryId: e.id, toStatus: 'NEW', actorLabel: 'PUBLIC_SUBMISSION' },
           });
 
-          for (const type of ['COMPANY_EMAIL', 'CUSTOMER_EMAIL', 'EXCEL_SYNC']) {
+          const jobsToQueue = ['COMPANY_EMAIL', 'EXCEL_SYNC'];
+          if (process.env.ENABLE_CUSTOMER_AUTO_REPLY !== 'false') {
+            jobsToQueue.push('CUSTOMER_EMAIL');
+          }
+
+          for (const type of jobsToQueue) {
             await tx.integrationJob.create({
               data: { enquiryId: e.id, type, status: 'PENDING' },
             });

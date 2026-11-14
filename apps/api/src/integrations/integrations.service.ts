@@ -23,9 +23,11 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
   // Cached Google Places reviews (1 hour TTL)
   private googleReviewsCache: { data: any; expiresAt: number } | null = null;
 
-  // Cached Nodemailer transporter
+  // Cached Nodemailer transporters
   private cachedTransporter: nodemailer.Transporter | null = null;
   private transporterKey = '';
+  private cachedCustomerTransporter: nodemailer.Transporter | null = null;
+  private customerTransporterKey = '';
 
   constructor(private readonly db: PrismaService) {}
 
@@ -105,7 +107,39 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private getMailTransporter() {
+  private getMailTransporter(isCustomerReply = false) {
+    const isCustomerDedicated =
+      isCustomerReply &&
+      Boolean(process.env.CUSTOMER_SMTP_PASSWORD || process.env.CUSTOMER_SMTP_USER);
+
+    if (isCustomerDedicated) {
+      const host = process.env.CUSTOMER_SMTP_HOST || 'smtp.gmail.com';
+      const port = Number(process.env.CUSTOMER_SMTP_PORT || 465);
+      const user = process.env.CUSTOMER_SMTP_USER || 'skyrayholidays@gmail.com';
+      const pass = process.env.CUSTOMER_SMTP_PASSWORD;
+      const secure =
+        process.env.CUSTOMER_SMTP_SECURE === 'true' || port === 465;
+
+      const key = `customer:${host}:${port}:${user}:${secure}`;
+      if (this.cachedCustomerTransporter && this.customerTransporterKey === key) {
+        return this.cachedCustomerTransporter;
+      }
+
+      const transporter = nodemailer.createTransport({
+        host,
+        port,
+        secure,
+        pool: true,
+        maxConnections: 3,
+        maxMessages: 100,
+        auth: user ? { user, pass } : undefined,
+      });
+
+      this.cachedCustomerTransporter = transporter;
+      this.customerTransporterKey = key;
+      return transporter;
+    }
+
     const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_SECURE } = process.env;
     const currentKey = `${SMTP_HOST}:${SMTP_PORT}:${SMTP_USER}:${SMTP_SECURE}`;
 
@@ -129,8 +163,26 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async sendEmail(job: any) {
+    const isCustomerEmail = job.type === 'CUSTOMER_EMAIL';
+
+    // If customer return auto-replies are explicitly disabled, skip
+    if (isCustomerEmail && process.env.ENABLE_CUSTOMER_AUTO_REPLY === 'false') {
+      this.log.log('Skipping customer return auto-reply email (ENABLE_CUSTOMER_AUTO_REPLY is false)');
+      return;
+    }
+
     const { SMTP_HOST, SMTP_FROM, ENQUIRY_NOTIFICATION_EMAIL } = process.env;
-    if (!SMTP_HOST || !SMTP_FROM) {
+    const customerUser = process.env.CUSTOMER_SMTP_USER || 'skyrayholidays@gmail.com';
+    const customerFrom =
+      process.env.CUSTOMER_SMTP_FROM || `"SkyRay Holidays" <${customerUser}>`;
+
+    const from =
+      isCustomerEmail &&
+      (process.env.CUSTOMER_SMTP_USER || process.env.CUSTOMER_SMTP_PASSWORD)
+        ? customerFrom
+        : SMTP_FROM;
+
+    if (!from && !SMTP_HOST) {
       throw new Error('SMTP is not configured; email job is awaiting provider setup');
     }
 
@@ -188,8 +240,8 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
       </div>
     `;
 
-    const transporter = this.getMailTransporter();
-    await transporter.sendMail({ from: SMTP_FROM, to, subject, html });
+    const transporter = this.getMailTransporter(isCustomerEmail);
+    await transporter.sendMail({ from: from || customerFrom, to, subject, html });
   }
 
   private encryptionKey() {

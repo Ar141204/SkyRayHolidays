@@ -1,13 +1,31 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Target, Eye, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useWebsiteContent } from '@/lib/content';
 
+const fallbackAboutImg = '/images/banner/banner-1-swiss-alps.jpg';
+
+function resolveImage(raw?: string) {
+  if (!raw || !raw.trim()) return fallbackAboutImg;
+  const str = raw.trim();
+  if (str.startsWith('data:') || str.startsWith('http://') || str.startsWith('https://')) return str;
+  if (str.startsWith('/uploads/')) {
+    return `https://skyray-holidays-api.onrender.com${str}`;
+  }
+  return str;
+}
+
 export default function AboutView() {
   const { content } = useWebsiteContent();
   const a = content.about;
+  const [imgSrc, setImgSrc] = useState<string>(() => resolveImage(a.image));
+
+  useEffect(() => {
+    setImgSrc(resolveImage(a.image));
+  }, [a.image]);
 
   return (
     <>
@@ -32,12 +50,17 @@ export default function AboutView() {
             <div className="plane-art-card">
               <div className="plane-tag">SkyRay Holidays</div>
               <Image
-                src={a.image && !a.image.startsWith('/uploads') ? a.image : '/images/hero.jpg'}
+                src={imgSrc}
                 alt="Scenic holiday destination travel"
                 fill
                 style={{ objectFit: 'cover' }}
                 priority
                 unoptimized
+                onError={() => {
+                  if (imgSrc !== fallbackAboutImg) {
+                    setImgSrc(fallbackAboutImg);
+                  }
+                }}
               />
             </div>
           </div>
