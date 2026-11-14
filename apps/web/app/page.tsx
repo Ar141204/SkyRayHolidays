@@ -16,71 +16,17 @@ import {
 import PackageGrid from '@/components/PackageGrid';
 import GoogleReviews from '@/components/GoogleReviews';
 import VisaExplorer from '@/components/VisaExplorer';
+import HeroBanner from '@/components/HeroBanner';
 import { useWebsiteContent } from '@/lib/content';
 
 export default function Home() {
   const { content } = useWebsiteContent();
   const h = content.home;
 
-  const heroStyle =
-    h.heroImage && h.heroImage !== '/images/hero.jpg'
-      ? {
-          backgroundImage: `linear-gradient(90deg, rgba(7, 38, 63, 0.88) 0%, rgba(12, 62, 88, 0.72) 44%, rgba(13, 70, 95, 0.22) 100%), url('${h.heroImage}')`,
-        }
-      : undefined;
-
   return (
     <>
-      {/* 1. Hero Section matching Preview Screen 1 */}
-      <section className="hero" style={heroStyle}>
-        <div className="hero-bg"></div>
-        <div className="container hero-content">
-          <div className="eyebrow light">
-            <span></span> {h.eyebrow || 'WHERE EVERY TRIP BECOMES A MEMORY'}
-          </div>
-          <h1>
-            {h.title ? (
-              h.title.includes('with') ? (
-                <>
-                  {h.title.split('with')[0]}
-                  <br />
-                  <em>with {h.title.split('with')[1]?.trim() || 'SkyRay Holidays'}</em>
-                </>
-              ) : (
-                h.title
-              )
-            ) : (
-              <>
-                Your Journey Begins
-                <br />
-                <em>with SkyRay Holidays</em>
-              </>
-            )}
-          </h1>
-          <p>
-            {h.subtitle ||
-              'Discover unforgettable destinations, thoughtfully planned holidays and meaningful pilgrimage journeys.'}
-          </p>
-          <div className="hero-actions">
-            <Link className="btn btn-primary" href="/packages">
-              Explore Packages <ArrowRight size={17} />
-            </Link>
-            <Link className="btn btn-ghost" href="/enquire">
-              Plan Your Trip
-            </Link>
-          </div>
-          <div className="hero-footnote">
-            <span>✦ Curated travel experiences</span>
-            <span>✦ Personal guidance</span>
-            <span>✦ Journeys that matter</span>
-          </div>
-        </div>
-        <div className="hero-stamp">
-          <span>YOUR NEXT</span>
-          <strong>great<br />escape</strong>
-          <small>starts here</small>
-        </div>
-      </section>
+      {/* 1. Continuous Sliding Image & Video Hero Banner with Live Running Offers */}
+      <HeroBanner />
 
       {/* 2. Stat Counter Strip matching Preview Screen 1 */}
       <section className="stats-strip">

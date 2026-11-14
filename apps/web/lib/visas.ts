@@ -13,6 +13,11 @@ export interface VisaServiceItem {
   applicableCountries?: string[];
   defaultCountry?: string;
   status?: string;
+  hasOffer?: boolean;
+  offerBadge?: string;
+  originalPrice?: string;
+  offerPrice?: string;
+  offerRunningText?: string;
 }
 
 export function getStoredVisaServices(): VisaServiceItem[] {
@@ -120,6 +125,11 @@ export const VISA_SERVICES: VisaServiceItem[] = [
     entryType: 'Multiple Entry',
     image: '/images/destinations/us-visa.jpg',
     defaultCountry: 'United States',
+    hasOffer: true,
+    offerBadge: 'FLAT ₹2,000 OFF',
+    originalPrice: '₹8,500',
+    offerPrice: '₹6,500',
+    offerRunningText: '⚡ DS-160 Filing + Appointment Slot + Mock Interview included',
     highlights: [
       'Tourist (B2), Business (B1) & Student (F1/M1) Options',
       'Official DS-160 Form Review & Submission',
@@ -140,6 +150,11 @@ export const VISA_SERVICES: VisaServiceItem[] = [
     entryType: 'Multiple Entry',
     image: '/images/destinations/uk-visa.jpg',
     defaultCountry: 'United Kingdom',
+    hasOffer: true,
+    offerBadge: 'SPECIAL ₹1,500 OFF',
+    originalPrice: '₹7,500',
+    offerPrice: '₹6,000',
+    offerRunningText: '⚡ UKVI Filing + Financial Verification + VFS Slot included',
     highlights: [
       'Tourist, Business & Higher Education Student Categories',
       'Online UKVI Application Filing & Verification',
@@ -160,6 +175,11 @@ export const VISA_SERVICES: VisaServiceItem[] = [
     entryType: 'Single or Multiple Entry',
     image: '/images/destinations/europe.jpg',
     applicableCountries: SCHENGEN_MEMBER_COUNTRIES,
+    hasOffer: true,
+    offerBadge: '29 COUNTRIES PASS',
+    originalPrice: '₹8,000',
+    offerPrice: '₹6,200',
+    offerRunningText: '⚡ Flight/Hotel Vouchers + EUR 30K Insurance included',
     highlights: [
       'Tourist & Business Purpose for 29 European Nations',
       'Confirmed Flight & Hotel Reservation Vouchers',
@@ -201,6 +221,11 @@ export const VISA_SERVICES: VisaServiceItem[] = [
     image: '/images/destinations/dubai.jpg',
     defaultCountry: 'Saudi Arabia',
     applicableCountries: GCC_COUNTRIES,
+    hasOffer: true,
+    offerBadge: 'EXPRESS 24H DELIVERY',
+    originalPrice: '₹4,500',
+    offerPrice: '₹3,200',
+    offerRunningText: '⚡ 100% Online Paperless Approval via WhatsApp & Email',
     highlights: [
       'Saudi Arabia, UAE, Oman, Kuwait & Qatar Coverage',
       'Single Entry and Multiple Entry Options',

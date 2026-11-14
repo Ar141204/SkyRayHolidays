@@ -9,6 +9,15 @@ export type WebsiteContent = {
     title: string;
     subtitle: string;
     heroImage: string;
+    heroImages?: string[];
+    enableVideo?: boolean;
+    heroVideoUrl?: string;
+    slideInterval?: number;
+    enableLiveOffers?: boolean;
+    offerHeadline?: string;
+    offerBadge?: string;
+    offerLink?: string;
+    offerExpiry?: string;
     badge1Title: string;
     badge1Desc: string;
     badge2Title: string;
@@ -62,7 +71,25 @@ export const defaultWebsiteContent: WebsiteContent = {
     eyebrow: 'WHERE EVERY TRIP BECOMES A MEMORY',
     title: 'Your Journey Begins with SkyRay Holidays',
     subtitle: 'Discover unforgettable destinations, thoughtfully planned holidays and meaningful pilgrimage journeys.',
-    heroImage: '/images/hero.jpg',
+    heroImage: '/images/banner/banner-1-swiss-alps.jpg',
+    heroImages: [
+      '/images/banner/banner-1-swiss-alps.jpg',
+      '/images/banner/banner-2-santorini.jpg',
+      '/images/banner/banner-3-cappadocia.jpg',
+      '/images/banner/banner-4-kyoto-fuji.jpg',
+      '/images/banner/banner-5-norway-fjords.jpg',
+      '/images/banner/banner-6-singapore.jpg',
+      '/images/banner/banner-7-amalfi.jpg',
+      '/images/banner/banner-8-phuket.jpg',
+    ],
+    enableVideo: false,
+    heroVideoUrl: '/videos/travel-hero.webm',
+    slideInterval: 5,
+    enableLiveOffers: true,
+    offerHeadline: 'Special Offer: Flat ₹2,000 Off on US, UK & Schengen Visa Consultations | Fast-Track Slots Available!',
+    offerBadge: 'LIMITED RUNNING OFFER',
+    offerLink: '/visa',
+    offerExpiry: 'Special Rates Valid This Month',
     badge1Title: 'Curated Itineraries',
     badge1Desc: 'Handcrafted travel plans tailored to your exact pace and preferences.',
     badge2Title: 'Verified Stays',

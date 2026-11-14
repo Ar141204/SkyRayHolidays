@@ -43,6 +43,10 @@ import {
   Unlock,
   KeyRound,
   Globe2,
+  Menu,
+  Play,
+  Pause,
+  Film,
 } from 'lucide-react';
 import { API_URL, contactDefaults } from '@/lib/config';
 import {
@@ -134,6 +138,11 @@ export default function AdminConsole() {
     highlights: string;
     applicableCountries: string;
     status: string;
+    hasOffer?: boolean;
+    offerBadge?: string;
+    originalPrice?: string;
+    offerPrice?: string;
+    offerRunningText?: string;
   }>({
     id: '',
     slug: '',
@@ -149,7 +158,14 @@ export default function AdminConsole() {
     highlights: 'Document Pre-Screening & Verification\nAppointment Scheduling\nPersonal Guidance',
     applicableCountries: '',
     status: 'PUBLISHED',
+    hasOffer: false,
+    offerBadge: '',
+    originalPrice: '',
+    offerPrice: '',
+    offerRunningText: '',
   });
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   function copyPackageQuote(pkg: any) {
     const inclusions = Array.isArray(pkg.inclusions)
@@ -897,6 +913,11 @@ export default function AdminConsole() {
           : ['Document Pre-Screening & Verification', 'Official Application Filing Guidance'],
       applicableCountries: countriesArr.length > 0 ? countriesArr : undefined,
       status: visaFormData.status || 'PUBLISHED',
+      hasOffer: visaFormData.hasOffer || false,
+      offerBadge: visaFormData.offerBadge?.trim() || undefined,
+      originalPrice: visaFormData.originalPrice?.trim() || undefined,
+      offerPrice: visaFormData.offerPrice?.trim() || undefined,
+      offerRunningText: visaFormData.offerRunningText?.trim() || undefined,
     };
 
     let updated: VisaServiceItem[];
@@ -1181,8 +1202,40 @@ export default function AdminConsole() {
   // Main Dashboard View
   return (
     <div className="admin-console-app">
+      {/* Mobile Top Header */}
+      <header className="admin-mobile-header">
+        <div className="admin-mobile-brand">
+          <Image
+            src="/brand/skyray-logo.png"
+            alt="SkyRay Holidays"
+            width={120}
+            height={48}
+            style={{ width: 'auto', height: '34px', objectFit: 'contain' }}
+            priority
+          />
+          <span className="live-status-pill">
+            <span className="dot-green"></span> Live
+          </span>
+        </div>
+        <button
+          type="button"
+          className="admin-mobile-toggle-btn"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Toggle navigation menu"
+        >
+          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          <span>{isMobileMenuOpen ? 'Close' : 'Menu'}</span>
+        </button>
+      </header>
+
+      {/* Mobile Backdrop */}
+      <div
+        className={`admin-mobile-backdrop ${isMobileMenuOpen ? 'mobile-open' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+
       {/* Sidebar Navigation */}
-      <aside className="admin-app-sidebar">
+      <aside className={`admin-app-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-brand">
           <Image
             src="/brand/skyray-logo.png"
@@ -1196,22 +1249,58 @@ export default function AdminConsole() {
         </div>
 
         <nav className="sidebar-nav">
-          <button className={tab === 'Dashboard' ? 'active' : ''} onClick={() => setTab('Dashboard')}>
+          <button
+            className={tab === 'Dashboard' ? 'active' : ''}
+            onClick={() => {
+              setTab('Dashboard');
+              setIsMobileMenuOpen(false);
+            }}
+          >
             <LayoutDashboard size={17} /> Dashboard
           </button>
-          <button className={tab === 'Enquiries' ? 'active' : ''} onClick={() => setTab('Enquiries')}>
+          <button
+            className={tab === 'Enquiries' ? 'active' : ''}
+            onClick={() => {
+              setTab('Enquiries');
+              setIsMobileMenuOpen(false);
+            }}
+          >
             <Inbox size={17} /> Enquiries
           </button>
-          <button className={tab === 'Packages' ? 'active' : ''} onClick={() => setTab('Packages')}>
+          <button
+            className={tab === 'Packages' ? 'active' : ''}
+            onClick={() => {
+              setTab('Packages');
+              setIsMobileMenuOpen(false);
+            }}
+          >
             <Package size={17} /> Packages
           </button>
-          <button className={tab === 'Visas' ? 'active' : ''} onClick={() => setTab('Visas')}>
+          <button
+            className={tab === 'Visas' ? 'active' : ''}
+            onClick={() => {
+              setTab('Visas');
+              setIsMobileMenuOpen(false);
+            }}
+          >
             <Globe2 size={17} /> Visa Services
           </button>
-          <button className={tab === 'Content' ? 'active' : ''} onClick={() => setTab('Content')}>
+          <button
+            className={tab === 'Content' ? 'active' : ''}
+            onClick={() => {
+              setTab('Content');
+              setIsMobileMenuOpen(false);
+            }}
+          >
             <FileText size={17} /> Website Content
           </button>
-          <button className={tab === 'Settings' ? 'active' : ''} onClick={() => setTab('Settings')}>
+          <button
+            className={tab === 'Settings' ? 'active' : ''}
+            onClick={() => {
+              setTab('Settings');
+              setIsMobileMenuOpen(false);
+            }}
+          >
             <Settings size={17} /> Settings
           </button>
         </nav>
@@ -1802,6 +1891,11 @@ export default function AdminConsole() {
                     highlights: 'Document Pre-Screening & Verification\nOfficial Application Filing Guidance\nAppointment Scheduling Assistance',
                     applicableCountries: '',
                     status: 'PUBLISHED',
+                    hasOffer: false,
+                    offerBadge: '',
+                    originalPrice: '',
+                    offerPrice: '',
+                    offerRunningText: '',
                   });
                   setShowVisaModal(true);
                 }}
@@ -1919,6 +2013,11 @@ export default function AdminConsole() {
                                   highlights: Array.isArray(v.highlights) ? v.highlights.join('\n') : '',
                                   applicableCountries: Array.isArray(v.applicableCountries) ? v.applicableCountries.join(', ') : '',
                                   status: v.status || 'PUBLISHED',
+                                  hasOffer: v.hasOffer ?? false,
+                                  offerBadge: v.offerBadge || '',
+                                  originalPrice: v.originalPrice || '',
+                                  offerPrice: v.offerPrice || '',
+                                  offerRunningText: v.offerRunningText || '',
                                 });
                                 setShowVisaModal(true);
                               }}
@@ -1972,110 +2071,507 @@ export default function AdminConsole() {
             {/* TAB 1: HOME PAGE CONTENT */}
             {contentTab === 'Home' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div className="admin-card-panel">
-                  <div className="panel-header">
+                {/* 1. LIVE RUNNING OFFER ADS CONTROL (Marquee Ticker & Banner Promo) */}
+                <div
+                  className="admin-card-panel"
+                  style={{
+                    border: '1.5px solid #fde68a',
+                    backgroundColor: '#fffdf5',
+                  }}
+                >
+                  <div className="panel-header" style={{ marginBottom: '14px' }}>
                     <div>
-                      <h3>Home Hero Section</h3>
-                      <p>Customize banner headlines, hero image, and primary call-to-actions.</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '20px' }}>🔥</span>
+                        <h3 style={{ margin: 0, color: '#92400e' }}>Live Running Offer Ads &amp; Ticker</h3>
+                      </div>
+                      <p style={{ margin: '4px 0 0', color: '#b45309' }}>
+                        Broadcast flash promotions, festival discounts, and special offers on top of the website banner and visa packages.
+                      </p>
                     </div>
+
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        padding: '8px 14px',
+                        background: '#ffffff',
+                        border: '1.5px solid #fcd34d',
+                        borderRadius: '6px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={websiteContent.home.enableLiveOffers ?? true}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            home: { ...prev.home, enableLiveOffers: e.target.checked },
+                          }))
+                        }
+                      />
+                      <span
+                        style={{
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          color: websiteContent.home.enableLiveOffers ? '#b45309' : '#64748b',
+                        }}
+                      >
+                        {websiteContent.home.enableLiveOffers ? '🔥 LIVE OFFERS ACTIVE (ON)' : 'Offers Disabled (OFF)'}
+                      </span>
+                    </label>
                   </div>
 
-                  <div className="content-hero-preview-box">
-                    <div className="hero-img-col">
-                      <div className="img-frame">
-                        <Image
-                          src={websiteContent.home.heroImage || '/images/destinations/dubai.jpg'}
-                          alt="Hero Banner Preview"
-                          fill
-                          style={{ objectFit: 'cover' }}
-                          unoptimized={
-                            websiteContent.home.heroImage?.startsWith('data:') ||
-                            websiteContent.home.heroImage?.startsWith('/uploads')
-                          }
-                        />
-                      </div>
-
-                      {/* Hidden file input for Hero image */}
-                      <input
-                        type="file"
-                        ref={heroFileInputRef}
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={handleHeroImageUpload}
-                      />
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                        <button
-                          type="button"
-                          className="btn btn-primary small full-btn"
-                          disabled={uploadingImage}
-                          onClick={() => heroFileInputRef.current?.click()}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                        >
-                          {uploadingImage ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
-                          {uploadingImage ? 'Uploading...' : 'Upload Image from Device'}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline small full-btn"
-                          onClick={() => {
-                            const url = prompt('Or enter image URL:', websiteContent.home.heroImage);
-                            if (url) {
+                  {websiteContent.home.enableLiveOffers && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '14px' }}>
+                        <label>
+                          Offer Badge Tag
+                          <input
+                            type="text"
+                            value={websiteContent.home.offerBadge || ''}
+                            onChange={(e) =>
                               setWebsiteContent((prev) => ({
                                 ...prev,
-                                home: { ...prev.home, heroImage: url },
+                                home: { ...prev.home, offerBadge: e.target.value },
+                              }))
+                            }
+                            placeholder="e.g. FLASH OFFER • LIMITED TIME"
+                          />
+                        </label>
+                        <label>
+                          Target Link (Clicking Offer Redirects To)
+                          <input
+                            type="text"
+                            value={websiteContent.home.offerLink || '/visa'}
+                            onChange={(e) =>
+                              setWebsiteContent((prev) => ({
+                                ...prev,
+                                home: { ...prev.home, offerLink: e.target.value },
+                              }))
+                            }
+                            placeholder="/visa or /packages or /enquire"
+                          />
+                        </label>
+                      </div>
+
+                      <label>
+                        Offer Running Headline / Marquee Ad Text
+                        <input
+                          type="text"
+                          value={websiteContent.home.offerHeadline || ''}
+                          onChange={(e) =>
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              home: { ...prev.home, offerHeadline: e.target.value },
+                            }))
+                          }
+                          placeholder="e.g. Get Flat ₹2,000 OFF on all Tourist Visas & Free Travel Insurance on International Holiday Packages! Book before midnight!"
+                        />
+                      </label>
+
+                      {/* Live Ticker Preview */}
+                      <div
+                        style={{
+                          padding: '10px 14px',
+                          background: 'linear-gradient(90deg, #b45309 0%, #d97706 100%)',
+                          color: '#ffffff',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <span
+                          style={{
+                            background: '#ffffff',
+                            color: '#b45309',
+                            fontWeight: 800,
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            textTransform: 'uppercase',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {websiteContent.home.offerBadge || 'LIVE OFFER'}
+                        </span>
+                        <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {websiteContent.home.offerHeadline || 'Limited Time Deal Active'}
+                        </span>
+                        <span style={{ marginLeft: 'auto', fontWeight: 700, whiteSpace: 'nowrap', fontSize: '12px' }}>
+                          Claim Now →
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. HERO BANNER MEDIA SETTINGS: VIDEO CLIP & MULTI-IMAGE CAROUSEL */}
+                <div className="admin-card-panel">
+                  <div className="panel-header" style={{ marginBottom: '16px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Film size={20} color="#0284c7" />
+                        <h3 style={{ margin: 0 }}>Banner Media Mode: Video vs Multi-Image Carousel</h3>
+                      </div>
+                      <p style={{ margin: '4px 0 0', color: '#64748b' }}>
+                        Switch seamlessly between background video playback and continuous 5 to 8 sliding destination images.
+                      </p>
+                    </div>
+
+                    {/* VIDEO ON/OFF TOGGLE SWITCH */}
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        padding: '8px 14px',
+                        background: websiteContent.home.enableVideo ? '#f0fdf4' : '#f8fafc',
+                        border: websiteContent.home.enableVideo ? '1.5px solid #22c55e' : '1.5px solid #cbd5e1',
+                        borderRadius: '6px',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={websiteContent.home.enableVideo ?? false}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            home: { ...prev.home, enableVideo: e.target.checked },
+                          }))
+                        }
+                      />
+                      <span
+                        style={{
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          color: websiteContent.home.enableVideo ? '#15803d' : '#64748b',
+                        }}
+                      >
+                        {websiteContent.home.enableVideo ? '🎬 VIDEO BANNER (ON)' : '🖼️ IMAGE SLIDESHOW (ON)'}
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* IF VIDEO IS ENABLED */}
+                  {websiteContent.home.enableVideo ? (
+                    <div
+                      style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '14px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <strong style={{ fontSize: '14px', color: '#1e293b' }}>
+                          🎥 Background Video Clip Player Settings
+                        </strong>
+                        <span style={{ fontSize: '12px', color: '#64748b' }}>
+                          Autoplays muted on loop with visitor sound toggle
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', alignItems: 'start' }}>
+                        <div>
+                          <label>
+                            Video Clip Source URL (MP4 or WebM)
+                            <input
+                              type="text"
+                              value={websiteContent.home.heroVideoUrl || '/videos/travel-hero.webm'}
+                              onChange={(e) =>
+                                setWebsiteContent((prev) => ({
+                                  ...prev,
+                                  home: { ...prev.home, heroVideoUrl: e.target.value },
+                                }))
+                              }
+                              placeholder="/videos/travel-hero.webm or https://..."
+                            />
+                          </label>
+
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="btn btn-outline small"
+                              onClick={() =>
+                                setWebsiteContent((prev) => ({
+                                  ...prev,
+                                  home: { ...prev.home, heroVideoUrl: '/videos/travel-hero.webm' },
+                                }))
+                              }
+                            >
+                              Preset 1: Aerial Ocean Drone (Local)
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-outline small"
+                              onClick={() =>
+                                setWebsiteContent((prev) => ({
+                                  ...prev,
+                                  home: {
+                                    ...prev.home,
+                                    heroVideoUrl:
+                                      'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-waves-crashing-on-a-beach-41484-large.mp4',
+                                  },
+                                }))
+                              }
+                            >
+                              Preset 2: Beach Waves Drone
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Video Player Preview */}
+                        <div
+                          style={{
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            border: '1px solid #cbd5e1',
+                            background: '#000000',
+                            position: 'relative',
+                            aspectRatio: '16/9',
+                          }}
+                        >
+                          <video
+                            src={websiteContent.home.heroVideoUrl || '/videos/travel-hero.webm'}
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '6px',
+                              left: '8px',
+                              background: 'rgba(0,0,0,0.7)',
+                              color: '#ffffff',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                            }}
+                          >
+                            Live Video Preview
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* IF VIDEO IS OFF: CONTINUOUS 5 TO 8 IMAGES SLIDING BANNER */
+                    <div
+                      style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '14px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <strong style={{ fontSize: '14px', color: '#1e293b' }}>
+                            Continuous Sliding Images Carousel ({websiteContent.home.heroImages?.length || 8} Active Slides)
+                          </strong>
+                          <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
+                            Fresh international destinations sliding smoothly with swipe &amp; arrow controls.
+                          </p>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '12px', color: '#475569', fontWeight: 600 }}>Slide Duration:</span>
+                          <select
+                            value={websiteContent.home.slideInterval || 5000}
+                            onChange={(e) =>
+                              setWebsiteContent((prev) => ({
+                                ...prev,
+                                home: { ...prev.home, slideInterval: Number(e.target.value) },
+                              }))
+                            }
+                            style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '13px', border: '1px solid #cbd5e1' }}
+                          >
+                            <option value={3000}>3 seconds (Fast)</option>
+                            <option value={4000}>4 seconds</option>
+                            <option value={5000}>5 seconds (Default)</option>
+                            <option value={7000}>7 seconds</option>
+                            <option value={10000}>10 seconds</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* SLIDES THUMBNAIL GRID */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                          gap: '14px',
+                        }}
+                      >
+                        {(websiteContent.home.heroImages || []).map((imgUrl, index) => (
+                          <div
+                            key={index}
+                            style={{
+                              border: '1px solid #cbd5e1',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              background: '#ffffff',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                            }}
+                          >
+                            <div style={{ height: '110px', position: 'relative', background: '#0f172a' }}>
+                              <Image
+                                src={imgUrl}
+                                alt={`Banner Slide ${index + 1}`}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                unoptimized={imgUrl.startsWith('data:') || imgUrl.startsWith('/uploads')}
+                              />
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  top: '6px',
+                                  left: '6px',
+                                  background: 'rgba(0,0,0,0.7)',
+                                  color: '#ffffff',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                }}
+                              >
+                                Slide #{index + 1}
+                              </span>
+                            </div>
+
+                            <div style={{ padding: '8px', display: 'flex', gap: '6px' }}>
+                              <button
+                                type="button"
+                                className="btn btn-outline small"
+                                style={{ flex: 1, padding: '4px 6px', fontSize: '11px' }}
+                                onClick={() => {
+                                  const newUrl = prompt(`Enter new image URL for Slide #${index + 1}:`, imgUrl);
+                                  if (newUrl) {
+                                    const nextImages = [...(websiteContent.home.heroImages || [])];
+                                    nextImages[index] = newUrl;
+                                    setWebsiteContent((prev) => ({
+                                      ...prev,
+                                      home: { ...prev.home, heroImages: nextImages, heroImage: nextImages[0] },
+                                    }));
+                                  }
+                                }}
+                              >
+                                Replace URL
+                              </button>
+                              {(websiteContent.home.heroImages?.length || 0) > 3 && (
+                                <button
+                                  type="button"
+                                  className="btn btn-outline small"
+                                  style={{ color: '#dc2626', borderColor: '#fca5a5', padding: '4px 6px', fontSize: '11px' }}
+                                  title="Remove Slide"
+                                  onClick={() => {
+                                    const nextImages = (websiteContent.home.heroImages || []).filter((_, i) => i !== index);
+                                    setWebsiteContent((prev) => ({
+                                      ...prev,
+                                      home: { ...prev.home, heroImages: nextImages, heroImage: nextImages[0] },
+                                    }));
+                                  }}
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* ADD NEW SLIDE BUTTON */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <button
+                          type="button"
+                          className="btn btn-outline small"
+                          onClick={() => {
+                            const newUrl = prompt('Enter image URL for new slide:');
+                            if (newUrl) {
+                              const nextImages = [...(websiteContent.home.heroImages || []), newUrl];
+                              setWebsiteContent((prev) => ({
+                                ...prev,
+                                home: { ...prev.home, heroImages: nextImages },
                               }));
                             }
                           }}
                         >
-                          Enter Image URL
+                          <Plus size={14} /> Add Another Banner Slide
                         </button>
                       </div>
                     </div>
+                  )}
+                </div>
 
-                    <div className="hero-inputs-col">
-                      <label>
-                        Eyebrow Text
-                        <input
-                          type="text"
-                          value={websiteContent.home.eyebrow}
-                          onChange={(e) =>
-                            setWebsiteContent((prev) => ({
-                              ...prev,
-                              home: { ...prev.home, eyebrow: e.target.value },
-                            }))
-                          }
-                        />
-                      </label>
-
-                      <label>
-                        Main Headline
-                        <input
-                          type="text"
-                          value={websiteContent.home.title}
-                          onChange={(e) =>
-                            setWebsiteContent((prev) => ({
-                              ...prev,
-                              home: { ...prev.home, title: e.target.value },
-                            }))
-                          }
-                        />
-                      </label>
-
-                      <label>
-                        Subtitle Description
-                        <textarea
-                          rows={3}
-                          value={websiteContent.home.subtitle}
-                          onChange={(e) =>
-                            setWebsiteContent((prev) => ({
-                              ...prev,
-                              home: { ...prev.home, subtitle: e.target.value },
-                            }))
-                          }
-                        />
-                      </label>
+                {/* 3. HERO HEADLINES & CALL-TO-ACTIONS */}
+                <div className="admin-card-panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3>Hero Headlines &amp; Copy</h3>
+                      <p>Customize banner eyebrow, main titles, and subtitle description.</p>
                     </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <label>
+                      Eyebrow Text
+                      <input
+                        type="text"
+                        value={websiteContent.home.eyebrow}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            home: { ...prev.home, eyebrow: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      Main Headline
+                      <input
+                        type="text"
+                        value={websiteContent.home.title}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            home: { ...prev.home, title: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      Subtitle Description
+                      <textarea
+                        rows={3}
+                        value={websiteContent.home.subtitle}
+                        onChange={(e) =>
+                          setWebsiteContent((prev) => ({
+                            ...prev,
+                            home: { ...prev.home, subtitle: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
                   </div>
                 </div>
 
@@ -3442,6 +3938,96 @@ export default function AdminConsole() {
                     placeholder="e.g. France, Germany, Italy, Switzerland, Spain, Netherlands"
                   />
                 </label>
+
+                {/* LIVE RUNNING OFFER & PROMOTIONAL PRICING FOR THIS VISA */}
+                <div
+                  style={{
+                    border: '1.5px solid #fde68a',
+                    backgroundColor: '#fffbeb',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    marginTop: '16px',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '20px' }}>🔥</span>
+                      <div>
+                        <strong style={{ fontSize: '14px', color: '#92400e', display: 'block' }}>
+                          Live Running Offer Ad on this Visa
+                        </strong>
+                        <small style={{ color: '#b45309' }}>
+                          Shows dynamic promotional discount badge, strikethrough price, and flash deal ticker.
+                        </small>
+                      </div>
+                    </div>
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        padding: '6px 12px',
+                        background: '#ffffff',
+                        border: '1px solid #fcd34d',
+                        borderRadius: '6px',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={visaFormData.hasOffer || false}
+                        onChange={(e) => setVisaFormData({ ...visaFormData, hasOffer: e.target.checked })}
+                      />
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: visaFormData.hasOffer ? '#b45309' : '#64748b' }}>
+                        {visaFormData.hasOffer ? 'Offer ACTIVE (ON)' : 'Offer Disabled (OFF)'}
+                      </span>
+                    </label>
+                  </div>
+
+                  {visaFormData.hasOffer && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '10px' }}>
+                      <label>
+                        Offer Badge (Card Tag)
+                        <input
+                          value={visaFormData.offerBadge || ''}
+                          onChange={(e) => setVisaFormData({ ...visaFormData, offerBadge: e.target.value })}
+                          placeholder="e.g. FLAT ₹2,000 OFF or LIMITED TIME DEAL"
+                        />
+                      </label>
+                      <label>
+                        Live Offer Ad Ticker
+                        <input
+                          value={visaFormData.offerRunningText || ''}
+                          onChange={(e) => setVisaFormData({ ...visaFormData, offerRunningText: e.target.value })}
+                          placeholder="e.g. ⚡ Limited Time: Free document pre-check + Flat ₹2,000 Discount!"
+                        />
+                      </label>
+                      <label>
+                        Original Standard Price (Crossed Out)
+                        <input
+                          value={visaFormData.originalPrice || ''}
+                          onChange={(e) => setVisaFormData({ ...visaFormData, originalPrice: e.target.value })}
+                          placeholder="e.g. ₹8,500"
+                        />
+                      </label>
+                      <label>
+                        Special Offer Discount Price (Highlighted)
+                        <input
+                          value={visaFormData.offerPrice || ''}
+                          onChange={(e) => setVisaFormData({ ...visaFormData, offerPrice: e.target.value })}
+                          placeholder="e.g. ₹6,500"
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="modal-footer" style={{ flexShrink: 0 }}>

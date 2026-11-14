@@ -37,6 +37,7 @@ export default function AboutView() {
                 fill
                 style={{ objectFit: 'cover' }}
                 priority
+                unoptimized
               />
             </div>
           </div>

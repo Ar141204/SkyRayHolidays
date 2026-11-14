@@ -23,6 +23,9 @@ import {
   Plane,
   ChevronDown,
   ChevronUp,
+  Flame,
+  Tag,
+  Sparkles,
 } from 'lucide-react';
 
 export default function VisaExplorer() {
@@ -44,8 +47,66 @@ export default function VisaExplorer() {
       .catch(() => {});
   }, []);
 
+  const hasAnyOffer = visas.some((v) => v.hasOffer);
+
   return (
     <div className="visa-explorer-wrap">
+      {/* Live Running Offers Highlight Strip in Visa Section */}
+      {hasAnyOffer && (
+        <div
+          style={{
+            background: 'linear-gradient(90deg, #eff6ff 0%, #f0fdf4 100%)',
+            border: '1px solid #bfdbfe',
+            borderRadius: '12px',
+            padding: '12px 18px',
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'linear-gradient(135deg, #ef4444 0%, #f59e0b 100%)',
+                color: '#ffffff',
+                padding: '4px 10px',
+                borderRadius: '999px',
+                fontSize: '11px',
+                fontWeight: 800,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}
+            >
+              <Flame size={13} fill="#ffffff" /> LIVE VISA OFFERS
+            </span>
+            <span style={{ fontSize: '13px', color: '#1e293b', fontWeight: 600 }}>
+              Special limited-time promotional pricing active on US, UK, Schengen &amp; E-Visa services!
+            </span>
+          </div>
+
+          <Link
+            href="/enquire?service=visa"
+            style={{
+              fontSize: '12px',
+              fontWeight: 800,
+              color: '#0284c7',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              textDecoration: 'none',
+            }}
+          >
+            Claim Offer Now <ArrowRight size={13} />
+          </Link>
+        </div>
+      )}
+
       {/* 4 Visa Columns / Small Boxes arranged just like holiday packages */}
       <div
         style={{
@@ -150,6 +211,31 @@ export default function VisaExplorer() {
                 >
                   {v.badge}
                 </span>
+
+                {v.hasOffer && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '10px',
+                      right: '10px',
+                      background: 'linear-gradient(135deg, #ef4444 0%, #f59e0b 100%)',
+                      color: '#ffffff',
+                      fontSize: '9.5px',
+                      fontWeight: 800,
+                      letterSpacing: '0.04em',
+                      padding: '4px 9px',
+                      borderRadius: '5px',
+                      boxShadow: '0 2px 8px rgba(239, 68, 68, 0.35)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      zIndex: 2,
+                    }}
+                  >
+                    <Flame size={11} fill="#ffffff" />
+                    {v.offerBadge || 'OFFER'}
+                  </span>
+                )}
 
                 <span
                   style={{
@@ -426,17 +512,35 @@ export default function VisaExplorer() {
                   }}
                 >
                   <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    <strong style={{ display: 'block', color: '#17496b', fontSize: '13px' }}>
-                      Fast Assistance
-                    </strong>
-                    Tourist, Business &amp; Medical
+                    {v.hasOffer && v.offerPrice ? (
+                      <div>
+                        {v.originalPrice && (
+                          <s style={{ color: '#94a3b8', fontSize: '11px', marginRight: '5px' }}>
+                            {v.originalPrice}
+                          </s>
+                        )}
+                        <strong style={{ display: 'inline-block', color: '#0284c7', fontSize: '14px', fontWeight: 800 }}>
+                          {v.offerPrice}
+                        </strong>
+                        <span style={{ display: 'block', fontSize: '10px', color: '#059669', fontWeight: 700, marginTop: '1px' }}>
+                          ● Live Offer Active
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <strong style={{ display: 'block', color: '#17496b', fontSize: '13px' }}>
+                          Fast Assistance
+                        </strong>
+                        Tourist, Business &amp; Medical
+                      </>
+                    )}
                   </div>
 
                   <Link
                     href={enquireUrl}
                     className="btn btn-primary"
                     style={{
-                      background: '#0284c7',
+                      background: v.hasOffer ? '#0284c7' : '#0284c7',
                       color: '#ffffff',
                       border: '1px solid #0284c7',
                       padding: '8px 16px',
@@ -446,7 +550,7 @@ export default function VisaExplorer() {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Enquire Now <ArrowRight size={14} />
+                    {v.hasOffer ? 'Grab Offer' : 'Enquire Now'} <ArrowRight size={14} />
                   </Link>
                 </div>
               </div>
