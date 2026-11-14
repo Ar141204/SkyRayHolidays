@@ -3,22 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  ArrowRight,
-  Flame,
-  Compass,
-} from 'lucide-react';
+import { ArrowRight, Flame } from 'lucide-react';
 import { useWebsiteContent } from '@/lib/content';
 
 const DEFAULT_BANNER_IMAGES = [
-  { url: '/images/banner/banner-1-swiss-alps.jpg', label: 'Swiss Alps • Zermatt' },
-  { url: '/images/banner/banner-2-santorini.jpg', label: 'Santorini • Greece' },
-  { url: '/images/banner/banner-3-cappadocia.jpg', label: 'Cappadocia • Turkey' },
-  { url: '/images/banner/banner-4-kyoto-fuji.jpg', label: 'Kyoto & Mt Fuji • Japan' },
-  { url: '/images/banner/banner-5-norway-fjords.jpg', label: 'Scenic Fjords • Norway' },
-  { url: '/images/banner/banner-6-singapore.jpg', label: 'Marina Bay • Singapore' },
-  { url: '/images/banner/banner-7-amalfi.jpg', label: 'Amalfi Coast • Italy' },
-  { url: '/images/banner/banner-8-phuket.jpg', label: 'Phuket Islands • Thailand' },
+  '/images/banner/banner-1-swiss-alps.jpg',
+  '/images/banner/banner-2-santorini.jpg',
+  '/images/banner/banner-3-cappadocia.jpg',
+  '/images/banner/banner-4-kyoto-fuji.jpg',
+  '/images/banner/banner-5-norway-fjords.jpg',
+  '/images/banner/banner-6-singapore.jpg',
+  '/images/banner/banner-7-amalfi.jpg',
+  '/images/banner/banner-8-phuket.jpg',
 ];
 
 export default function HeroBanner() {
@@ -28,27 +24,26 @@ export default function HeroBanner() {
   const images: string[] =
     Array.isArray(h.heroImages) && h.heroImages.length >= 2
       ? h.heroImages
-      : DEFAULT_BANNER_IMAGES.map((img) => img.url);
+      : DEFAULT_BANNER_IMAGES;
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
   // Video state
   const isVideoEnabled = Boolean(h.enableVideo && h.heroVideoUrl);
 
-  // Auto-slide interval for continuous sliding
+  // Auto-slide interval: 5 seconds (5000ms) continuous sliding
   const intervalSeconds = Number(h.slideInterval) || 5;
 
   useEffect(() => {
-    if (isVideoEnabled || isPaused) return;
+    if (isVideoEnabled) return;
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % images.length);
     }, intervalSeconds * 1000);
 
     return () => clearInterval(timer);
-  }, [images.length, intervalSeconds, isVideoEnabled, isPaused]);
+  }, [images.length, intervalSeconds, isVideoEnabled]);
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + images.length) % images.length);
@@ -81,10 +76,6 @@ export default function HeroBanner() {
     setTouchStart(null);
   };
 
-  // Get current slide destination caption
-  const currentImageObj = DEFAULT_BANNER_IMAGES[currentSlide % DEFAULT_BANNER_IMAGES.length];
-  const slideCaption = currentImageObj ? currentImageObj.label : `Explore Destination ${currentSlide + 1}`;
-
   return (
     <div className="hero-banner-wrapper">
       {/* 1. Live Running Offer Banner Ticker (if enabled in Admin Panel) */}
@@ -111,8 +102,6 @@ export default function HeroBanner() {
       {/* 2. Main Hero Banner Container */}
       <section
         className="hero hero-dynamic-banner"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -159,28 +148,6 @@ export default function HeroBanner() {
               );
             })}
             <div className="hero-gradient-overlay" />
-
-            {/* Slide Destination Label Pill */}
-            <div className="hero-slide-badge">
-              <Compass size={13} />
-              <span>{slideCaption}</span>
-              <span className="hero-slide-counter">
-                {currentSlide + 1} / {images.length}
-              </span>
-            </div>
-
-            {/* Pagination Progress Dots (Center: active dot accurately tracks the current slide) */}
-            <div className="hero-slider-dots">
-              {images.map((_, dotIdx) => (
-                <button
-                  key={dotIdx}
-                  type="button"
-                  className={`hero-dot ${dotIdx === currentSlide ? 'active' : ''}`}
-                  onClick={() => setCurrentSlide(dotIdx)}
-                  aria-label={`Go to slide ${dotIdx + 1}`}
-                />
-              ))}
-            </div>
           </div>
         )}
 
