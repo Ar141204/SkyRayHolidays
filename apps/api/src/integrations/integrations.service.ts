@@ -129,11 +129,11 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
         host,
         port,
         secure,
-        pool: true,
-        maxConnections: 3,
-        maxMessages: 100,
+        connectionTimeout: 15000,
+        greetingTimeout: 10000,
+        socketTimeout: 20000,
         auth: user ? { user, pass } : undefined,
-      });
+      } as any);
 
       this.cachedCustomerTransporter = transporter;
       this.customerTransporterKey = key;
@@ -163,11 +163,11 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
       host,
       port,
       secure,
-      pool: true,
-      maxConnections: 3,
-      maxMessages: 100,
+      connectionTimeout: 15000,
+      greetingTimeout: 10000,
+      socketTimeout: 20000,
       auth: user ? { user, pass } : undefined,
-    });
+    } as any);
 
     this.cachedTransporter = transporter;
     this.transporterKey = currentKey;
