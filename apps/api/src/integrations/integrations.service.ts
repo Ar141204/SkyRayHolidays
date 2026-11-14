@@ -32,7 +32,7 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly db: PrismaService) {}
 
   onModuleInit() {
-    this.timer = setInterval(() => this.processJobs().catch((e) => this.log.error(e)), 15000);
+    this.timer = setInterval(() => this.processJobs().catch((e) => this.log.error(e)), 5000);
     this.processJobs().catch((e) => this.log.error(e));
   }
 
@@ -147,10 +147,16 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
       return this.cachedTransporter;
     }
 
+    const host = SMTP_HOST || 'smtp.gmail.com';
+    const isGmail = host.toLowerCase().includes('gmail');
+    // On cloud providers like Render, port 465 SSL is never blocked, while 587 often times out
+    const port = Number(SMTP_PORT || (isGmail ? 465 : 587));
+    const secure = SMTP_SECURE === 'true' || port === 465;
+
     const transporter = nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: Number(SMTP_PORT || 587),
-      secure: SMTP_SECURE === 'true' || Number(SMTP_PORT) === 465,
+      host,
+      port,
+      secure,
       pool: true,
       maxConnections: 3,
       maxMessages: 100,
@@ -241,7 +247,24 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
     `;
 
     const transporter = this.getMailTransporter(isCustomerEmail);
-    await transporter.sendMail({ from: from || customerFrom, to, subject, html });
+    try {
+      await transporter.sendMail({ from: from || customerFrom, to, subject, html });
+    } catch (err: any) {
+      if (/timeout|connect|econn/i.test(err?.message || '')) {
+        this.log.warn(`SMTP error (${err?.message}). Retrying immediately via SSL port 465...`);
+        const fallbackTransporter = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: process.env.SMTP_USER
+            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
+            : undefined,
+        });
+        await fallbackTransporter.sendMail({ from: from || customerFrom, to, subject, html });
+        return;
+      }
+      throw err;
+    }
   }
 
   private encryptionKey() {
