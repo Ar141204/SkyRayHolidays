@@ -88,7 +88,7 @@ export const DEFAULT_WEBSITE_CONTENT = {
     copyrightText: '© 2026 SkyRay Holidays. All rights reserved.',
     sloganText: 'Where Every Trip Becomes A Memory',
     pilgrimNotice:
-      'Official SkyRay Travel Concierge. Direct specialist support for Tours, Hajj & Umrah, and Global Visas.',
+      'Official SkyRay Holidays Concierge. Direct specialist support for Tours, Hajj & Umrah, and Global Visas.',
   },
 };
 

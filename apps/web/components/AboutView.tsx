@@ -30,7 +30,7 @@ export default function AboutView() {
           </div>
           <div className="about-hero-image">
             <div className="plane-art-card">
-              <div className="plane-tag">SkyRay Travel</div>
+              <div className="plane-tag">SkyRay Holidays</div>
               <Image
                 src={a.image && !a.image.startsWith('/uploads') ? a.image : '/images/hero.jpg'}
                 alt="Scenic holiday destination travel"

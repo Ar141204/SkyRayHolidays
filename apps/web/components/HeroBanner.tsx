@@ -1,18 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
   ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  Volume2,
-  VolumeX,
-  Play,
-  Pause,
   Flame,
-  Sparkles,
   Compass,
 } from 'lucide-react';
 import { useWebsiteContent } from '@/lib/content';
@@ -43,9 +36,6 @@ export default function HeroBanner() {
 
   // Video state
   const isVideoEnabled = Boolean(h.enableVideo && h.heroVideoUrl);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [videoPlaying, setVideoPlaying] = useState(true);
-  const [videoMuted, setVideoMuted] = useState(true);
 
   // Auto-slide interval for continuous sliding
   const intervalSeconds = Number(h.slideInterval) || 5;
@@ -91,23 +81,6 @@ export default function HeroBanner() {
     setTouchStart(null);
   };
 
-  const toggleVideoPlayback = () => {
-    if (!videoRef.current) return;
-    if (videoPlaying) {
-      videoRef.current.pause();
-      setVideoPlaying(false);
-    } else {
-      videoRef.current.play();
-      setVideoPlaying(true);
-    }
-  };
-
-  const toggleVideoAudio = () => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = !videoMuted;
-    setVideoMuted(!videoMuted);
-  };
-
   // Get current slide destination caption
   const currentImageObj = DEFAULT_BANNER_IMAGES[currentSlide % DEFAULT_BANNER_IMAGES.length];
   const slideCaption = currentImageObj ? currentImageObj.label : `Explore Destination ${currentSlide + 1}`;
@@ -148,7 +121,6 @@ export default function HeroBanner() {
         {isVideoEnabled ? (
           <div className="hero-media-layer hero-video-layer">
             <video
-              ref={videoRef}
               autoPlay
               muted
               loop
@@ -158,27 +130,6 @@ export default function HeroBanner() {
               src={h.heroVideoUrl}
             />
             <div className="hero-gradient-overlay" />
-
-            {/* Video Controls Pill */}
-            <div className="hero-video-controls">
-              <button
-                type="button"
-                onClick={toggleVideoPlayback}
-                className="hero-video-btn"
-                title={videoPlaying ? 'Pause Video' : 'Play Video'}
-              >
-                {videoPlaying ? <Pause size={13} /> : <Play size={13} />}
-                <span>{videoPlaying ? 'Video Live' : 'Paused'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={toggleVideoAudio}
-                className="hero-video-btn"
-                title={videoMuted ? 'Unmute Audio' : 'Mute Audio'}
-              >
-                {videoMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
-              </button>
-            </div>
           </div>
         ) : (
           /* Background Layer: 5 to 8 Continuous Sliding Images */
@@ -218,25 +169,7 @@ export default function HeroBanner() {
               </span>
             </div>
 
-            {/* Left / Right Navigation Arrows */}
-            <button
-              type="button"
-              className="hero-slider-arrow prev"
-              onClick={prevSlide}
-              aria-label="Previous Slide"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              type="button"
-              className="hero-slider-arrow next"
-              onClick={nextSlide}
-              aria-label="Next Slide"
-            >
-              <ChevronRight size={20} />
-            </button>
-
-            {/* Pagination Progress Dots */}
+            {/* Pagination Progress Dots (Center: active dot accurately tracks the current slide) */}
             <div className="hero-slider-dots">
               {images.map((_, dotIdx) => (
                 <button

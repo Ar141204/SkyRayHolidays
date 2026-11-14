@@ -544,7 +544,7 @@ export function HomeScreen({ navigation }: any) {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={s.conciergeEyebrow}>24/7 PRIORITY ASSISTANCE</Text>
-              <Text style={s.conciergeTitle}>SkyRay Travel Concierge</Text>
+              <Text style={s.conciergeTitle}>SkyRay Holidays Concierge</Text>
             </View>
           </View>
 

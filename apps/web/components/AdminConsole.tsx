@@ -1189,7 +1189,7 @@ export default function AdminConsole() {
           </div>
           <Image
             src="/images/destinations/dubai.jpg"
-            alt="SkyRay Travel Operations"
+            alt="SkyRay Holidays Operations"
             fill
             style={{ objectFit: 'cover', opacity: 0.85 }}
             priority
