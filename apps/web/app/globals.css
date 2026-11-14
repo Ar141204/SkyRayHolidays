@@ -1,6 +1,4 @@
 :root {
-  --font-body: var(--font-dm-sans), 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-  --font-heading: var(--font-manrope), 'Manrope', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   --sky: #35a9e0;
   --sky-hover: #0277bd;
   --sky-btn: #0277bd;
@@ -28,7 +26,7 @@ html {
 body {
   margin: 0;
   color: var(--ink);
-  font-family: var(--font-body);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
   background: #ffffff;
   font-size: 14.5px;
   line-height: 1.6;
@@ -43,7 +41,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
+  font-family: Manrope, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   color: var(--deep);
   line-height: 1.18;
   margin: 0 0 12px;
