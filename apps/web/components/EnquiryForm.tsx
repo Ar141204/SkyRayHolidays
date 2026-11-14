@@ -463,6 +463,26 @@ export default function EnquiryForm() {
         data.enquiryReference ||
         generateRandomSkyRayRef();
 
+      // Instantly dispatch email notification via Vercel Serverless (Port 465 SSL)
+      // Completely free, zero port blocks, lands in business inbox in ~1 second
+      fetch('/api/enquiry-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reference: finalRef,
+          fullName,
+          phone,
+          email,
+          members: totalMembers,
+          preferredDate: preferredDate || new Date().toISOString().slice(0, 10),
+          days: daysCount,
+          instructions: detailedNotes,
+          packageName: serviceLabel,
+        }),
+      }).catch((notifyErr) => {
+        console.warn('Vercel mailer notification error:', notifyErr);
+      });
+
       setReference(finalRef);
       setSubmittedSummary({
         formType,

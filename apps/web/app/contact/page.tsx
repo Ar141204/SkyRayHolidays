@@ -38,9 +38,25 @@ export default function Contact() {
         }),
       });
 
-      if (!res.ok) {
-        // Fallback for contact message
-      }
+      const data = await res.json().catch(() => ({}));
+      const ref = data.reference || `CONT-${Date.now().toString().slice(-6)}`;
+
+      fetch('/api/enquiry-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reference: ref,
+          fullName: form.name.trim(),
+          email: form.email.trim().toLowerCase(),
+          phone: '+91 91763 57791',
+          members: 1,
+          preferredDate: new Date().toISOString().slice(0, 10),
+          days: 1,
+          instructions: `Contact Message: ${form.message.trim()}`,
+          packageName: 'General Contact Inquiry',
+        }),
+      }).catch(() => {});
+
       setStatus('success');
       setForm({ name: '', email: '', message: '' });
     } catch {
