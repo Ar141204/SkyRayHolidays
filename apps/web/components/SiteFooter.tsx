@@ -55,7 +55,7 @@ export default function SiteFooter() {
         </div>
 
         <div>
-          <h4>Services &amp; Explore</h4>
+          <h3>Services &amp; Explore</h3>
           <Link href="/services">All Services Hub</Link>
           <Link href="/services?tab=packages">Tour Packages</Link>
           <Link href="/services?tab=visa">Visa Services (US, UK, Schengen, E-Visa)</Link>
@@ -65,7 +65,7 @@ export default function SiteFooter() {
         </div>
 
         <div>
-          <h4>Plan With Us</h4>
+          <h3>Plan With Us</h3>
           <Link href="/enquire">Send an Enquiry</Link>
           <Link href="/contact">Contact &amp; Support</Link>
           <a href={reviewsUrl} target="_blank" rel="noopener noreferrer">
@@ -76,7 +76,7 @@ export default function SiteFooter() {
         </div>
 
         <div>
-          <h4>Get In Touch</h4>
+          <h3>Get In Touch</h3>
           <a href={`tel:${phone.replace(/\s+/g, '')}`}>{phone} (India)</a>
           <a href={`tel:${(s.phoneSecondary || '+966 57 549 0602').replace(/\s+/g, '')}`}>
             {s.phoneSecondary || '+966 57 549 0602'} (Saudi)

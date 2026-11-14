@@ -86,7 +86,7 @@ export default function Home() {
               alt="Holy Kaaba in Mecca Grand Mosque View"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
-              priority
+              loading="lazy"
             />
           </div>
           <div className="pilgrim-copy">

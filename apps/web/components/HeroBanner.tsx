@@ -28,6 +28,19 @@ export default function HeroBanner() {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [mountedSlides, setMountedSlides] = useState<Set<number>>(() => new Set([0]));
+
+  useEffect(() => {
+    // Progressively mount slides on demand: current and upcoming next slide
+    setMountedSlides((prev) => {
+      const nextIdx = (currentSlide + 1) % images.length;
+      if (prev.has(currentSlide) && prev.has(nextIdx)) return prev;
+      const updated = new Set(prev);
+      updated.add(currentSlide);
+      updated.add(nextIdx);
+      return updated;
+    });
+  }, [currentSlide, images.length]);
 
   // Video state
   const isVideoEnabled = Boolean(h.enableVideo && h.heroVideoUrl);
@@ -122,10 +135,14 @@ export default function HeroBanner() {
             <div className="hero-gradient-overlay" />
           </div>
         ) : (
-          /* Background Layer: 5 to 8 Continuous Sliding Images */
+          /* Background Layer: Progressive Sliding Images */
           <div className="hero-media-layer hero-slider-layer">
             {images.map((imgUrl, idx) => {
+              const isMounted = mountedSlides.has(idx);
               const isActive = idx === currentSlide;
+
+              if (!isMounted) return null;
+
               return (
                 <div
                   key={idx}
@@ -142,7 +159,9 @@ export default function HeroBanner() {
                     alt={`SkyRay Holidays Travel Destination ${idx + 1}`}
                     fill
                     priority={idx === 0}
+                    loading={idx === 0 ? undefined : 'lazy'}
                     sizes="100vw"
+                    quality={75}
                     style={{ objectFit: 'cover' }}
                     unoptimized={imgUrl.startsWith('data:') || imgUrl.startsWith('/uploads')}
                   />

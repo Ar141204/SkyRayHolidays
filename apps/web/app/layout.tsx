@@ -1,6 +1,21 @@
 import type { Metadata } from 'next';
+import { DM_Sans, Manrope } from 'next/font/google';
 import './globals.css';
 import SiteChrome from '@/components/SiteChrome';
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+});
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-manrope',
+  display: 'swap',
+});
 
 const appUrl =
   process.env.APP_URL ||
@@ -151,7 +166,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${dmSans.variable} ${manrope.variable}`}>
       <head>
         <script
           type="application/ld+json"
