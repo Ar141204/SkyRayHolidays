@@ -113,12 +113,12 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
       Boolean(process.env.CUSTOMER_SMTP_PASSWORD || process.env.CUSTOMER_SMTP_USER);
 
     if (isCustomerDedicated) {
-      const host = process.env.CUSTOMER_SMTP_HOST || 'smtp.gmail.com';
-      const port = Number(process.env.CUSTOMER_SMTP_PORT || 465);
-      const user = process.env.CUSTOMER_SMTP_USER || 'contact.skyrayholidays@gmail.com';
-      const pass = process.env.CUSTOMER_SMTP_PASSWORD;
+      const host = (process.env.CUSTOMER_SMTP_HOST || 'smtp.gmail.com').replace(/^["']|["']$/g, '').trim();
+      const port = Number((process.env.CUSTOMER_SMTP_PORT || '465').replace(/^["']|["']$/g, '').trim());
+      const user = (process.env.CUSTOMER_SMTP_USER || 'contact.skyrayholidays@gmail.com').replace(/^["']|["']$/g, '').trim();
+      const pass = (process.env.CUSTOMER_SMTP_PASSWORD || '').replace(/^["']|["']$/g, '').trim();
       const secure =
-        process.env.CUSTOMER_SMTP_SECURE === 'true' || port === 465;
+        (process.env.CUSTOMER_SMTP_SECURE || '').replace(/^["']|["']$/g, '').trim() === 'true' || port === 465;
 
       const key = `customer:${host}:${port}:${user}:${secure}`;
       if (this.cachedCustomerTransporter && this.customerTransporterKey === key) {
@@ -140,18 +140,24 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
       return transporter;
     }
 
-    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_SECURE } = process.env;
-    const currentKey = `${SMTP_HOST}:${SMTP_PORT}:${SMTP_USER}:${SMTP_SECURE}`;
+    const rawHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const rawPort = process.env.SMTP_PORT;
+    const rawUser = process.env.SMTP_USER;
+    const rawPass = process.env.SMTP_PASSWORD;
+    const rawSecure = process.env.SMTP_SECURE;
+
+    const host = rawHost.replace(/^["']|["']$/g, '').trim();
+    const isGmail = host.toLowerCase().includes('gmail');
+    const port = Number((rawPort || (isGmail ? '465' : '587')).replace(/^["']|["']$/g, '').trim());
+    const secure = (rawSecure || '').replace(/^["']|["']$/g, '').trim() === 'true' || port === 465;
+    const user = (rawUser || '').replace(/^["']|["']$/g, '').trim();
+    const pass = (rawPass || '').replace(/^["']|["']$/g, '').trim();
+
+    const currentKey = `${host}:${port}:${user}:${secure}`;
 
     if (this.cachedTransporter && this.transporterKey === currentKey) {
       return this.cachedTransporter;
     }
-
-    const host = SMTP_HOST || 'smtp.gmail.com';
-    const isGmail = host.toLowerCase().includes('gmail');
-    // On cloud providers like Render, port 465 SSL is never blocked, while 587 often times out
-    const port = Number(SMTP_PORT || (isGmail ? 465 : 587));
-    const secure = SMTP_SECURE === 'true' || port === 465;
 
     const transporter = nodemailer.createTransport({
       host,
@@ -160,7 +166,7 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
       pool: true,
       maxConnections: 3,
       maxMessages: 100,
-      auth: SMTP_USER ? { user: SMTP_USER, pass: SMTP_PASSWORD } : undefined,
+      auth: user ? { user, pass } : undefined,
     });
 
     this.cachedTransporter = transporter;
@@ -182,11 +188,15 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
     const customerFrom =
       process.env.CUSTOMER_SMTP_FROM || `"SkyRay Holidays" <${customerUser}>`;
 
-    const from =
+    const rawFrom =
       isCustomerEmail &&
       (process.env.CUSTOMER_SMTP_USER || process.env.CUSTOMER_SMTP_PASSWORD)
         ? customerFrom
         : SMTP_FROM;
+
+    const from = (rawFrom || customerFrom || `"SkyRay Holidays" <contact.skyrayholidays@gmail.com>`)
+      .replace(/^[']|[']$/g, '')
+      .trim();
 
     if (!from && !SMTP_HOST) {
       throw new Error('SMTP is not configured; email job is awaiting provider setup');
@@ -259,7 +269,10 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
           port: 465,
           secure: true,
           auth: process.env.SMTP_USER
-            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
+            ? {
+                user: process.env.SMTP_USER.replace(/^["']|["']$/g, '').trim(),
+                pass: (process.env.SMTP_PASSWORD || '').replace(/^["']|["']$/g, '').trim(),
+              }
             : undefined,
         });
         await fallbackTransporter.sendMail({ from: from || customerFrom, to, replyTo, subject, html });
