@@ -32,18 +32,19 @@ export default function HeroBanner() {
   // Video state
   const isVideoEnabled = Boolean(h.enableVideo && h.heroVideoUrl);
 
-  // Auto-slide interval: 5 seconds (5000ms) continuous sliding
-  const intervalSeconds = Number(h.slideInterval) || 5;
+  // Auto-slide interval: normalize to milliseconds (handles both 5s and 5000ms)
+  const rawInterval = Number(h.slideInterval);
+  const intervalMs = rawInterval && rawInterval >= 100 ? rawInterval : (rawInterval || 5) * 1000;
 
   useEffect(() => {
-    if (isVideoEnabled) return;
+    if (isVideoEnabled || images.length <= 1) return;
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % images.length);
-    }, intervalSeconds * 1000);
+    }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [images.length, intervalSeconds, isVideoEnabled]);
+  }, [images.length, intervalMs, isVideoEnabled]);
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + images.length) % images.length);
@@ -131,8 +132,9 @@ export default function HeroBanner() {
                   className={`hero-slide-item ${isActive ? 'active' : ''}`}
                   style={{
                     opacity: isActive ? 1 : 0,
-                    transform: isActive ? 'scale(1)' : 'scale(1.06)',
-                    transition: 'opacity 1.2s ease-in-out, transform 6s cubic-bezier(0.25, 1, 0.5, 1)',
+                    zIndex: isActive ? 2 : 1,
+                    transform: isActive ? 'scale(1)' : 'scale(1.05)',
+                    transition: 'opacity 1s ease-in-out, transform 5s ease-out',
                   }}
                 >
                   <Image
