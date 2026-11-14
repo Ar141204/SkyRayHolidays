@@ -247,8 +247,10 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
     `;
 
     const transporter = this.getMailTransporter(isCustomerEmail);
+    const replyTo = job.type === 'COMPANY_EMAIL' && e.email ? e.email : undefined;
+
     try {
-      await transporter.sendMail({ from: from || customerFrom, to, subject, html });
+      await transporter.sendMail({ from: from || customerFrom, to, replyTo, subject, html });
     } catch (err: any) {
       if (/timeout|connect|econn/i.test(err?.message || '')) {
         this.log.warn(`SMTP error (${err?.message}). Retrying immediately via SSL port 465...`);
@@ -260,7 +262,7 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
             ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
             : undefined,
         });
-        await fallbackTransporter.sendMail({ from: from || customerFrom, to, subject, html });
+        await fallbackTransporter.sendMail({ from: from || customerFrom, to, replyTo, subject, html });
         return;
       }
       throw err;
