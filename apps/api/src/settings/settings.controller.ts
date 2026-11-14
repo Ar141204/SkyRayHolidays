@@ -52,7 +52,7 @@ export const DEFAULT_WEBSITE_CONTENT = {
       "At SkyRay Holidays, we believe travel is more than just a journey — it's an experience that connects you to new cultures, beautiful places and lasting memories.",
     story:
       'Whether you are discovering iconic world capitals, relaxing on pristine tropical beaches, or embarking on sacred pilgrimage journeys for Hajj & Umrah, our team is dedicated to providing personal care, transparent itineraries and seamless logistics.',
-    image: '/images/hero.jpg',
+    image: '/brand/skyray-about-logo.jpg',
     missionTitle: 'Our Mission',
     missionDesc:
       'To make travel accessible, enjoyable, and effortless for every traveler through thoughtful planning, transparent pricing, and personalized itineraries.',

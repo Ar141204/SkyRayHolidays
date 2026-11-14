@@ -6,10 +6,10 @@ import Image from 'next/image';
 import { ArrowRight, Target, Eye, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useWebsiteContent } from '@/lib/content';
 
-const fallbackAboutImg = '/images/banner/banner-1-swiss-alps.jpg';
+const fallbackAboutImg = '/brand/skyray-about-logo.jpg';
 
 function resolveImage(raw?: string) {
-  if (!raw || !raw.trim()) return fallbackAboutImg;
+  if (!raw || !raw.trim() || raw === '/images/hero.jpg') return fallbackAboutImg;
   const str = raw.trim();
   if (str.startsWith('data:') || str.startsWith('http://') || str.startsWith('https://')) return str;
   if (str.startsWith('/uploads/')) {
@@ -24,7 +24,55 @@ export default function AboutView() {
   const [imgSrc, setImgSrc] = useState<string>(() => resolveImage(a.image));
 
   useEffect(() => {
-    setImgSrc(resolveImage(a.image));
+    let active = true;
+    const src = resolveImage(a.image);
+
+    // If it's a data URL or image with black background, turn black pixels pure white
+    if (src.startsWith('data:image/')) {
+      const img = new window.Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            if (active) setImgSrc(src);
+            return;
+          }
+          ctx.drawImage(img, 0, 0);
+          const imgData = ctx.getImageData(0, 0, img.width, img.height);
+          const d = imgData.data;
+          // Check corner pixel for black background
+          if (d[0] < 50 && d[1] < 50 && d[2] < 50) {
+            for (let i = 0; i < d.length; i += 4) {
+              if (d[i] < 45 && d[i + 1] < 45 && d[i + 2] < 45) {
+                d[i] = 255;
+                d[i + 1] = 255;
+                d[i + 2] = 255;
+              }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            if (active) setImgSrc(canvas.toDataURL('image/jpeg', 0.92));
+            return;
+          }
+        } catch {
+          // fallback gracefully
+        }
+        if (active) setImgSrc(src);
+      };
+      img.onerror = () => {
+        if (active) setImgSrc(fallbackAboutImg);
+      };
+      img.src = src;
+    } else {
+      setImgSrc(src);
+    }
+
+    return () => {
+      active = false;
+    };
   }, [a.image]);
 
   return (
@@ -48,12 +96,11 @@ export default function AboutView() {
           </div>
           <div className="about-hero-image">
             <div className="plane-art-card">
-              <div className="plane-tag">SkyRay Holidays</div>
               <Image
                 src={imgSrc}
-                alt="Scenic holiday destination travel"
+                alt="SkyRay Holidays"
                 fill
-                style={{ objectFit: 'cover' }}
+                style={{ objectFit: 'contain', padding: '14px' }}
                 priority
                 unoptimized
                 onError={() => {

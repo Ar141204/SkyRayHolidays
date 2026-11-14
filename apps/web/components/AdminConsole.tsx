@@ -696,6 +696,40 @@ export default function AdminConsole() {
     }
   }
 
+  async function cleanBlackBackgroundToWhite(dataUrl: string): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve(dataUrl);
+          ctx.drawImage(img, 0, 0);
+          const imgData = ctx.getImageData(0, 0, img.width, img.height);
+          const d = imgData.data;
+          if (d[0] < 50 && d[1] < 50 && d[2] < 50) {
+            for (let i = 0; i < d.length; i += 4) {
+              if (d[i] < 45 && d[i + 1] < 45 && d[i + 2] < 45) {
+                d[i] = 255;
+                d[i + 1] = 255;
+                d[i + 2] = 255;
+              }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            return resolve(canvas.toDataURL('image/jpeg', 0.92));
+          }
+        } catch {
+          // ignore error
+        }
+        resolve(dataUrl);
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
   // Device File Upload handler (About Page Cover)
   async function handleAboutImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -703,13 +737,14 @@ export default function AdminConsole() {
 
     setUploadingAboutImage(true);
     try {
-      const dataUrl = await compressImageToDataUrl(file);
+      let dataUrl = await compressImageToDataUrl(file);
       if (dataUrl) {
+        dataUrl = await cleanBlackBackgroundToWhite(dataUrl);
         setWebsiteContent((prev) => ({
           ...prev,
           about: { ...prev.about, image: dataUrl },
         }));
-        setSavedMsg('About photo loaded! Click "Save About Changes" below to publish.');
+        setSavedMsg('About photo loaded with clean white background! Click "Save About Changes" below to publish.');
         setTimeout(() => setSavedMsg(''), 4000);
       }
     } catch {
@@ -2771,6 +2806,21 @@ export default function AdminConsole() {
                           }}
                         >
                           Enter Image URL
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline small full-btn"
+                          onClick={() => {
+                            setWebsiteContent((prev) => ({
+                              ...prev,
+                              about: { ...prev.about, image: '/brand/skyray-about-logo.jpg' },
+                            }));
+                            setSavedMsg('Official SkyRay Logo (White Background) loaded! Click "Save About Changes" below to publish.');
+                            setTimeout(() => setSavedMsg(''), 4000);
+                          }}
+                          style={{ borderColor: '#38bdf8', color: '#0284c7', background: '#f0f9ff' }}
+                        >
+                          Use Official Logo (White Background)
                         </button>
                       </div>
                     </div>
