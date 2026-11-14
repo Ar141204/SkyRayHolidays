@@ -115,7 +115,7 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
     if (isCustomerDedicated) {
       const host = process.env.CUSTOMER_SMTP_HOST || 'smtp.gmail.com';
       const port = Number(process.env.CUSTOMER_SMTP_PORT || 465);
-      const user = process.env.CUSTOMER_SMTP_USER || 'skyrayholidays@gmail.com';
+      const user = process.env.CUSTOMER_SMTP_USER || 'contact.skyrayholidays@gmail.com';
       const pass = process.env.CUSTOMER_SMTP_PASSWORD;
       const secure =
         process.env.CUSTOMER_SMTP_SECURE === 'true' || port === 465;
@@ -178,7 +178,7 @@ export class IntegrationsService implements OnModuleInit, OnModuleDestroy {
     }
 
     const { SMTP_HOST, SMTP_FROM, ENQUIRY_NOTIFICATION_EMAIL } = process.env;
-    const customerUser = process.env.CUSTOMER_SMTP_USER || 'skyrayholidays@gmail.com';
+    const customerUser = process.env.CUSTOMER_SMTP_USER || 'contact.skyrayholidays@gmail.com';
     const customerFrom =
       process.env.CUSTOMER_SMTP_FROM || `"SkyRay Holidays" <${customerUser}>`;
 
