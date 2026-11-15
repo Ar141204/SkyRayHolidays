@@ -47,6 +47,7 @@ import {
   Play,
   Pause,
   Film,
+  Award,
 } from 'lucide-react';
 import { API_URL, contactDefaults } from '@/lib/config';
 import {
@@ -55,6 +56,12 @@ import {
   saveStoredVisaServices,
   type VisaServiceItem,
 } from '@/lib/visas';
+import {
+  ATTESTATION_SERVICES,
+  getStoredAttestationServices,
+  saveStoredAttestationServices,
+  type AttestationServiceItem,
+} from '@/lib/attestation';
 import {
   type WebsiteContent,
   defaultWebsiteContent,
@@ -86,12 +93,55 @@ export default function AdminConsole() {
   const [email, setEmail] = useState('syedrahamathullah@skyrayholidays.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [tab, setTab] = useState<'Dashboard' | 'Enquiries' | 'Packages' | 'Visas' | 'Content' | 'Settings'>('Dashboard');
+  const [tab, setTab] = useState<'Dashboard' | 'Enquiries' | 'Packages' | 'Visas' | 'Attestation' | 'Content' | 'Settings'>('Dashboard');
 
   // Data states
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
   const [visas, setVisas] = useState<VisaServiceItem[]>([]);
+  const [attestations, setAttestations] = useState<AttestationServiceItem[]>(() => getStoredAttestationServices());
+  const [attestationSearchQuery, setAttestationSearchQuery] = useState('');
+  const [showAttestationModal, setShowAttestationModal] = useState(false);
+  const [editingAttestation, setEditingAttestation] = useState<AttestationServiceItem | null>(null);
+  const [attestationFormData, setAttestationFormData] = useState<{
+    id: string;
+    slug: string;
+    title: string;
+    category: 'Gulf Embassy' | 'Apostille' | 'Educational' | 'Personal' | 'Commercial';
+    badge: string;
+    shortDesc: string;
+    processingTime: string;
+    validity: string;
+    targetCountries: string;
+    requirements: string;
+    workflow: string;
+    startingPrice: string;
+    status: string;
+    hasOffer?: boolean;
+    offerBadge?: string;
+    originalPrice?: string;
+    offerPrice?: string;
+    offerRunningText?: string;
+  }>({
+    id: '',
+    slug: '',
+    title: '',
+    category: 'Gulf Embassy',
+    badge: '',
+    shortDesc: '',
+    processingTime: '5 – 8 Working Days',
+    validity: 'Permanent / Lifetime Authentication',
+    targetCountries: 'United Arab Emirates (UAE)',
+    requirements: 'Original Certificate\nPassport Copy (First & Last Page)\nAadhaar / National ID',
+    workflow: '1. Notary Public Attestation\n2. State HRD / Home Department Authentication\n3. Ministry of External Affairs (MEA India)\n4. Embassy Legalization',
+    startingPrice: '₹3,500',
+    status: 'Active',
+    hasOffer: false,
+    offerBadge: '',
+    originalPrice: '',
+    offerPrice: '',
+    offerRunningText: '',
+  });
   const [stats, setStats] = useState<any>({ total: 0, new: 0, pending: 0, contacted: 0, quoted: 0, confirmed: 0 });
   const [staff, setStaff] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
@@ -1006,6 +1056,97 @@ export default function AdminConsole() {
     });
   }, [visas, visaSearchQuery]);
 
+  // Attestation Save Handler
+  function handleSaveAttestation(e: React.FormEvent) {
+    e.preventDefault();
+    if (!attestationFormData.title.trim()) {
+      alert('Please enter a service title for the attestation package.');
+      return;
+    }
+
+    const slug =
+      attestationFormData.slug?.trim() ||
+      attestationFormData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+    const targetCountriesArray = attestationFormData.targetCountries
+      .split('\n')
+      .map((c) => c.trim())
+      .filter(Boolean);
+
+    const requirementsArray = attestationFormData.requirements
+      .split('\n')
+      .map((r) => r.trim())
+      .filter(Boolean);
+
+    const workflowArray = attestationFormData.workflow
+      .split('\n')
+      .map((w) => w.trim())
+      .filter(Boolean);
+
+    const attestationItem: AttestationServiceItem = {
+      id: editingAttestation ? editingAttestation.id : `attest-${Date.now()}`,
+      slug,
+      title: attestationFormData.title.trim(),
+      category: attestationFormData.category,
+      badge: attestationFormData.badge.trim() || 'Verified Attestation',
+      shortDesc: attestationFormData.shortDesc.trim(),
+      processingTime: attestationFormData.processingTime.trim(),
+      validity: attestationFormData.validity.trim(),
+      targetCountries: targetCountriesArray.length > 0 ? targetCountriesArray : ['International'],
+      requirements: requirementsArray.length > 0 ? requirementsArray : ['Original Certificate', 'Passport Copy'],
+      workflow: workflowArray.length > 0 ? workflowArray : ['Notary', 'State HRD/Home', 'MEA', 'Embassy'],
+      image: '/images/dubai.svg',
+      startingPrice: attestationFormData.startingPrice.trim() || '₹2,500',
+      status: attestationFormData.status,
+      hasOffer: Boolean(attestationFormData.hasOffer),
+      offerBadge: attestationFormData.offerBadge?.trim() || undefined,
+      originalPrice: attestationFormData.originalPrice?.trim() || undefined,
+      offerPrice: attestationFormData.offerPrice?.trim() || undefined,
+      offerRunningText: attestationFormData.offerRunningText?.trim() || undefined,
+    };
+
+    let updated: AttestationServiceItem[];
+    if (editingAttestation) {
+      updated = attestations.map((a) => (a.id === editingAttestation.id ? attestationItem : a));
+      setSavedMsg(`Attestation package "${attestationItem.title}" updated successfully!`);
+    } else {
+      updated = [attestationItem, ...attestations];
+      setSavedMsg(`New attestation package "${attestationItem.title}" added to catalogue!`);
+    }
+
+    setAttestations(updated);
+    saveStoredAttestationServices(updated);
+    setShowAttestationModal(false);
+    setEditingAttestation(null);
+    setTimeout(() => setSavedMsg(''), 4000);
+  }
+
+  // Attestation Delete Handler
+  function deleteAttestationService(id: string, title: string) {
+    if (!confirm(`Are you sure you want to remove the attestation service "${title}"?`)) return;
+    const updated = attestations.filter((a) => a.id !== id);
+    setAttestations(updated);
+    saveStoredAttestationServices(updated);
+    setSavedMsg(`Attestation service "${title}" deleted.`);
+    setTimeout(() => setSavedMsg(''), 3000);
+  }
+
+  const filteredAttestations = useMemo(() => {
+    return attestations.filter((a) => {
+      if (!attestationSearchQuery.trim()) return true;
+      const q = attestationSearchQuery.toLowerCase();
+      return (
+        a.title.toLowerCase().includes(q) ||
+        a.slug.toLowerCase().includes(q) ||
+        a.category.toLowerCase().includes(q) ||
+        a.targetCountries.some((c) => c.toLowerCase().includes(q))
+      );
+    });
+  }, [attestations, attestationSearchQuery]);
+
   // Restoring persistent auto sign-in session
   if (checkingAuth && !token) {
     return (
@@ -1319,6 +1460,15 @@ export default function AdminConsole() {
             }}
           >
             <Globe2 size={17} /> Visa Services
+          </button>
+          <button
+            className={tab === 'Attestation' ? 'active' : ''}
+            onClick={() => {
+              setTab('Attestation');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <Award size={17} /> Attestation Services
           </button>
           <button
             className={tab === 'Content' ? 'active' : ''}
@@ -2076,6 +2226,217 @@ export default function AdminConsole() {
                       <tr>
                         <td colSpan={9} style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
                           No visa services found matching your search.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            SCREEN: ATTESTATION SERVICES MANAGEMENT
+           ========================================================================= */}
+        {tab === 'Attestation' && (
+          <div className="visas-management-screen">
+            <div className="table-toolbar">
+              <div>
+                <h2>Certificate Attestation &amp; Apostille Catalogue</h2>
+                <p>Manage Gulf embassy legalizations (UAE, Saudi, Qatar, Kuwait), MEA Hague Apostille, turnaround times, and pricing.</p>
+              </div>
+
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setEditingAttestation(null);
+                  setAttestationFormData({
+                    id: '',
+                    slug: '',
+                    title: '',
+                    category: 'Gulf Embassy',
+                    badge: 'Verified Attestation',
+                    shortDesc: '',
+                    processingTime: '5 – 8 Working Days',
+                    validity: 'Permanent / Lifetime Authentication',
+                    targetCountries: 'United Arab Emirates (UAE)',
+                    requirements: 'Original Certificate\nPassport Copy (First & Last Page)\nAadhaar / National ID',
+                    workflow: '1. Notary Public Attestation\n2. State HRD / Home Department Authentication\n3. Ministry of External Affairs (MEA India)\n4. Embassy Legalization',
+                    startingPrice: '₹3,500',
+                    status: 'Active',
+                    hasOffer: false,
+                    offerBadge: '',
+                    originalPrice: '',
+                    offerPrice: '',
+                    offerRunningText: '',
+                  });
+                  setShowAttestationModal(true);
+                }}
+              >
+                <Plus size={16} /> Add Attestation Service
+              </button>
+            </div>
+
+            {/* Search Toolbar */}
+            <div className="table-toolbar" style={{ marginTop: '2px', marginBottom: '14px' }}>
+              <div className="search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search attestation by country, certificate, category..."
+                  value={attestationSearchQuery}
+                  onChange={(e) => setAttestationSearchQuery(e.target.value)}
+                />
+              </div>
+              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>
+                Showing {filteredAttestations.length} attestation services
+              </span>
+            </div>
+
+            <div className="admin-card-panel no-padding">
+              <div className="table-responsive">
+                <table className="admin-clean-table">
+                  <thead>
+                    <tr>
+                      <th>Service Title</th>
+                      <th>Category</th>
+                      <th>Turnaround Time</th>
+                      <th>Target Countries</th>
+                      <th>Starting Fee</th>
+                      <th>Offer</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAttestations.map((a) => (
+                      <tr key={a.id}>
+                        <td>
+                          <div>
+                            <strong style={{ color: '#17496b', display: 'block', fontSize: '13.5px' }}>{a.title}</strong>
+                            <small style={{ color: '#64748b' }}>{a.badge}</small>
+                          </div>
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              background: '#e0f2fe',
+                              color: '#0369a1',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {a.category}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '12px', color: '#334155' }}>
+                            <Clock size={12} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} />
+                            {a.processingTime}
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '12px', color: '#334155', maxWidth: '180px' }}>
+                            {a.targetCountries.slice(0, 2).join(', ')}
+                            {a.targetCountries.length > 2 && ` +${a.targetCountries.length - 2} more`}
+                          </div>
+                        </td>
+                        <td>
+                          <div>
+                            <strong style={{ color: '#17496b', fontSize: '13.5px' }}>
+                              {a.offerPrice || a.startingPrice || '₹2,500'}
+                            </strong>
+                            {a.hasOffer && a.originalPrice && (
+                              <span style={{ fontSize: '11px', color: '#94a3b8', textDecoration: 'line-through', marginLeft: '4px' }}>
+                                {a.originalPrice}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          {a.hasOffer ? (
+                            <span
+                              style={{
+                                fontSize: '10.5px',
+                                background: '#fef3c7',
+                                color: '#b45309',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontWeight: 700,
+                              }}
+                            >
+                              {a.offerBadge || 'Active Offer'}
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Standard</span>
+                          )}
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              background: a.status === 'Active' ? '#dcfce7' : '#f1f5f9',
+                              color: a.status === 'Active' ? '#15803d' : '#64748b',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {a.status || 'Active'}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              className="btn-icon"
+                              title="Edit Attestation Service"
+                              onClick={() => {
+                                setEditingAttestation(a);
+                                setAttestationFormData({
+                                  id: a.id,
+                                  slug: a.slug,
+                                  title: a.title,
+                                  category: a.category,
+                                  badge: a.badge,
+                                  shortDesc: a.shortDesc,
+                                  processingTime: a.processingTime,
+                                  validity: a.validity,
+                                  targetCountries: a.targetCountries.join('\n'),
+                                  requirements: a.requirements.join('\n'),
+                                  workflow: a.workflow.join('\n'),
+                                  startingPrice: a.startingPrice || '₹2,500',
+                                  status: a.status || 'Active',
+                                  hasOffer: Boolean(a.hasOffer),
+                                  offerBadge: a.offerBadge || '',
+                                  originalPrice: a.originalPrice || '',
+                                  offerPrice: a.offerPrice || '',
+                                  offerRunningText: a.offerRunningText || '',
+                                });
+                                setShowAttestationModal(true);
+                              }}
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-icon danger"
+                              title="Delete Attestation Service"
+                              onClick={() => deleteAttestationService(a.id, a.title)}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredAttestations.length === 0 && (
+                      <tr>
+                        <td colSpan={8} style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
+                          No attestation services found matching your search.
                         </td>
                       </tr>
                     )}
@@ -4093,6 +4454,247 @@ export default function AdminConsole() {
                 </button>
                 <button type="submit" className="btn btn-primary">
                   {editingVisa ? 'Update Visa Package' : 'Save Visa Package'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 1c. Add / Edit Attestation Service Modal */}
+      {showAttestationModal && (
+        <div className="modal-backdrop">
+          <div className="modal-dialog wide" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div className="modal-header" style={{ flexShrink: 0 }}>
+              <h3>{editingAttestation ? 'Edit Attestation Service' : 'Create New Attestation Service'}</h3>
+              <button
+                className="modal-close"
+                onClick={() => {
+                  setShowAttestationModal(false);
+                  setEditingAttestation(null);
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAttestation} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, padding: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <label>
+                    Attestation Service Title *
+                    <input
+                      required
+                      value={attestationFormData.title}
+                      onChange={(e) => {
+                        const title = e.target.value;
+                        setAttestationFormData((prev) => ({
+                          ...prev,
+                          title,
+                          slug: editingAttestation
+                            ? prev.slug
+                            : title
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, '-')
+                                .replace(/^-|-$/g, ''),
+                        }));
+                      }}
+                      placeholder="e.g. UAE Embassy Attestation & MOFA Legalization"
+                    />
+                  </label>
+                  <label>
+                    URL Slug *
+                    <input
+                      required
+                      value={attestationFormData.slug}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, slug: e.target.value })}
+                      placeholder="e.g. uae-embassy-attestation"
+                    />
+                  </label>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <label>
+                    Attestation Category *
+                    <select
+                      value={attestationFormData.category}
+                      onChange={(e) =>
+                        setAttestationFormData({
+                          ...attestationFormData,
+                          category: e.target.value as any,
+                        })
+                      }
+                    >
+                      <option value="Gulf Embassy">Gulf Embassy (UAE, Saudi, Qatar, Kuwait)</option>
+                      <option value="Apostille">Hague Apostille (120+ Countries)</option>
+                      <option value="Educational">Educational &amp; Degree</option>
+                      <option value="Personal">Personal (Marriage, Birth, PCC)</option>
+                      <option value="Commercial">Commercial &amp; Power of Attorney</option>
+                    </select>
+                  </label>
+                  <label>
+                    Header Badge
+                    <input
+                      value={attestationFormData.badge}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, badge: e.target.value })}
+                      placeholder="e.g. High Demand · Dubai & Abu Dhabi"
+                    />
+                  </label>
+                  <label>
+                    Publication Status
+                    <select
+                      value={attestationFormData.status}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, status: e.target.value })}
+                    >
+                      <option value="Active">Active (Visible on Website)</option>
+                      <option value="Draft">Draft (Hidden)</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <label>
+                    Processing Turnaround *
+                    <input
+                      required
+                      value={attestationFormData.processingTime}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, processingTime: e.target.value })}
+                      placeholder="e.g. 5 – 8 Working Days"
+                    />
+                  </label>
+                  <label>
+                    Validity Scope *
+                    <input
+                      required
+                      value={attestationFormData.validity}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, validity: e.target.value })}
+                      placeholder="e.g. Permanent / Lifetime Authentication"
+                    />
+                  </label>
+                  <label>
+                    Starting Price / Fee *
+                    <input
+                      required
+                      value={attestationFormData.startingPrice}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, startingPrice: e.target.value })}
+                      placeholder="e.g. ₹3,500"
+                    />
+                  </label>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label>
+                    Short Description / Overview *
+                    <textarea
+                      required
+                      rows={2}
+                      value={attestationFormData.shortDesc}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, shortDesc: e.target.value })}
+                      placeholder="Overview of documents covered, embassy scope, and purpose..."
+                    />
+                  </label>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <label>
+                    Target Countries (One per line) *
+                    <textarea
+                      required
+                      rows={3}
+                      value={attestationFormData.targetCountries}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, targetCountries: e.target.value })}
+                      placeholder="United Arab Emirates (Dubai, Abu Dhabi)&#10;Saudi Arabia&#10;Qatar"
+                    />
+                  </label>
+
+                  <label>
+                    Required Documents (One per line) *
+                    <textarea
+                      required
+                      rows={3}
+                      value={attestationFormData.requirements}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, requirements: e.target.value })}
+                      placeholder="Original Certificate&#10;Passport Copy (First & Last Page)&#10;Aadhaar / National ID"
+                    />
+                  </label>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label>
+                    Step-by-Step Legalization Workflow (One step per line) *
+                    <textarea
+                      required
+                      rows={4}
+                      value={attestationFormData.workflow}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, workflow: e.target.value })}
+                      placeholder="1. Notary Public Attestation&#10;2. State HRD / Home Department Authentication&#10;3. Ministry of External Affairs (MEA India)&#10;4. Embassy Legalization"
+                    />
+                  </label>
+                </div>
+
+                {/* Promotional Offer Fields */}
+                <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '12px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '12px', fontWeight: 700 }}>
+                    <input
+                      type="checkbox"
+                      checked={attestationFormData.hasOffer}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, hasOffer: e.target.checked })}
+                    />
+                    Enable Running Promotional Offer on this Attestation Service
+                  </label>
+
+                  {attestationFormData.hasOffer && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                      <label>
+                        Offer Badge
+                        <input
+                          value={attestationFormData.offerBadge}
+                          onChange={(e) => setAttestationFormData({ ...attestationFormData, offerBadge: e.target.value })}
+                          placeholder="e.g. EXPRESS PROMO"
+                        />
+                      </label>
+                      <label>
+                        Original Price
+                        <input
+                          value={attestationFormData.originalPrice}
+                          onChange={(e) => setAttestationFormData({ ...attestationFormData, originalPrice: e.target.value })}
+                          placeholder="e.g. ₹4,500"
+                        />
+                      </label>
+                      <label>
+                        Offer Price
+                        <input
+                          value={attestationFormData.offerPrice}
+                          onChange={(e) => setAttestationFormData({ ...attestationFormData, offerPrice: e.target.value })}
+                          placeholder="e.g. ₹3,500"
+                        />
+                      </label>
+                      <label style={{ gridColumn: 'span 3' }}>
+                        Running Banner Offer Text
+                        <input
+                          value={attestationFormData.offerRunningText}
+                          onChange={(e) => setAttestationFormData({ ...attestationFormData, offerRunningText: e.target.value })}
+                          placeholder="e.g. Flat ₹1,000 Off on all Degree Attestations this month!"
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="modal-footer" style={{ flexShrink: 0 }}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setShowAttestationModal(false);
+                    setEditingAttestation(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  {editingAttestation ? 'Update Attestation Service' : 'Save Attestation Service'}
                 </button>
               </div>
             </form>

@@ -31,7 +31,8 @@ export type FormCategory =
   | 'schengen-visa'
   | 'canada-visa'
   | 'gcc-visa'
-  | 'evisa';
+  | 'evisa'
+  | 'attestation';
 
 function generateRandomSkyRayRef(): string {
   const datePrefix = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -128,6 +129,12 @@ export default function EnquiryForm() {
   const [evisaPurpose, setEvisaPurpose] = useState('Tourism & Leisure');
   const [evisaProcessing, setEvisaProcessing] = useState('Standard Fast-Track (2–3 Working Days)');
 
+  // 9. Attestation Form State
+  const [attestationDocType, setAttestationDocType] = useState('Educational Degree / Diploma');
+  const [attestationTargetCountry, setAttestationTargetCountry] = useState('United Arab Emirates (UAE)');
+  const [attestationUrgency, setAttestationUrgency] = useState('Standard Service (5–7 Working Days)');
+  const [attestationCertificateCount, setAttestationCertificateCount] = useState('1');
+
   // Submission State
   const [state, setState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [reference, setReference] = useState('');
@@ -141,6 +148,22 @@ export default function EnquiryForm() {
     const countryParam = (params.get('country') || '').trim();
     const packageParam = (params.get('package') || '').toLowerCase();
     const tierParam = (params.get('tier') || '').toLowerCase();
+
+    // 0. Attestation Service
+    if (
+      serviceParam === 'attestation' ||
+      serviceParam === 'apostille' ||
+      serviceParam.includes('attest')
+    ) {
+      setFormType('attestation');
+      const titleParam = (params.get('title') || '').toLowerCase();
+      if (titleParam.includes('uae')) setAttestationTargetCountry('United Arab Emirates (UAE)');
+      else if (titleParam.includes('saudi')) setAttestationTargetCountry('Saudi Arabia');
+      else if (titleParam.includes('qatar')) setAttestationTargetCountry('Qatar');
+      else if (titleParam.includes('kuwait')) setAttestationTargetCountry('Kuwait');
+      else if (titleParam.includes('apostille')) setAttestationTargetCountry('Hague Apostille (USA, UK, Europe, Australia)');
+      return;
+    }
 
     // 1. USA Visa
     if (
@@ -411,6 +434,21 @@ export default function EnquiryForm() {
           `Processing Speed: ${evisaProcessing}`,
           city ? `Applicant City: ${city}` : null,
           instructions ? `Additional Details: ${instructions}` : null,
+        ]
+          .filter(Boolean)
+          .join('\n');
+      } else if (formType === 'attestation') {
+        serviceLabel = `Certificate Attestation: ${attestationDocType} (${attestationTargetCountry})`;
+        targetCountry = attestationTargetCountry;
+        daysCount = attestationUrgency.includes('Express') ? 3 : 7;
+        detailedNotes = [
+          `Service: Certificate Attestation & Apostille Legalization`,
+          `Document Type: ${attestationDocType}`,
+          `Target Country / Jurisdiction: ${attestationTargetCountry}`,
+          `Number of Certificates: ${attestationCertificateCount}`,
+          `Turnaround Preference: ${attestationUrgency}`,
+          city ? `Applicant City: ${city}` : null,
+          instructions ? `Specific Notes: ${instructions}` : null,
         ]
           .filter(Boolean)
           .join('\n');
@@ -694,6 +732,14 @@ export default function EnquiryForm() {
         >
           ⚡ Global E-Visa
         </button>
+
+        <button
+          type="button"
+          className={`form-type-btn ${formType === 'attestation' ? 'active' : ''}`}
+          onClick={() => setFormType('attestation')}
+        >
+          📜 Attestation &amp; Apostille
+        </button>
       </nav>
 
       {/* Dynamic Form Header Badge */}
@@ -706,6 +752,7 @@ export default function EnquiryForm() {
         {formType === 'canada-visa' && '🇨🇦 Canada Visitor, Business & Super Visa Consultation'}
         {formType === 'gcc-visa' && '🌴 GCC Visas: Saudi, UAE, Oman, Kuwait, Qatar & GCC Resident Scheme'}
         {formType === 'evisa' && '⚡ Global 100% Online Paperless Fast-Track E-Visa'}
+        {formType === 'attestation' && '📜 Official Certificate Attestation & Hague Apostille Legalization'}
       </div>
 
       <form className="enquiry-form" onSubmit={handleSubmit}>
@@ -1586,6 +1633,83 @@ export default function EnquiryForm() {
                   <option value="Same-Day Super Rush (6 to 12 Hours)">
                     Same-Day Super Rush (6 to 12 Hours)
                   </option>
+                </select>
+              </label>
+            </>
+          )}
+
+          {/* =========================================================================
+              9. ATTESTATION & APOSTILLE FORM
+             ========================================================================= */}
+          {formType === 'attestation' && (
+            <>
+              <div className="form-section-divider">
+                <FileCheck size={14} />
+                <span>Certificate &amp; Destination Details</span>
+              </div>
+
+              <label>
+                Certificate / Document Type *
+                <select
+                  required
+                  value={attestationDocType}
+                  onChange={(e) => setAttestationDocType(e.target.value)}
+                  style={{ fontWeight: 700 }}
+                >
+                  <option value="Educational Degree / Diploma">🎓 Educational Degree / Diploma / Mark Sheet</option>
+                  <option value="Marriage Certificate">💍 Marriage Certificate (Spouse / Family Visa)</option>
+                  <option value="Birth Certificate">👶 Birth Certificate (Child / Family Visa)</option>
+                  <option value="Police Clearance Certificate (PCC)">👮 Police Clearance Certificate (PCC)</option>
+                  <option value="Commercial Invoice / Power of Attorney">🏢 Commercial Document / Power of Attorney (POA)</option>
+                  <option value="Medical / Nursing Certificate">🏥 Medical / Nursing Certificate</option>
+                  <option value="Other Personal Affidavit">📄 Other Personal Document / Affidavit</option>
+                </select>
+              </label>
+
+              <label>
+                Target Destination Country / Embassy *
+                <select
+                  required
+                  value={attestationTargetCountry}
+                  onChange={(e) => setAttestationTargetCountry(e.target.value)}
+                  style={{ fontWeight: 700 }}
+                >
+                  <option value="United Arab Emirates (UAE)">🇦🇪 United Arab Emirates (UAE / Dubai / Abu Dhabi)</option>
+                  <option value="Saudi Arabia">🇸🇦 Kingdom of Saudi Arabia (SACM &amp; Embassy)</option>
+                  <option value="Qatar">🇶🇦 Qatar (Embassy &amp; MOFA)</option>
+                  <option value="Kuwait">🇰🇼 Kuwait (Embassy &amp; PCC Legalization)</option>
+                  <option value="Oman">🇴🇲 Sultanate of Oman</option>
+                  <option value="Bahrain">🇧🇭 Kingdom of Bahrain</option>
+                  <option value="Hague Apostille (USA, UK, Europe, Australia)">🌍 Hague Apostille (USA, UK, Germany, France, Australia, 120+ Nations)</option>
+                  <option value="Malaysia">🇲🇾 Malaysia</option>
+                  <option value="Singapore">🇸🇬 Singapore</option>
+                  <option value="Other International Country">🌐 Other International Country</option>
+                </select>
+              </label>
+
+              <label>
+                Number of Certificates to Attest *
+                <select
+                  value={attestationCertificateCount}
+                  onChange={(e) => setAttestationCertificateCount(e.target.value)}
+                >
+                  <option value="1">1 Certificate</option>
+                  <option value="2">2 Certificates</option>
+                  <option value="3">3 Certificates</option>
+                  <option value="4">4 Certificates</option>
+                  <option value="5+">5 or more Certificates (Bulk Slabs)</option>
+                </select>
+              </label>
+
+              <label>
+                Processing Turnaround Preference *
+                <select
+                  value={attestationUrgency}
+                  onChange={(e) => setAttestationUrgency(e.target.value)}
+                >
+                  <option value="Standard Service (5–7 Working Days)">Standard Safe Courier (5–7 Working Days)</option>
+                  <option value="Express Fast-Track (3–4 Working Days)">Express Fast-Track (3–4 Working Days)</option>
+                  <option value="Super Rush Emergency Service">Super Rush Emergency Service</option>
                 </select>
               </label>
             </>

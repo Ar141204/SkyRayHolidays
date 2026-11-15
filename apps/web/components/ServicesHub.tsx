@@ -5,12 +5,13 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import PackageExplorer from '@/components/PackageExplorer';
 import VisaExplorer from '@/components/VisaExplorer';
-import { Plane, FileText, LayoutGrid, ArrowRight, ShieldCheck, Clock, Award, Sparkles } from 'lucide-react';
+import AttestationExplorer from '@/components/AttestationExplorer';
+import { Plane, FileText, LayoutGrid, ArrowRight, ShieldCheck, Clock, Award, Sparkles, FileCheck } from 'lucide-react';
 
 export default function ServicesHub() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get('tab') || 'all';
-  const [activeTab, setActiveTab] = useState<'all' | 'packages' | 'visa'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'packages' | 'visa' | 'attestation'>('all');
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -18,6 +19,8 @@ export default function ServicesHub() {
       setActiveTab('packages');
     } else if (tab === 'visa' || tab === 'visas') {
       setActiveTab('visa');
+    } else if (tab === 'attestation' || tab === 'apostille') {
+      setActiveTab('attestation');
     } else {
       setActiveTab('all');
     }
@@ -104,6 +107,29 @@ export default function ServicesHub() {
         >
           <FileText size={16} /> Visa Services (US, UK, Schengen, E-Visa)
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('attestation')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 22px',
+            borderRadius: '24px',
+            fontSize: '13.5px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            border: '1px solid',
+            borderColor: activeTab === 'attestation' ? '#0284c7' : '#cbd5e1',
+            background: activeTab === 'attestation' ? '#0284c7' : '#ffffff',
+            color: activeTab === 'attestation' ? '#ffffff' : '#334155',
+            boxShadow: activeTab === 'attestation' ? '0 4px 14px rgba(2, 132, 199, 0.28)' : '0 2px 6px rgba(0,0,0,0.03)',
+          }}
+        >
+          <Award size={16} /> Certificate Attestation &amp; Apostille
+        </button>
       </div>
 
       {/* 2. Tour Packages Section */}
@@ -148,7 +174,7 @@ export default function ServicesHub() {
 
       {/* 3. International Visa Services Section */}
       {(activeTab === 'all' || activeTab === 'visa') && (
-        <section id="visa-services">
+        <section id="visa-services" style={{ marginBottom: activeTab === 'all' ? '60px' : '20px' }}>
           <div className="section-head" style={{ marginBottom: '24px' }}>
             <div>
               <div className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
@@ -172,6 +198,46 @@ export default function ServicesHub() {
           </div>
 
           <VisaExplorer />
+        </section>
+      )}
+
+      {/* Divider when in 'all' view */}
+      {activeTab === 'all' && (
+        <div
+          style={{
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent, #cbd5e1, transparent)',
+            margin: '40px 0',
+          }}
+        />
+      )}
+
+      {/* 4. Certificate Attestation & Apostille Services Section */}
+      {(activeTab === 'all' || activeTab === 'attestation') && (
+        <section id="attestation-services">
+          <div className="section-head" style={{ marginBottom: '24px' }}>
+            <div>
+              <div className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Award size={13} color="#0284c7" /> OFFICIAL EMBASSY &amp; MEA APOSTILLE LEGALIZATION
+              </div>
+              <h2>Certificate Attestation &amp; Apostille Services</h2>
+              <p>
+                Complete document verification for UAE, Saudi Arabia, Qatar, Kuwait, Oman, Bahrain, and 120+ Hague Apostille nations. Educational degrees, marriage certificates, birth certificates, and commercial documents.
+              </p>
+            </div>
+            {activeTab === 'all' && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('attestation')}
+                className="text-link"
+                style={{ background: 'none', border: 0, cursor: 'pointer' }}
+              >
+                Focus on Attestation <ArrowRight size={15} />
+              </button>
+            )}
+          </div>
+
+          <AttestationExplorer />
         </section>
       )}
 

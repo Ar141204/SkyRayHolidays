@@ -126,6 +126,23 @@ export default function SiteHeader() {
                   <small style={{ color: '#64748b' }}>US, UK, Schengen &amp; Global E-Visas</small>
                 </div>
               </Link>
+
+              <Link
+                href="/services?tab=attestation"
+                className="dropdown-link-item"
+                onClick={() => {
+                  setOpen(false);
+                  setDropdownOpen(false);
+                }}
+              >
+                <div className="dropdown-icon-wrap" style={{ background: '#eaf7fd', padding: '6px', borderRadius: '6px', color: '#0284c7' }}>
+                  <span style={{ fontSize: '15px' }}>📜</span>
+                </div>
+                <div>
+                  <div style={{ color: '#17496b', fontWeight: 800 }}>Attestation Services</div>
+                  <small style={{ color: '#64748b' }}>Gulf Embassies &amp; Hague Apostille</small>
+                </div>
+              </Link>
             </div>
           </div>
 
@@ -145,6 +162,13 @@ export default function SiteHeader() {
                 onClick={() => setOpen(false)}
               >
                 🛂 Visa Services (US, UK, Schengen)
+              </Link>
+              <Link
+                href="/services?tab=attestation"
+                style={{ fontSize: '13.5px', color: '#0284c7', padding: '6px 12px', fontWeight: 700 }}
+                onClick={() => setOpen(false)}
+              >
+                📜 Certificate Attestation &amp; Apostille
               </Link>
             </div>
           )}
