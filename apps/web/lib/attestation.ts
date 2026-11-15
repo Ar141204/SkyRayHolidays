@@ -11,6 +11,7 @@ export interface AttestationServiceItem {
   requirements: string[];
   workflow: string[];
   image: string;
+  showPrice?: boolean;
   startingPrice?: string;
   governmentFeeNote?: string;
   status?: string;
@@ -304,12 +305,18 @@ export function getStoredAttestationServices(): AttestationServiceItem[] {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          return parsed.map((item: any) => ({
+            ...item,
+            showPrice: Boolean(item.showPrice),
+          }));
         }
       }
     } catch {}
   }
-  return ATTESTATION_SERVICES;
+  return ATTESTATION_SERVICES.map((item) => ({
+    ...item,
+    showPrice: Boolean(item.showPrice),
+  }));
 }
 
 export function saveStoredAttestationServices(items: AttestationServiceItem[]): void {

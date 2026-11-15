@@ -116,6 +116,7 @@ export default function AdminConsole() {
     requirements: string;
     workflow: string;
     startingPrice: string;
+    showPrice?: boolean;
     status: string;
     hasOffer?: boolean;
     offerBadge?: string;
@@ -135,6 +136,7 @@ export default function AdminConsole() {
     requirements: 'Original Certificate\nPassport Copy (First & Last Page)\nAadhaar / National ID',
     workflow: '1. Notary Public Attestation\n2. State HRD / Home Department Authentication\n3. Ministry of External Affairs (MEA India)\n4. Embassy Legalization',
     startingPrice: '₹3,500',
+    showPrice: false,
     status: 'Active',
     hasOffer: false,
     offerBadge: '',
@@ -1100,6 +1102,7 @@ export default function AdminConsole() {
       workflow: workflowArray.length > 0 ? workflowArray : ['Notary', 'State HRD/Home', 'MEA', 'Embassy'],
       image: '/images/dubai.svg',
       startingPrice: attestationFormData.startingPrice.trim() || '₹2,500',
+      showPrice: Boolean(attestationFormData.showPrice),
       status: attestationFormData.status,
       hasOffer: Boolean(attestationFormData.hasOffer),
       offerBadge: attestationFormData.offerBadge?.trim() || undefined,
@@ -1132,6 +1135,21 @@ export default function AdminConsole() {
     saveStoredAttestationServices(updated);
     setSavedMsg(`Attestation service "${title}" deleted.`);
     setTimeout(() => setSavedMsg(''), 3000);
+  }
+
+  // Quick toggle price display on website
+  function toggleAttestationPrice(id: string) {
+    const updated = attestations.map((a) => {
+      if (a.id === id) {
+        const nextState = !a.showPrice;
+        setSavedMsg(`Price display for "${a.title}" is now ${nextState ? 'ENABLED on website' : 'HIDDEN on website (Enquiry Only)'}`);
+        return { ...a, showPrice: nextState };
+      }
+      return a;
+    });
+    setAttestations(updated);
+    saveStoredAttestationServices(updated);
+    setTimeout(() => setSavedMsg(''), 4000);
   }
 
   const filteredAttestations = useMemo(() => {
@@ -2264,6 +2282,7 @@ export default function AdminConsole() {
                     requirements: 'Original Certificate\nPassport Copy (First & Last Page)\nAadhaar / National ID',
                     workflow: '1. Notary Public Attestation\n2. State HRD / Home Department Authentication\n3. Ministry of External Affairs (MEA India)\n4. Embassy Legalization',
                     startingPrice: '₹3,500',
+                    showPrice: false,
                     status: 'Active',
                     hasOffer: false,
                     offerBadge: '',
@@ -2354,6 +2373,56 @@ export default function AdminConsole() {
                                 {a.originalPrice}
                               </span>
                             )}
+                            <div style={{ marginTop: '4px' }}>
+                              {a.showPrice ? (
+                                <span
+                                  style={{
+                                    fontSize: '10px',
+                                    background: '#dcfce7',
+                                    color: '#15803d',
+                                    padding: '1px 6px',
+                                    borderRadius: '4px',
+                                    fontWeight: 700,
+                                    display: 'inline-block',
+                                  }}
+                                >
+                                  👁️ Visible on Site
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    fontSize: '10px',
+                                    background: '#f1f5f9',
+                                    color: '#64748b',
+                                    padding: '1px 6px',
+                                    borderRadius: '4px',
+                                    fontWeight: 700,
+                                    display: 'inline-block',
+                                  }}
+                                >
+                                  🙈 Hidden (Enquiry Only)
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => toggleAttestationPrice(a.id)}
+                              style={{
+                                fontSize: '10.5px',
+                                padding: '2px 8px',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: '4px',
+                                background: '#ffffff',
+                                color: a.showPrice ? '#b91c1c' : '#0284c7',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                marginTop: '4px',
+                                display: 'inline-block',
+                              }}
+                              title={a.showPrice ? 'Click to hide price on website' : 'Click to show price on website'}
+                            >
+                              {a.showPrice ? 'Hide Price' : 'Turn On Price'}
+                            </button>
                           </div>
                         </td>
                         <td>
@@ -2409,6 +2478,7 @@ export default function AdminConsole() {
                                   requirements: a.requirements.join('\n'),
                                   workflow: a.workflow.join('\n'),
                                   startingPrice: a.startingPrice || '₹2,500',
+                                  showPrice: Boolean(a.showPrice),
                                   status: a.status || 'Active',
                                   hasOffer: Boolean(a.hasOffer),
                                   offerBadge: a.offerBadge || '',
@@ -4579,6 +4649,24 @@ export default function AdminConsole() {
                       onChange={(e) => setAttestationFormData({ ...attestationFormData, startingPrice: e.target.value })}
                       placeholder="e.g. ₹3,500"
                     />
+                  </label>
+                </div>
+
+                {/* Website Price Display Setting */}
+                <div style={{ padding: '12px 14px', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd', marginBottom: '16px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 700, color: '#0369a1', margin: 0 }}>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(attestationFormData.showPrice)}
+                      onChange={(e) => setAttestationFormData({ ...attestationFormData, showPrice: e.target.checked })}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    <div>
+                      <div style={{ fontSize: '13.5px' }}>Display Starting Price on Website</div>
+                      <small style={{ color: '#475569', fontWeight: 500, display: 'block', marginTop: '2px' }}>
+                        When turned OFF (default), the website displays &ldquo;Custom Quote on Enquiry&rdquo; without showing any price amount. Turn this ON if you want the public website to display this service fee.
+                      </small>
+                    </div>
                   </label>
                 </div>
 

@@ -279,8 +279,8 @@ export default function AttestationExplorer() {
                 {item.shortDesc}
               </p>
 
-              {/* Running offer banner if present */}
-              {item.hasOffer && item.offerRunningText && (
+              {/* Running offer banner if present and price display is enabled */}
+              {item.showPrice && item.hasOffer && item.offerRunningText && (
                 <div
                   style={{
                     background: '#f0fdf4',
@@ -364,15 +364,25 @@ export default function AttestationExplorer() {
               }}
             >
               <div>
-                <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Starting from</span>
+                <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>
+                  {item.showPrice ? 'Starting from' : 'Service Pricing'}
+                </span>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                  <strong style={{ fontSize: '18px', color: '#17496b' }}>
-                    {item.offerPrice || item.startingPrice || '₹2,500'}
-                  </strong>
-                  {item.hasOffer && item.originalPrice && (
-                    <span style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'line-through' }}>
-                      {item.originalPrice}
-                    </span>
+                  {item.showPrice ? (
+                    <>
+                      <strong style={{ fontSize: '18px', color: '#17496b' }}>
+                        {item.offerPrice || item.startingPrice || '₹2,500'}
+                      </strong>
+                      {item.hasOffer && item.originalPrice && (
+                        <span style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'line-through' }}>
+                          {item.originalPrice}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <strong style={{ fontSize: '14.5px', color: '#0284c7', fontWeight: 800 }}>
+                      Custom Quote on Enquiry
+                    </strong>
                   )}
                 </div>
               </div>
