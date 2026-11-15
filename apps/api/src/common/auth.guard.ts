@@ -11,8 +11,12 @@ export class AuthGuard implements CanActivate {
     const token = req.cookies?.skyray_session || (h?.startsWith('Bearer ') ? h.slice(7) : null);
     if (!token) throw new UnauthorizedException('Sign in required');
 
-    // 1. Support dev demo tokens gracefully ONLY when not in production and database is offline
-    if (process.env.NODE_ENV !== 'production' && (token === 'demo-admin-token' || token === 'cookie-session')) {
+    // 1. Support dev demo tokens ONLY in local development with explicit ALLOW_DEMO_TOKENS flag
+    if (
+      process.env.NODE_ENV === 'development' &&
+      process.env.ALLOW_DEMO_TOKENS === 'true' &&
+      token === 'demo-admin-token'
+    ) {
       req.user = {
         id: 'admin-seed',
         name: 'SkyRay Owner',

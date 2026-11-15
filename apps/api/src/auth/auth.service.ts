@@ -198,10 +198,14 @@ export class AuthService {
   }
 
   private async sendEmergencyLockEmail(toEmail: string, code: string) {
-    console.log(`\n==================================================`);
-    console.log(`🚨 [SECURITY ALERT] PANEL LOCKED FOR: ${toEmail}`);
-    console.log(`🔑 EMERGENCY 6-DIGIT UNLOCK CODE: ${code}`);
-    console.log(`==================================================\n`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`\n==================================================`);
+      console.log(`🚨 [SECURITY ALERT] PANEL LOCKED FOR: ${toEmail}`);
+      console.log(`🔑 EMERGENCY 6-DIGIT UNLOCK CODE: ${code}`);
+      console.log(`==================================================\n`);
+    } else {
+      console.log(`🚨 [SECURITY ALERT] Panel locked for ${toEmail}. Emergency unlock code sent via secure email.`);
+    }
 
     try {
       const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SMTP_SECURE } = process.env;
