@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Visa Services | Services | SkyRay Holidays',
   description:
     'Reliable international visa services for US B1/B2, UK Visitor, 29 Schengen member states, and Global E-Visas.',
+  alternates: {
+    canonical: '/services/visa',
+  },
 };
 
 export default function ServicesVisaPage() {

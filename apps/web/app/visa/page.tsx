@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Visa Services | US, UK, Schengen & Global E-Visas',
   description:
     'Reliable international visa services by SkyRay Holidays. Expert assistance for US B1/B2, UK Visitor, 29-Country Schengen, and Fast-Track Global E-Visas.',
+  alternates: {
+    canonical: '/visa',
+  },
 };
 
 export default function VisaPage() {

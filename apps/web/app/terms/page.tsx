@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Terms of Use & Booking Policy | SkyRay Holidays',
   description:
     'SkyRay Holidays Terms of Service — Booking conditions, cancellation policy, pilgrimage package guidelines, and liability disclaimer.',
+  alternates: {
+    canonical: '/terms',
+  },
 };
 
 export default function Terms() {

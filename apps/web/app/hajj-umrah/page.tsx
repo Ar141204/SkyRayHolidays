@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: 'Hajj & Umrah Services | A Blessed Journey',
   description:
     'Dedicated Hajj and Umrah pilgrimage services with SkyRay Holidays. 5-star accommodations near the Haram, experienced guidance, and comprehensive support.',
+  alternates: {
+    canonical: '/hajj-umrah',
+  },
 };
 
 const HOLY_CITIES_GALLERY = [

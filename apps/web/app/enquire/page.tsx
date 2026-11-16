@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Enquire Now | Holiday Tours, Umrah & Visa Services',
   description:
     'Send an enquiry for customized international tour packages, Hajj & Umrah pilgrimages, or US, UK, Schengen and E-Visa services with SkyRay Holidays.',
+  alternates: {
+    canonical: '/enquire',
+  },
 };
 
 export default function Enquire() {

@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'Our Services | Tour Packages, Visas & Certificate Attestation',
   description:
     'Explore SkyRay Holidays comprehensive services: Handcrafted international tour packages, specialized destinations, US, UK, Schengen visa concierge, and official UAE, Saudi, Gulf & Hague Apostille certificate attestation.',
+  alternates: {
+    canonical: '/services',
+  },
 };
 
 export default function ServicesPage() {

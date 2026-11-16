@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Privacy Notice | SkyRay Holidays',
   description:
     'SkyRay Holidays Privacy Policy — Learn how we collect, process, protect and store your personal travel enquiry data in accordance with DPDP Act 2023.',
+  alternates: {
+    canonical: '/privacy',
+  },
 };
 
 export default function Privacy() {

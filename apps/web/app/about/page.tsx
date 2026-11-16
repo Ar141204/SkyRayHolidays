@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'About Us | Your Trusted Travel Partner',
   description:
     'About SkyRay Holidays — Your Trusted Travel Partner. We connect you to new cultures, beautiful places and lasting memories.',
+  alternates: {
+    canonical: '/about',
+  },
 };
 
 export default function About() {

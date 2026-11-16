@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Tour Packages | Services | SkyRay Holidays',
   description:
     'Handcrafted holiday packages and specialized destinations curated by SkyRay Holidays.',
+  alternates: {
+    canonical: '/services/packages',
+  },
 };
 
 export default function ServicesPackagesPage() {

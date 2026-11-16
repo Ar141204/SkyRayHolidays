@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Certificate Attestation & Hague Apostille | Services | SkyRay Holidays',
   description:
     'Certified Embassy Attestation for UAE, Saudi Arabia, Qatar, Kuwait, Oman, Bahrain, and MEA Hague Apostille for 120+ countries. Fast-track turnaround for educational, personal, and commercial documents.',
+  alternates: {
+    canonical: '/services/attestation',
+  },
 };
 
 export default function ServicesAttestationPage() {

@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   publisher: 'SkyRay Holidays',
   metadataBase: new URL(appUrl),
   alternates: {
-    canonical: 'https://www.skyrayholidays.com',
+    canonical: '/',
   },
   openGraph: {
     type: 'website',

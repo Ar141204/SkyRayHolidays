@@ -4,6 +4,9 @@ import PackageExplorer from '@/components/PackageExplorer';
 export const metadata: Metadata = {
   title: 'Our Tour Packages | Handcrafted Holiday Experiences',
   description: 'Explore our carefully curated travel packages — from international escapes to spiritual journeys.',
+  alternates: {
+    canonical: '/packages',
+  },
 };
 
 export default function Packages() {
