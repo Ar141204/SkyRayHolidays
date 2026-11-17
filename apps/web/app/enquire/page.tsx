@@ -4,11 +4,17 @@ import EnquiryForm from '@/components/EnquiryForm';
 import { ShieldCheck, Clock, CheckCircle2, Phone, Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Enquire Now | Holiday Tours, Umrah & Visa Services',
+  title: 'Enquire Now | Holiday & Visa Booking',
   description:
-    'Send an enquiry for customized international tour packages, Hajj & Umrah pilgrimages, or US, UK, Schengen and E-Visa services with SkyRay Holidays.',
+    'Submit your travel requirements for customized holidays, Umrah pilgrimage, or global visa assistance. Our travel specialists will reach out promptly.',
   alternates: {
     canonical: '/enquire',
+  },
+  openGraph: {
+    title: 'Enquire Now | Holiday & Visa Booking | SkyRay Holidays',
+    description:
+      'Submit your travel requirements for customized holidays, Umrah pilgrimage, or global visa assistance. Our travel specialists will reach out promptly.',
+    url: 'https://www.skyrayholidays.com/enquire',
   },
 };
 

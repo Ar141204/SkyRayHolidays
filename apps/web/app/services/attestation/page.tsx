@@ -4,11 +4,17 @@ import AttestationExplorer from '@/components/AttestationExplorer';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Certificate Attestation & Hague Apostille | Services | SkyRay Holidays',
+  title: 'Certificate Attestation & Apostille',
   description:
-    'Certified Embassy Attestation for UAE, Saudi Arabia, Qatar, Kuwait, Oman, Bahrain, and MEA Hague Apostille for 120+ countries. Fast-track turnaround for educational, personal, and commercial documents.',
+    'Certified Embassy Attestation for UAE, Saudi, Qatar, Kuwait, and MEA Hague Apostille for 120+ countries. Fast-track turnaround for all certificates.',
   alternates: {
     canonical: '/services/attestation',
+  },
+  openGraph: {
+    title: 'Certificate Attestation & Apostille | SkyRay Holidays',
+    description:
+      'Certified Embassy Attestation for UAE, Saudi, Qatar, Kuwait, and MEA Hague Apostille for 120+ countries. Fast-track turnaround for all certificates.',
+    url: 'https://www.skyrayholidays.com/services/attestation',
   },
 };
 

@@ -2,11 +2,17 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Terms of Use & Booking Policy | SkyRay Holidays',
+  title: 'Terms of Service',
   description:
     'SkyRay Holidays Terms of Service — Booking conditions, cancellation policy, pilgrimage package guidelines, and liability disclaimer.',
   alternates: {
     canonical: '/terms',
+  },
+  openGraph: {
+    title: 'Terms of Service | SkyRay Holidays',
+    description:
+      'SkyRay Holidays Terms of Service — Booking conditions, cancellation policy, pilgrimage package guidelines, and liability disclaimer.',
+    url: 'https://www.skyrayholidays.com/terms',
   },
 };
 

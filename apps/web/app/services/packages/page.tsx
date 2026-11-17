@@ -4,11 +4,17 @@ import PackageExplorer from '@/components/PackageExplorer';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Tour Packages | Services | SkyRay Holidays',
+  title: 'Curated Tour Packages',
   description:
-    'Handcrafted holiday packages and specialized destinations curated by SkyRay Holidays.',
+    'Handcrafted holiday packages and specialized global destinations curated by SkyRay Holidays. Transparent pricing and confirmed itineraries.',
   alternates: {
     canonical: '/services/packages',
+  },
+  openGraph: {
+    title: 'Curated Tour Packages | SkyRay Holidays',
+    description:
+      'Handcrafted holiday packages and specialized global destinations curated by SkyRay Holidays. Transparent pricing and confirmed itineraries.',
+    url: 'https://www.skyrayholidays.com/services/packages',
   },
 };
 

@@ -2,10 +2,17 @@ import type { Metadata } from 'next';
 import PackageExplorer from '@/components/PackageExplorer';
 
 export const metadata: Metadata = {
-  title: 'Our Tour Packages | Handcrafted Holiday Experiences',
-  description: 'Explore our carefully curated travel packages — from international escapes to spiritual journeys.',
+  title: 'Handcrafted Tour Packages',
+  description:
+    'Discover curated holiday packages and pilgrimage tours. Handcrafted itineraries, confirmed accommodations, and transparent pricing with SkyRay Holidays.',
   alternates: {
     canonical: '/packages',
+  },
+  openGraph: {
+    title: 'Handcrafted Tour Packages | SkyRay Holidays',
+    description:
+      'Discover curated holiday packages and pilgrimage tours. Handcrafted itineraries, confirmed accommodations, and transparent pricing with SkyRay Holidays.',
+    url: 'https://www.skyrayholidays.com/packages',
   },
 };
 

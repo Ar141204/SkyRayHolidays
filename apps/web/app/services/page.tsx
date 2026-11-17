@@ -3,11 +3,17 @@ import { Suspense } from 'react';
 import ServicesHub from '@/components/ServicesHub';
 
 export const metadata: Metadata = {
-  title: 'Our Services | Tour Packages, Visas & Certificate Attestation',
+  title: 'Tours, Visas & Attestation Services',
   description:
-    'Explore SkyRay Holidays comprehensive services: Handcrafted international tour packages, specialized destinations, US, UK, Schengen visa concierge, and official UAE, Saudi, Gulf & Hague Apostille certificate attestation.',
+    'Explore SkyRay Holidays services: Curated holiday tour packages, Hajj & Umrah pilgrimages, US/UK/Schengen visas, and embassy certificate attestation.',
   alternates: {
     canonical: '/services',
+  },
+  openGraph: {
+    title: 'Tours, Visas & Attestation Services | SkyRay Holidays',
+    description:
+      'Explore SkyRay Holidays services: Curated holiday tour packages, Hajj & Umrah pilgrimages, US/UK/Schengen visas, and embassy certificate attestation.',
+    url: 'https://www.skyrayholidays.com/services',
   },
 };
 

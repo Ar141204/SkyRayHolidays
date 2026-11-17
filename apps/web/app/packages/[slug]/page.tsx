@@ -40,7 +40,7 @@ export async function generateMetadata({
     };
   }
 
-  const title = `${p.title} | SkyRay Holidays`;
+  const title = p.title;
   const description = p.summary || p.description || 'Custom crafted itinerary with SkyRay Holidays.';
   const imageUrl = p.image || '/images/destinations/dubai.jpg';
 
@@ -51,9 +51,9 @@ export async function generateMetadata({
       canonical: `/packages/${p.slug}`,
     },
     openGraph: {
-      title,
+      title: `${p.title} | SkyRay Holidays`,
       description,
-      url: `https://skyrayholidays.com/packages/${p.slug}`,
+      url: `https://www.skyrayholidays.com/packages/${p.slug}`,
       siteName: 'SkyRay Holidays',
       images: [
         {

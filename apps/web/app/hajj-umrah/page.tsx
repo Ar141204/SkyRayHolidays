@@ -5,11 +5,17 @@ import { ArrowRight, BookOpen, Heart, ShieldCheck, CheckCircle2, MapPin } from '
 import PilgrimageExplorer from '@/components/PilgrimageExplorer';
 
 export const metadata: Metadata = {
-  title: 'Hajj & Umrah Services | A Blessed Journey',
+  title: 'Hajj & Umrah Pilgrimage Packages',
   description:
-    'Dedicated Hajj and Umrah pilgrimage services with SkyRay Holidays. 5-star accommodations near the Haram, experienced guidance, and comprehensive support.',
+    'Dedicated Hajj & Umrah pilgrimage packages from Kumbakonam and Tamil Nadu. Flights, star hotels near Haram, visas, and complete ziyarat guidance.',
   alternates: {
     canonical: '/hajj-umrah',
+  },
+  openGraph: {
+    title: 'Hajj & Umrah Pilgrimage Packages | SkyRay Holidays',
+    description:
+      'Dedicated Hajj & Umrah pilgrimage packages from Kumbakonam and Tamil Nadu. Flights, star hotels near Haram, visas, and complete ziyarat guidance.',
+    url: 'https://www.skyrayholidays.com/hajj-umrah',
   },
 };
 

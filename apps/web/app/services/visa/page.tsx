@@ -4,11 +4,17 @@ import VisaExplorer from '@/components/VisaExplorer';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Visa Services | Services | SkyRay Holidays',
+  title: 'Global Visa Assistance',
   description:
-    'Reliable international visa services for US B1/B2, UK Visitor, 29 Schengen member states, and Global E-Visas.',
+    'Reliable international visa services for US B1/B2, UK Visitor, 29 Schengen European member states, and 50+ fast-track global eVisas.',
   alternates: {
     canonical: '/services/visa',
+  },
+  openGraph: {
+    title: 'Global Visa Assistance | SkyRay Holidays',
+    description:
+      'Reliable international visa services for US B1/B2, UK Visitor, 29 Schengen European member states, and 50+ fast-track global eVisas.',
+    url: 'https://www.skyrayholidays.com/services/visa',
   },
 };
 

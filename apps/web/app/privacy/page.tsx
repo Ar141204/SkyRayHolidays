@@ -2,11 +2,17 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Privacy Notice | SkyRay Holidays',
+  title: 'Privacy Policy',
   description:
     'SkyRay Holidays Privacy Policy — Learn how we collect, process, protect and store your personal travel enquiry data in accordance with DPDP Act 2023.',
   alternates: {
     canonical: '/privacy',
+  },
+  openGraph: {
+    title: 'Privacy Policy | SkyRay Holidays',
+    description:
+      'SkyRay Holidays Privacy Policy — Learn how we collect, process, protect and store your personal travel enquiry data in accordance with DPDP Act 2023.',
+    url: 'https://www.skyrayholidays.com/privacy',
   },
 };
 

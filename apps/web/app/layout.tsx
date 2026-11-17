@@ -2,19 +2,15 @@ import type { Metadata } from 'next';
 import './globals.css';
 import SiteChrome from '@/components/SiteChrome';
 
-const appUrl =
-  process.env.APP_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined) ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
-  'https://www.skyrayholidays.com';
+const appUrl = 'https://www.skyrayholidays.com';
 
 export const metadata: Metadata = {
   title: {
-    default: 'SkyRay Holidays | Official Tour Operator & Pilgrimage Specialist',
+    default: 'SkyRay Holidays | Tour Operator & Pilgrimages',
     template: '%s | SkyRay Holidays',
   },
   description:
-    'SkyRay Holidays is a premier tour operator in Kumbakonam, Tamil Nadu. Specializing in customized international holidays, Hajj & Umrah pilgrimage packages, and fast-track global visa services.',
+    'Premier tour operator in Kumbakonam, Tamil Nadu. Handcrafted international holidays, Hajj & Umrah pilgrimage packages, and fast-track global visa concierge.',
   keywords: [
     'SkyRay Holidays',
     'skyrayholidays',
