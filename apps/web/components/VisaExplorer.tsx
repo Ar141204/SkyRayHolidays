@@ -115,7 +115,7 @@ export default function VisaExplorer() {
           gap: '20px',
         }}
       >
-        {visas.map((v) => {
+        {visas.map((v, idx) => {
           const isUS = v.slug === 'us-visa';
           const isUK = v.slug === 'uk-visa';
           const isSchengen = v.slug === 'schengen-visa';
@@ -182,6 +182,7 @@ export default function VisaExplorer() {
                   fill
                   sizes="(max-width: 768px) 100vw, 300px"
                   style={{ objectFit: 'cover' }}
+                  priority={idx === 0}
                   unoptimized={Boolean(cardPhoto?.startsWith('data:') || cardPhoto?.startsWith('/uploads'))}
                 />
                 <div

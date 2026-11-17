@@ -15,6 +15,14 @@ export const metadata: Metadata = {
     description:
       'Reliable international visa services for US B1/B2, UK Visitor, 29 Schengen European member states, and 50+ fast-track global eVisas.',
     url: 'https://www.skyrayholidays.com/services/visa',
+    images: [
+      {
+        url: 'https://www.skyrayholidays.com/brand/skyray-logo.png',
+        width: 880,
+        height: 658,
+        alt: 'SkyRay Holidays Official Logo',
+      },
+    ],
   },
 };
 

@@ -13,6 +13,14 @@ export const metadata: Metadata = {
     description:
       'Discover curated holiday packages and pilgrimage tours. Handcrafted itineraries, confirmed accommodations, and transparent pricing with SkyRay Holidays.',
     url: 'https://www.skyrayholidays.com/packages',
+    images: [
+      {
+        url: 'https://www.skyrayholidays.com/brand/skyray-logo.png',
+        width: 880,
+        height: 658,
+        alt: 'SkyRay Holidays Official Logo',
+      },
+    ],
   },
 };
 

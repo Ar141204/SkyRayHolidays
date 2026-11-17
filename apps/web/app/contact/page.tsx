@@ -13,6 +13,14 @@ export const metadata: Metadata = {
     description:
       'Get in touch with SkyRay Holidays. Reach our team by phone, email, or WhatsApp, or visit our office in Kumbakonam, Tamil Nadu.',
     url: 'https://www.skyrayholidays.com/contact',
+    images: [
+      {
+        url: 'https://www.skyrayholidays.com/brand/skyray-logo.png',
+        width: 880,
+        height: 658,
+        alt: 'SkyRay Holidays Official Logo',
+      },
+    ],
   },
 };
 

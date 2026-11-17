@@ -13,6 +13,14 @@ export const metadata: Metadata = {
     description:
       'SkyRay Holidays Terms of Service — Booking conditions, cancellation policy, pilgrimage package guidelines, and liability disclaimer.',
     url: 'https://www.skyrayholidays.com/terms',
+    images: [
+      {
+        url: 'https://www.skyrayholidays.com/brand/skyray-logo.png',
+        width: 880,
+        height: 658,
+        alt: 'SkyRay Holidays Official Logo',
+      },
+    ],
   },
 };
 

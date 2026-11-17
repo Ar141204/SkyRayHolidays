@@ -16,6 +16,14 @@ export const metadata: Metadata = {
     description:
       'Dedicated Hajj & Umrah pilgrimage packages from Kumbakonam and Tamil Nadu. Flights, star hotels near Haram, visas, and complete ziyarat guidance.',
     url: 'https://www.skyrayholidays.com/hajj-umrah',
+    images: [
+      {
+        url: 'https://www.skyrayholidays.com/brand/skyray-logo.png',
+        width: 880,
+        height: 658,
+        alt: 'SkyRay Holidays Official Logo',
+      },
+    ],
   },
 };
 
@@ -53,6 +61,8 @@ const HOLY_CITIES_GALLERY = [
 export default function Pilgrimage() {
   return (
     <>
+      <h1 className="sr-only">Hajj &amp; Umrah Pilgrimage Packages — SkyRay Holidays</h1>
+
       {/* Top Main Showcase Section (Directly underneath Navbar matching user's view) */}
       <section className="section container" style={{ paddingTop: '28px', paddingBottom: '36px' }}>
         <PilgrimageExplorer />

@@ -15,6 +15,14 @@ export const metadata: Metadata = {
     description:
       'Certified Embassy Attestation for UAE, Saudi, Qatar, Kuwait, and MEA Hague Apostille for 120+ countries. Fast-track turnaround for all certificates.',
     url: 'https://www.skyrayholidays.com/services/attestation',
+    images: [
+      {
+        url: 'https://www.skyrayholidays.com/brand/skyray-logo.png',
+        width: 880,
+        height: 658,
+        alt: 'SkyRay Holidays Official Logo',
+      },
+    ],
   },
 };
 

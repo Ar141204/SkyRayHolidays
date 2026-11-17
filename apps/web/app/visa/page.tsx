@@ -15,6 +15,14 @@ export const metadata: Metadata = {
     description:
       'Expert international visa consultation for US B1/B2, UK Standard Visitor, 29 Schengen European countries, and 50+ worldwide fast-track eVisas.',
     url: 'https://www.skyrayholidays.com/visa',
+    images: [
+      {
+        url: 'https://www.skyrayholidays.com/brand/skyray-logo.png',
+        width: 880,
+        height: 658,
+        alt: 'SkyRay Holidays Official Logo',
+      },
+    ],
   },
 };
 

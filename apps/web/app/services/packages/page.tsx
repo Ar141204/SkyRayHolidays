@@ -15,6 +15,14 @@ export const metadata: Metadata = {
     description:
       'Handcrafted holiday packages and specialized global destinations curated by SkyRay Holidays. Transparent pricing and confirmed itineraries.',
     url: 'https://www.skyrayholidays.com/services/packages',
+    images: [
+      {
+        url: 'https://www.skyrayholidays.com/brand/skyray-logo.png',
+        width: 880,
+        height: 658,
+        alt: 'SkyRay Holidays Official Logo',
+      },
+    ],
   },
 };
 

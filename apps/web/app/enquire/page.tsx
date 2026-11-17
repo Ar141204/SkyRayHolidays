@@ -15,6 +15,14 @@ export const metadata: Metadata = {
     description:
       'Submit your travel requirements for customized holidays, Umrah pilgrimage, or global visa assistance. Our travel specialists will reach out promptly.',
     url: 'https://www.skyrayholidays.com/enquire',
+    images: [
+      {
+        url: 'https://www.skyrayholidays.com/brand/skyray-logo.png',
+        width: 880,
+        height: 658,
+        alt: 'SkyRay Holidays Official Logo',
+      },
+    ],
   },
 };
 
