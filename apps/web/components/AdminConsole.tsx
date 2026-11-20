@@ -130,6 +130,7 @@ export default function AdminConsole() {
     currency: string;
     status: 'PUBLISHED' | 'DRAFT';
     highlights: string;
+    showPrice?: boolean;
   }>({
     id: '',
     slug: '',
@@ -143,6 +144,7 @@ export default function AdminConsole() {
     currency: '₹',
     status: 'PUBLISHED',
     highlights: 'Emergency Medical & Hospitalization Cover\nRepatriation of Mortal Remains\nLoss of Checked-in Baggage',
+    showPrice: false,
   });
   const [attestationFormData, setAttestationFormData] = useState<{
     id: string;
@@ -1346,6 +1348,21 @@ export default function AdminConsole() {
     });
   }, [insurancePlans, insuranceSearchQuery]);
 
+  // Quick toggle insurance price display on website
+  function toggleInsurancePrice(id: string) {
+    const updated = insurancePlans.map((p) => {
+      if (p.id === id) {
+        const nextState = !p.showPrice;
+        setSavedMsg(`Price display for "${p.title}" is now ${nextState ? 'ENABLED on website' : 'HIDDEN on website (Quote on Request)'}`);
+        return { ...p, showPrice: nextState };
+      }
+      return p;
+    });
+    setInsurancePlans(updated);
+    saveStoredInsuranceServices(updated);
+    setTimeout(() => setSavedMsg(''), 4000);
+  }
+
   function saveInsurancePlan(e: React.FormEvent) {
     e.preventDefault();
     const highlightsArr = insuranceFormData.highlights
@@ -1366,6 +1383,7 @@ export default function AdminConsole() {
       startingPrice: insuranceFormData.startingPrice.trim(),
       currency: insuranceFormData.currency || '₹',
       status: insuranceFormData.status,
+      showPrice: Boolean(insuranceFormData.showPrice),
       coverageHighlights: highlightsArr,
       popular: editingInsurancePlan ? !!editingInsurancePlan.popular : false,
     };
@@ -2807,6 +2825,7 @@ export default function AdminConsole() {
                     currency: '₹',
                     status: 'PUBLISHED',
                     highlights: 'Emergency Medical & Hospitalization Cover\nRepatriation of Mortal Remains\nLoss of Checked-in Baggage',
+                    showPrice: false,
                   });
                   setShowInsuranceModal(true);
                 }}
@@ -2863,7 +2882,61 @@ export default function AdminConsole() {
                           </span>
                         </td>
                         <td>
-                          <strong>{p.startingPrice}</strong>
+                          <div>
+                            <strong style={{ color: '#17496b', fontSize: '13.5px' }}>
+                              {p.startingPrice}
+                            </strong>
+                            <div style={{ marginTop: '4px' }}>
+                              {p.showPrice ? (
+                                <span
+                                  style={{
+                                    fontSize: '10px',
+                                    background: '#dcfce7',
+                                    color: '#15803d',
+                                    padding: '1px 6px',
+                                    borderRadius: '4px',
+                                    fontWeight: 700,
+                                    display: 'inline-block',
+                                  }}
+                                >
+                                  👁️ Visible on Site
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    fontSize: '10px',
+                                    background: '#f1f5f9',
+                                    color: '#64748b',
+                                    padding: '1px 6px',
+                                    borderRadius: '4px',
+                                    fontWeight: 700,
+                                    display: 'inline-block',
+                                  }}
+                                >
+                                  🙈 Hidden (Quote on Request)
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => toggleInsurancePrice(p.id)}
+                              style={{
+                                fontSize: '10.5px',
+                                padding: '2px 8px',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: '4px',
+                                background: '#ffffff',
+                                color: p.showPrice ? '#b91c1c' : '#0284c7',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                marginTop: '4px',
+                                display: 'inline-block',
+                              }}
+                              title={p.showPrice ? 'Click to hide price on website' : 'Click to show price on website'}
+                            >
+                              {p.showPrice ? 'Hide Price' : 'Turn On Price'}
+                            </button>
+                          </div>
                         </td>
                         <td>
                           <span style={{ fontSize: '11.5px', color: '#475569' }}>{p.badge}</span>
@@ -2893,6 +2966,7 @@ export default function AdminConsole() {
                                   currency: p.currency,
                                   status: p.status,
                                   highlights: (p.coverageHighlights || []).join('\n'),
+                                  showPrice: Boolean(p.showPrice),
                                 });
                                 setShowInsuranceModal(true);
                               }}
@@ -5583,6 +5657,14 @@ export default function AdminConsole() {
                       onChange={(e) => setInsuranceFormData({ ...insuranceFormData, startingPrice: e.target.value })}
                       placeholder="e.g. ₹750"
                     />
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '6px', fontSize: '12px', fontWeight: 600 }}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(insuranceFormData.showPrice)}
+                        onChange={(e) => setInsuranceFormData({ ...insuranceFormData, showPrice: e.target.checked })}
+                      />
+                      <span>Show Starting Price on Website (Currently {insuranceFormData.showPrice ? 'ON' : 'OFF - Quote on Request'})</span>
+                    </label>
                   </label>
                 </div>
 

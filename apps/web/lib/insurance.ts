@@ -14,6 +14,7 @@ export interface InsurancePlanItem {
   startingPrice: string;
   currency: string;
   popular?: boolean;
+  showPrice?: boolean;
 }
 
 export const INSURANCE_CATEGORIES: { key: InsuranceCategory; label: string; icon: string; desc: string }[] = [
@@ -66,6 +67,7 @@ export const DEFAULT_INSURANCE_SERVICES: InsurancePlanItem[] = [
     startingPrice: '₹750',
     currency: '₹',
     popular: true,
+    showPrice: false,
   },
   {
     id: 'ins-united-states',
@@ -89,6 +91,7 @@ export const DEFAULT_INSURANCE_SERVICES: InsurancePlanItem[] = [
     startingPrice: '₹1,200',
     currency: '₹',
     popular: true,
+    showPrice: false,
   },
   {
     id: 'ins-united-kingdom',
@@ -112,6 +115,7 @@ export const DEFAULT_INSURANCE_SERVICES: InsurancePlanItem[] = [
     startingPrice: '₹950',
     currency: '₹',
     popular: false,
+    showPrice: false,
   },
   {
     id: 'ins-rest-of-world',
@@ -135,6 +139,7 @@ export const DEFAULT_INSURANCE_SERVICES: InsurancePlanItem[] = [
     startingPrice: '₹650',
     currency: '₹',
     popular: true,
+    showPrice: false,
   },
 ];
 
@@ -142,18 +147,20 @@ const STORAGE_KEY = 'skyray_travel_insurance_services_v1';
 
 export function getStoredInsuranceServices(): InsurancePlanItem[] {
   if (typeof window === 'undefined') {
-    return DEFAULT_INSURANCE_SERVICES;
+    return DEFAULT_INSURANCE_SERVICES.map((i) => ({ ...i, showPrice: Boolean(i.showPrice) }));
   }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_INSURANCE_SERVICES));
-      return DEFAULT_INSURANCE_SERVICES;
+      return DEFAULT_INSURANCE_SERVICES.map((i) => ({ ...i, showPrice: Boolean(i.showPrice) }));
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_INSURANCE_SERVICES;
+    return Array.isArray(parsed) && parsed.length > 0
+      ? parsed.map((i: any) => ({ ...i, showPrice: Boolean(i.showPrice) }))
+      : DEFAULT_INSURANCE_SERVICES.map((i) => ({ ...i, showPrice: Boolean(i.showPrice) }));
   } catch {
-    return DEFAULT_INSURANCE_SERVICES;
+    return DEFAULT_INSURANCE_SERVICES.map((i) => ({ ...i, showPrice: Boolean(i.showPrice) }));
   }
 }
 

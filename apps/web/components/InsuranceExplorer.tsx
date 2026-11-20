@@ -754,11 +754,19 @@ export default function InsuranceExplorer() {
                       </h4>
                     </div>
 
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '11px', color: '#64748b' }}>From</span>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#0284c7' }}>
-                        {p.startingPrice}
-                      </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      {p.showPrice ? (
+                        <>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>From</span>
+                          <div style={{ fontSize: '15px', fontWeight: 800, color: '#0284c7' }}>
+                            {p.startingPrice}
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0284c7', background: '#e0f2fe', padding: '3px 8px', borderRadius: '4px' }}>
+                          Quote on Request
+                        </div>
+                      )}
                     </div>
                   </div>
 
