@@ -60,6 +60,7 @@ export default function SiteFooter() {
           <Link href="/services?tab=packages">Tour Packages</Link>
           <Link href="/services?tab=visa">Visa Services (US, UK, Schengen, E-Visa)</Link>
           <Link href="/services?tab=attestation">Certificate Attestation &amp; Apostille</Link>
+          <Link href="/services/insurance">Travel Insurance (Europe, US, UK, Worldwide)</Link>
           <Link href="/hajj-umrah">Hajj &amp; Umrah</Link>
           <Link href="/packages?category=Specialized">Specialized Key Destinations</Link>
           <Link href="/about">About Us</Link>

@@ -32,7 +32,8 @@ export type FormCategory =
   | 'canada-visa'
   | 'gcc-visa'
   | 'evisa'
-  | 'attestation';
+  | 'attestation'
+  | 'insurance';
 
 function generateRandomSkyRayRef(): string {
   const datePrefix = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -135,6 +136,37 @@ export default function EnquiryForm() {
   const [attestationUrgency, setAttestationUrgency] = useState('Standard Service (5–7 Working Days)');
   const [attestationCertificateCount, setAttestationCertificateCount] = useState('1');
 
+  // 10. Travel Insurance Form State (Automatic Day Count)
+  const [insuranceCategory, setInsuranceCategory] = useState<'Europe' | 'Rest of World' | 'United States' | 'United Kingdom'>('Europe');
+  const [insuranceCountry, setInsuranceCountry] = useState('France & Schengen (For all Countries)');
+  const [insuranceEntryDate, setInsuranceEntryDate] = useState('');
+  const [insuranceReturnDate, setInsuranceReturnDate] = useState('');
+  const [insuranceDays, setInsuranceDays] = useState(0);
+  const [appliedOffer, setAppliedOffer] = useState<string | null>(null);
+
+  // Automatic Day Count for Travel Insurance
+  // "Date of Entry and Return - Idha enter pan a, No of days - Automatic count"
+  useEffect(() => {
+    if (!insuranceEntryDate || !insuranceReturnDate) {
+      setInsuranceDays(0);
+      return;
+    }
+    const start = new Date(insuranceEntryDate);
+    const end = new Date(insuranceReturnDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      setInsuranceDays(0);
+      return;
+    }
+    const diffTime = end.getTime() - start.getTime();
+    if (diffTime < 0) {
+      setInsuranceDays(0);
+      return;
+    }
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    setInsuranceDays(diffDays);
+    if (insuranceEntryDate) setPreferredDate(insuranceEntryDate);
+  }, [insuranceEntryDate, insuranceReturnDate]);
+
   // Submission State
   const [state, setState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [reference, setReference] = useState('');
@@ -148,8 +180,39 @@ export default function EnquiryForm() {
     const countryParam = (params.get('country') || '').trim();
     const packageParam = (params.get('package') || '').toLowerCase();
     const tierParam = (params.get('tier') || '').toLowerCase();
+    const offerParam = params.get('offer');
 
-    // 0. Attestation Service
+    if (offerParam) {
+      setAppliedOffer(offerParam);
+    }
+
+    // 0. Travel Insurance Service
+    if (
+      serviceParam === 'insurance' ||
+      serviceParam === 'travel-insurance' ||
+      serviceParam.includes('insurance')
+    ) {
+      setFormType('insurance');
+      const catParam = (params.get('category') || '').toLowerCase();
+      if (catParam.includes('us') || catParam.includes('states')) setInsuranceCategory('United States');
+      else if (catParam.includes('uk') || catParam.includes('kingdom')) setInsuranceCategory('United Kingdom');
+      else if (catParam.includes('world')) setInsuranceCategory('Rest of World');
+      else setInsuranceCategory('Europe');
+
+      if (countryParam) setInsuranceCountry(countryParam);
+      return;
+    }
+
+    // 0.1 General Visa Link Redirection (from Flash Ads or Menu)
+    if (serviceParam === 'visa' || serviceParam === 'visas') {
+      if (visaCategory === 'uk' || countryParam.toLowerCase() === 'united kingdom') setFormType('uk-visa');
+      else if (visaCategory === 'schengen' || countryParam.toLowerCase() === 'schengen') setFormType('schengen-visa');
+      else if (visaCategory === 'canada' || countryParam.toLowerCase() === 'canada') setFormType('canada-visa');
+      else setFormType('us-visa');
+      return;
+    }
+
+    // 0.2 Attestation Service
     if (
       serviceParam === 'attestation' ||
       serviceParam === 'apostille' ||
@@ -452,6 +515,25 @@ export default function EnquiryForm() {
         ]
           .filter(Boolean)
           .join('\n');
+      } else if (formType === 'insurance') {
+        serviceLabel = `Travel Insurance (${insuranceCategory}): ${insuranceCountry}`;
+        targetCountry = insuranceCountry;
+        daysCount = insuranceDays > 0 ? insuranceDays : 5;
+        visaTypeLabel = `Insurance - ${insuranceCategory}`;
+        detailedNotes = [
+          `Service: International Travel Insurance (Embassy Approved)`,
+          `Category: ${insuranceCategory}`,
+          `Target Country / Jurisdiction: ${insuranceCountry}`,
+          `Date of Entry (Departure): ${insuranceEntryDate || preferredDate}`,
+          `Date of Return: ${insuranceReturnDate || 'To be confirmed'}`,
+          `Trip Duration: ${daysCount} Days (Automatic Count)`,
+          `Travelers: ${numAdults} Adults, ${numChildren} Children`,
+          appliedOffer ? `Promotional Offer Applied: ${appliedOffer}` : null,
+          city ? `Applicant City: ${city}` : null,
+          instructions ? `Medical / Special Requirements: ${instructions}` : null,
+        ]
+          .filter(Boolean)
+          .join('\n');
       }
 
       const payload: Record<string, any> = {
@@ -468,6 +550,8 @@ export default function EnquiryForm() {
             ? 'tour'
             : formType === 'hajj-umrah'
             ? 'umrah'
+            : formType === 'insurance'
+            ? 'insurance'
             : 'visa',
         visaType: visaTypeLabel,
         tourType: tourTypeLabel,
@@ -740,7 +824,38 @@ export default function EnquiryForm() {
         >
           📜 Attestation &amp; Apostille
         </button>
+
+        <button
+          type="button"
+          className={`form-type-btn ${formType === 'insurance' ? 'active' : ''}`}
+          onClick={() => setFormType('insurance')}
+        >
+          🛡️ Travel Insurance
+        </button>
       </nav>
+
+      {/* Applied Offer Banner */}
+      {appliedOffer && (
+        <div
+          style={{
+            margin: '0 0 14px 0',
+            padding: '10px 16px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+            border: '1.5px solid #10b981',
+            color: '#065f46',
+            fontSize: '13px',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.15)',
+          }}
+        >
+          <Sparkles size={16} color="#059669" />
+          <span>Special Offer Activated: {appliedOffer.toUpperCase()} &bull; Flat Discount Applied to Your Enquiry!</span>
+        </div>
+      )}
 
       {/* Dynamic Form Header Badge */}
       <div className="form-header-badge">
@@ -753,6 +868,7 @@ export default function EnquiryForm() {
         {formType === 'gcc-visa' && '🌴 GCC Visas: Saudi, UAE, Oman, Kuwait, Qatar & GCC Resident Scheme'}
         {formType === 'evisa' && '⚡ Global 100% Online Paperless Fast-Track E-Visa'}
         {formType === 'attestation' && '📜 Official Certificate Attestation & Hague Apostille Legalization'}
+        {formType === 'insurance' && '🛡️ International Travel Insurance (Europe, US, UK & Rest of World)'}
       </div>
 
       <form className="enquiry-form" onSubmit={handleSubmit}>
@@ -1712,6 +1828,108 @@ export default function EnquiryForm() {
                   <option value="Super Rush Emergency Service">Super Rush Emergency Service</option>
                 </select>
               </label>
+            </>
+          )}
+
+          {/* =========================================================================
+              10. TRAVEL INSURANCE FORM (EUROPE, REST OF WORLD, US, UK - ALL COUNTRIES)
+             ========================================================================= */}
+          {formType === 'insurance' && (
+            <>
+              <div className="form-section-divider">
+                <ShieldCheck size={14} />
+                <span>Travel Insurance Category &amp; Destination Details</span>
+              </div>
+
+              <label className="span-2">
+                Insurance Category *
+                <select
+                  required
+                  value={insuranceCategory}
+                  onChange={(e) => {
+                    const cat = e.target.value as any;
+                    setInsuranceCategory(cat);
+                    if (cat === 'Europe') setInsuranceCountry('France & 29 Schengen Countries');
+                    else if (cat === 'United States') setInsuranceCountry('United States of America');
+                    else if (cat === 'United Kingdom') setInsuranceCountry('United Kingdom');
+                    else setInsuranceCountry('Worldwide (For all Countries)');
+                  }}
+                  style={{ fontWeight: 700 }}
+                >
+                  <option value="Europe">🇪🇺 Europe (Schengen Compliant €30,000+ Medical Cover)</option>
+                  <option value="United States">🇺🇸 United States (High-Limit Hospitalization &amp; Emergency)</option>
+                  <option value="United Kingdom">🇬🇧 United Kingdom (NHS-Independent Private Healthcare &amp; Delays)</option>
+                  <option value="Rest of World">🌍 Rest of World (For all Countries Worldwide)</option>
+                </select>
+              </label>
+
+              <label className="span-2">
+                Destination Country / Region (For all Countries) *
+                <input
+                  type="text"
+                  required
+                  value={insuranceCountry}
+                  onChange={(e) => setInsuranceCountry(e.target.value)}
+                  placeholder="e.g. France, Germany, USA, UK, Singapore, Dubai, Australia..."
+                />
+              </label>
+
+              <div className="form-section-divider">
+                <Calendar size={14} />
+                <span>Trip Schedule (Automatic Day Count)</span>
+              </div>
+
+              <label>
+                Date of Entry (Departure) *
+                <input
+                  type="date"
+                  required
+                  min={new Date().toISOString().slice(0, 10)}
+                  value={insuranceEntryDate}
+                  onChange={(e) => setInsuranceEntryDate(e.target.value)}
+                />
+              </label>
+
+              <label>
+                Date of Return *
+                <input
+                  type="date"
+                  required
+                  min={insuranceEntryDate || new Date().toISOString().slice(0, 10)}
+                  value={insuranceReturnDate}
+                  onChange={(e) => setInsuranceReturnDate(e.target.value)}
+                />
+              </label>
+
+              {/* Automatic Count Highlight Banner */}
+              <div
+                className="span-2"
+                style={{
+                  background: insuranceDays > 0 ? '#f0fdf4' : '#f8fafc',
+                  border: '1.5px solid',
+                  borderColor: insuranceDays > 0 ? '#86efac' : '#cbd5e1',
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  margin: '4px 0 10px 0',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={16} color={insuranceDays > 0 ? '#16a34a' : '#64748b'} />
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: insuranceDays > 0 ? '#166534' : '#475569' }}>
+                    {insuranceDays > 0
+                      ? `Trip Duration: ${insuranceDays} Days (Automatic count)`
+                      : 'Select Date of Entry and Return to calculate number of days automatically'}
+                  </span>
+                </div>
+                {insuranceDays > 0 && (
+                  <span style={{ fontSize: '11px', fontWeight: 800, background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: '4px' }}>
+                    Auto-Count Active
+                  </span>
+                )}
+              </div>
             </>
           )}
 

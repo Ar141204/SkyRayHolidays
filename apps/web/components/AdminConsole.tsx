@@ -48,6 +48,7 @@ import {
   Pause,
   Film,
   Award,
+  ShieldCheck,
 } from 'lucide-react';
 import { API_URL, contactDefaults } from '@/lib/config';
 import {
@@ -62,6 +63,13 @@ import {
   saveStoredAttestationServices,
   type AttestationServiceItem,
 } from '@/lib/attestation';
+import {
+  DEFAULT_INSURANCE_SERVICES,
+  getStoredInsuranceServices,
+  saveStoredInsuranceServices,
+  type InsurancePlanItem,
+  type InsuranceCategory,
+} from '@/lib/insurance';
 import {
   type WebsiteContent,
   defaultWebsiteContent,
@@ -93,7 +101,7 @@ export default function AdminConsole() {
   const [email, setEmail] = useState('syedrahamathullah@skyrayholidays.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [tab, setTab] = useState<'Dashboard' | 'Enquiries' | 'Packages' | 'Visas' | 'Attestation' | 'Content' | 'Settings'>('Dashboard');
+  const [tab, setTab] = useState<'Dashboard' | 'Enquiries' | 'Packages' | 'Visas' | 'Attestation' | 'Insurance' | 'Content' | 'Settings'>('Dashboard');
 
   // Data states
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -103,6 +111,39 @@ export default function AdminConsole() {
   const [attestationSearchQuery, setAttestationSearchQuery] = useState('');
   const [showAttestationModal, setShowAttestationModal] = useState(false);
   const [editingAttestation, setEditingAttestation] = useState<AttestationServiceItem | null>(null);
+
+  // Insurance States
+  const [insurancePlans, setInsurancePlans] = useState<InsurancePlanItem[]>(() => getStoredInsuranceServices());
+  const [insuranceSearchQuery, setInsuranceSearchQuery] = useState('');
+  const [showInsuranceModal, setShowInsuranceModal] = useState(false);
+  const [editingInsurancePlan, setEditingInsurancePlan] = useState<InsurancePlanItem | null>(null);
+  const [insuranceFormData, setInsuranceFormData] = useState<{
+    id: string;
+    slug: string;
+    title: string;
+    category: InsuranceCategory;
+    badge: string;
+    shortDesc: string;
+    medicalCoverage: string;
+    targetCountries: string;
+    startingPrice: string;
+    currency: string;
+    status: 'PUBLISHED' | 'DRAFT';
+    highlights: string;
+  }>({
+    id: '',
+    slug: '',
+    title: '',
+    category: 'Europe',
+    badge: '100% Embassy Approved',
+    shortDesc: '',
+    medicalCoverage: '€30,000 – €100,000',
+    targetCountries: 'For all Countries',
+    startingPrice: '₹750',
+    currency: '₹',
+    status: 'PUBLISHED',
+    highlights: 'Emergency Medical & Hospitalization Cover\nRepatriation of Mortal Remains\nLoss of Checked-in Baggage',
+  });
   const [attestationFormData, setAttestationFormData] = useState<{
     id: string;
     slug: string;
@@ -1292,6 +1333,68 @@ export default function AdminConsole() {
     });
   }, [attestations, attestationSearchQuery]);
 
+  const filteredInsurancePlans = useMemo(() => {
+    return insurancePlans.filter((p) => {
+      if (!insuranceSearchQuery.trim()) return true;
+      const q = insuranceSearchQuery.toLowerCase();
+      return (
+        p.title.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.targetCountries.toLowerCase().includes(q) ||
+        p.medicalCoverage.toLowerCase().includes(q)
+      );
+    });
+  }, [insurancePlans, insuranceSearchQuery]);
+
+  function saveInsurancePlan(e: React.FormEvent) {
+    e.preventDefault();
+    const highlightsArr = insuranceFormData.highlights
+      ? insuranceFormData.highlights.split('\n').map((s) => s.trim()).filter(Boolean)
+      : ['Emergency Medical & Hospitalization Cover', 'Emergency Evacuation & Repatriation'];
+
+    const newPlan: InsurancePlanItem = {
+      id: editingInsurancePlan ? editingInsurancePlan.id : `ins-${Date.now()}`,
+      slug:
+        insuranceFormData.slug.trim() ||
+        insuranceFormData.title.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, ''),
+      title: insuranceFormData.title.trim(),
+      category: insuranceFormData.category,
+      badge: insuranceFormData.badge.trim(),
+      shortDesc: insuranceFormData.shortDesc.trim(),
+      medicalCoverage: insuranceFormData.medicalCoverage.trim(),
+      targetCountries: insuranceFormData.targetCountries.trim(),
+      startingPrice: insuranceFormData.startingPrice.trim(),
+      currency: insuranceFormData.currency || '₹',
+      status: insuranceFormData.status,
+      coverageHighlights: highlightsArr,
+      popular: editingInsurancePlan ? !!editingInsurancePlan.popular : false,
+    };
+
+    let updatedList: InsurancePlanItem[];
+    if (editingInsurancePlan) {
+      updatedList = insurancePlans.map((p) => (p.id === editingInsurancePlan.id ? newPlan : p));
+      setSavedMsg(`Insurance plan "${newPlan.title}" updated successfully!`);
+    } else {
+      updatedList = [...insurancePlans, newPlan];
+      setSavedMsg(`Insurance plan "${newPlan.title}" created successfully!`);
+    }
+
+    setInsurancePlans(updatedList);
+    saveStoredInsuranceServices(updatedList);
+    setShowInsuranceModal(false);
+    setEditingInsurancePlan(null);
+    setTimeout(() => setSavedMsg(''), 4000);
+  }
+
+  function deleteInsurancePlan(id: string, title?: string) {
+    if (!confirm(`Are you sure you want to remove insurance plan "${title || 'this plan'}"?`)) return;
+    const updated = insurancePlans.filter((p) => p.id !== id);
+    setInsurancePlans(updated);
+    saveStoredInsuranceServices(updated);
+    setSavedMsg('Insurance plan removed.');
+    setTimeout(() => setSavedMsg(''), 4000);
+  }
+
   // Restoring persistent auto sign-in session
   if (checkingAuth && !token) {
     return (
@@ -1616,6 +1719,15 @@ export default function AdminConsole() {
             <Award size={17} /> Attestation Services
           </button>
           <button
+            className={tab === 'Insurance' ? 'active' : ''}
+            onClick={() => {
+              setTab('Insurance');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <ShieldCheck size={17} /> Travel Insurance
+          </button>
+          <button
             className={tab === 'Content' ? 'active' : ''}
             onClick={() => {
               setTab('Content');
@@ -1930,7 +2042,18 @@ export default function AdminConsole() {
                           </div>
                           <small>{enq.email}</small>
                         </td>
-                        <td>{enq.packageNameSnapshot || 'Custom Tour'}</td>
+                        <td>
+                          {enq.packageNameSnapshot?.toLowerCase().includes('insurance') ? (
+                            <div>
+                              <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#0369a1', background: '#e0f2fe', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px', marginBottom: '2px' }}>
+                                <ShieldCheck size={11} /> Insurance
+                              </span>
+                              <div style={{ fontWeight: 600, fontSize: '12px' }}>{enq.packageNameSnapshot}</div>
+                            </div>
+                          ) : (
+                            enq.packageNameSnapshot || 'Custom Tour'
+                          )}
+                        </td>
                         <td>{enq.preferredDate ? enq.preferredDate.slice(0, 10) : '—'}</td>
                         <td>
                           <select
@@ -2646,6 +2769,152 @@ export default function AdminConsole() {
                       <tr>
                         <td colSpan={8} style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
                           No attestation services found matching your search.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            SCREEN: TRAVEL INSURANCE SERVICES & CATEGORIES MANAGEMENT
+           ========================================================================= */}
+        {tab === 'Insurance' && (
+          <div className="insurance-management-screen">
+            <div className="table-toolbar">
+              <div>
+                <h2>International Travel Insurance Plans</h2>
+                <p>Manage coverage categories (Europe, Rest of World, US, UK), medical limits, and policy pricing for all countries.</p>
+              </div>
+
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setEditingInsurancePlan(null);
+                  setInsuranceFormData({
+                    id: '',
+                    slug: '',
+                    title: '',
+                    category: 'Europe',
+                    badge: '100% Embassy Approved',
+                    shortDesc: '',
+                    medicalCoverage: '€30,000 – €100,000',
+                    targetCountries: 'For all Countries',
+                    startingPrice: '₹750',
+                    currency: '₹',
+                    status: 'PUBLISHED',
+                    highlights: 'Emergency Medical & Hospitalization Cover\nRepatriation of Mortal Remains\nLoss of Checked-in Baggage',
+                  });
+                  setShowInsuranceModal(true);
+                }}
+              >
+                <Plus size={16} /> Add Insurance Plan
+              </button>
+            </div>
+
+            {/* Insurance Search Toolbar */}
+            <div className="table-toolbar" style={{ marginTop: '2px', marginBottom: '14px' }}>
+              <div className="search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search insurance by title, category, destination..."
+                  value={insuranceSearchQuery}
+                  onChange={(e) => setInsuranceSearchQuery(e.target.value)}
+                />
+              </div>
+              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>
+                Showing {filteredInsurancePlans.length} insurance categories &amp; plans
+              </span>
+            </div>
+
+            <div className="admin-card-panel no-padding">
+              <div className="table-responsive">
+                <table className="admin-clean-table">
+                  <thead>
+                    <tr>
+                      <th>Plan &amp; Category</th>
+                      <th>Coverage Region</th>
+                      <th>Medical Cover Limit</th>
+                      <th>Starting Rate</th>
+                      <th>Compliance / Badge</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredInsurancePlans.map((p) => (
+                      <tr key={p.id}>
+                        <td>
+                          <strong>{p.title}</strong>
+                          <small style={{ display: 'block', color: '#0284c7', fontWeight: 700 }}>
+                            {p.category}
+                          </small>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '12px', color: '#334155' }}>{p.targetCountries}</span>
+                        </td>
+                        <td>
+                          <span style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>
+                            {p.medicalCoverage}
+                          </span>
+                        </td>
+                        <td>
+                          <strong>{p.startingPrice}</strong>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '11.5px', color: '#475569' }}>{p.badge}</span>
+                        </td>
+                        <td>
+                          <span className={`status-pill ${p.status === 'PUBLISHED' ? 'pill-confirmed' : 'pill-pending'}`}>
+                            {p.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                              className="btn btn-outline small"
+                              title="Edit Plan"
+                              onClick={() => {
+                                setEditingInsurancePlan(p);
+                                setInsuranceFormData({
+                                  id: p.id,
+                                  slug: p.slug,
+                                  title: p.title,
+                                  category: p.category,
+                                  badge: p.badge,
+                                  shortDesc: p.shortDesc,
+                                  medicalCoverage: p.medicalCoverage,
+                                  targetCountries: p.targetCountries,
+                                  startingPrice: p.startingPrice,
+                                  currency: p.currency,
+                                  status: p.status,
+                                  highlights: (p.coverageHighlights || []).join('\n'),
+                                });
+                                setShowInsuranceModal(true);
+                              }}
+                            >
+                              <Edit2 size={13} /> Edit
+                            </button>
+                            <button
+                              className="action-icon-btn"
+                              title="Delete Plan"
+                              onClick={() => deleteInsurancePlan(p.id, p.title)}
+                              style={{ color: '#dc2626' }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredInsurancePlans.length === 0 && (
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
+                          No insurance plans found matching your search.
                         </td>
                       </tr>
                     )}
@@ -5199,6 +5468,176 @@ export default function AdminConsole() {
                 </button>
                 <button type="submit" className="btn btn-primary">
                   {editingAttestation ? 'Update Attestation Service' : 'Save Attestation Service'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 1d. Add / Edit Insurance Plan Modal */}
+      {showInsuranceModal && (
+        <div className="modal-backdrop">
+          <div className="modal-dialog wide" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div className="modal-header" style={{ flexShrink: 0 }}>
+              <h3>{editingInsurancePlan ? 'Edit Travel Insurance Plan' : 'Add New Travel Insurance Plan'}</h3>
+              <button
+                className="modal-close"
+                onClick={() => {
+                  setShowInsuranceModal(false);
+                  setEditingInsurancePlan(null);
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={saveInsurancePlan} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, padding: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <label>
+                    Insurance Plan Title *
+                    <input
+                      required
+                      value={insuranceFormData.title}
+                      onChange={(e) => {
+                        const title = e.target.value;
+                        setInsuranceFormData((prev) => ({
+                          ...prev,
+                          title,
+                          slug: editingInsurancePlan
+                            ? prev.slug
+                            : title
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, '-')
+                                .replace(/^-|-$/g, ''),
+                        }));
+                      }}
+                      placeholder="e.g. Europe & Schengen Visa Approved Travel Insurance"
+                    />
+                  </label>
+                  <label>
+                    URL Slug *
+                    <input
+                      required
+                      value={insuranceFormData.slug}
+                      onChange={(e) => setInsuranceFormData({ ...insuranceFormData, slug: e.target.value })}
+                      placeholder="e.g. europe-schengen-travel-insurance"
+                    />
+                  </label>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <label>
+                    Insurance Category *
+                    <select
+                      value={insuranceFormData.category}
+                      onChange={(e) =>
+                        setInsuranceFormData({
+                          ...insuranceFormData,
+                          category: e.target.value as any,
+                        })
+                      }
+                    >
+                      <option value="Europe">Europe (Schengen Compliant)</option>
+                      <option value="Rest of World">Rest of World (All Countries)</option>
+                      <option value="United States">United States</option>
+                      <option value="United Kingdom">United Kingdom</option>
+                    </select>
+                  </label>
+                  <label>
+                    Header Badge
+                    <input
+                      value={insuranceFormData.badge}
+                      onChange={(e) => setInsuranceFormData({ ...insuranceFormData, badge: e.target.value })}
+                      placeholder="e.g. 100% Embassy & VFS Compliant"
+                    />
+                  </label>
+                  <label>
+                    Publication Status
+                    <select
+                      value={insuranceFormData.status}
+                      onChange={(e) => setInsuranceFormData({ ...insuranceFormData, status: e.target.value as any })}
+                    >
+                      <option value="PUBLISHED">PUBLISHED (Visible to Public)</option>
+                      <option value="DRAFT">DRAFT (Staff Only)</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <label>
+                    Medical Coverage Limit *
+                    <input
+                      required
+                      value={insuranceFormData.medicalCoverage}
+                      onChange={(e) => setInsuranceFormData({ ...insuranceFormData, medicalCoverage: e.target.value })}
+                      placeholder="e.g. €30,000 – €100,000 or $500,000 USD"
+                    />
+                  </label>
+                  <label>
+                    Starting Price / Rate *
+                    <input
+                      required
+                      value={insuranceFormData.startingPrice}
+                      onChange={(e) => setInsuranceFormData({ ...insuranceFormData, startingPrice: e.target.value })}
+                      placeholder="e.g. ₹750"
+                    />
+                  </label>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label>
+                    Coverage Region / Target Countries (For all Countries) *
+                    <input
+                      required
+                      value={insuranceFormData.targetCountries}
+                      onChange={(e) => setInsuranceFormData({ ...insuranceFormData, targetCountries: e.target.value })}
+                      placeholder="e.g. All 29 Schengen Countries or Worldwide (For all Countries)"
+                    />
+                  </label>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label>
+                    Short Description *
+                    <textarea
+                      required
+                      rows={2}
+                      value={insuranceFormData.shortDesc}
+                      onChange={(e) => setInsuranceFormData({ ...insuranceFormData, shortDesc: e.target.value })}
+                      placeholder="Official Schengen-compliant travel medical insurance with minimum €30,000..."
+                    />
+                  </label>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label>
+                    Key Coverage Highlights (One benefit per line) *
+                    <textarea
+                      required
+                      rows={4}
+                      value={insuranceFormData.highlights}
+                      onChange={(e) => setInsuranceFormData({ ...insuranceFormData, highlights: e.target.value })}
+                      placeholder="€30,000+ Emergency Medical & Hospitalization Cover&#10;Emergency Medical Repatriation & Evacuation&#10;Loss of Checked-in Baggage & Passport Protection"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="modal-footer" style={{ flexShrink: 0 }}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setShowInsuranceModal(false);
+                    setEditingInsurancePlan(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  {editingInsurancePlan ? 'Update Insurance Plan' : 'Save Insurance Plan'}
                 </button>
               </div>
             </form>

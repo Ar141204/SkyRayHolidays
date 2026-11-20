@@ -103,7 +103,12 @@ export default function HeroBanner() {
               </div>
             </div>
 
-            <div className="live-offer-marquee" title="Hover to pause">
+            <Link
+              href={h.offerLink || '/enquire?service=visa&offer=FLAT1000'}
+              className="live-offer-marquee"
+              title="Click to claim offer on enquiry form (Hover to pause)"
+              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+            >
               <div className="live-offer-marquee-track">
                 <span className="live-offer-text">
                   {h.offerHeadline ||
@@ -116,10 +121,10 @@ export default function HeroBanner() {
                 </span>
                 <span className="live-offer-separator">✦</span>
               </div>
-            </div>
+            </Link>
 
             <div className="live-offer-cta-wrapper">
-              <Link href={h.offerLink || '/visa'} className="live-offer-cta">
+              <Link href={h.offerLink || '/enquire?service=visa&offer=FLAT1000'} className="live-offer-cta">
                 Claim Offer <ArrowRight size={13} />
               </Link>
             </div>

@@ -143,6 +143,23 @@ export default function SiteHeader() {
                   <small style={{ color: '#64748b' }}>Gulf Embassies &amp; Hague Apostille</small>
                 </div>
               </Link>
+
+              <Link
+                href="/services/insurance"
+                className="dropdown-link-item"
+                onClick={() => {
+                  setOpen(false);
+                  setDropdownOpen(false);
+                }}
+              >
+                <div className="dropdown-icon-wrap" style={{ background: '#eaf7fd', padding: '6px', borderRadius: '6px', color: '#0284c7' }}>
+                  <span style={{ fontSize: '15px' }}>🛡️</span>
+                </div>
+                <div>
+                  <div style={{ color: '#17496b', fontWeight: 800 }}>Travel Insurance</div>
+                  <small style={{ color: '#64748b' }}>Europe, USA, UK &amp; All Countries</small>
+                </div>
+              </Link>
             </div>
           </div>
 
@@ -169,6 +186,13 @@ export default function SiteHeader() {
                 onClick={() => setOpen(false)}
               >
                 📜 Certificate Attestation &amp; Apostille
+              </Link>
+              <Link
+                href="/services/insurance"
+                style={{ fontSize: '13.5px', color: '#0284c7', padding: '6px 12px', fontWeight: 700 }}
+                onClick={() => setOpen(false)}
+              >
+                🛡️ Travel Insurance (All Countries)
               </Link>
             </div>
           )}

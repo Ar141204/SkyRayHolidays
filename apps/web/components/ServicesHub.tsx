@@ -6,12 +6,13 @@ import Link from 'next/link';
 import PackageExplorer from '@/components/PackageExplorer';
 import VisaExplorer from '@/components/VisaExplorer';
 import AttestationExplorer from '@/components/AttestationExplorer';
+import InsuranceExplorer from '@/components/InsuranceExplorer';
 import { Plane, FileText, LayoutGrid, ArrowRight, ShieldCheck, Clock, Award, Sparkles, FileCheck } from 'lucide-react';
 
 export default function ServicesHub() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get('tab') || 'all';
-  const [activeTab, setActiveTab] = useState<'all' | 'packages' | 'visa' | 'attestation'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'packages' | 'visa' | 'attestation' | 'insurance'>('all');
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -21,6 +22,8 @@ export default function ServicesHub() {
       setActiveTab('visa');
     } else if (tab === 'attestation' || tab === 'apostille') {
       setActiveTab('attestation');
+    } else if (tab === 'insurance' || tab === 'travel-insurance') {
+      setActiveTab('insurance');
     } else {
       setActiveTab('all');
     }
@@ -130,6 +133,29 @@ export default function ServicesHub() {
         >
           <Award size={16} /> Certificate Attestation &amp; Apostille
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('insurance')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 22px',
+            borderRadius: '24px',
+            fontSize: '13.5px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            border: '1px solid',
+            borderColor: activeTab === 'insurance' ? '#0284c7' : '#cbd5e1',
+            background: activeTab === 'insurance' ? '#0284c7' : '#ffffff',
+            color: activeTab === 'insurance' ? '#ffffff' : '#334155',
+            boxShadow: activeTab === 'insurance' ? '0 4px 14px rgba(2, 132, 199, 0.28)' : '0 2px 6px rgba(0,0,0,0.03)',
+          }}
+        >
+          <ShieldCheck size={16} /> Travel Insurance (Europe, US, UK, Global)
+        </button>
       </div>
 
       {/* 2. Tour Packages Section */}
@@ -238,6 +264,35 @@ export default function ServicesHub() {
           </div>
 
           <AttestationExplorer />
+        </section>
+      )}
+
+      {/* 4. Travel Insurance Section */}
+      {(activeTab === 'all' || activeTab === 'insurance') && (
+        <section id="travel-insurance" style={{ marginBottom: activeTab === 'all' ? '60px' : '20px' }}>
+          <div className="section-head" style={{ marginBottom: '24px' }}>
+            <div>
+              <div className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <ShieldCheck size={13} color="#0284c7" /> EMBASSY APPROVED PROTECTION &bull; ALL COUNTRIES
+              </div>
+              <h2>International Travel Insurance</h2>
+              <p>
+                Comprehensive emergency medical cover, COVID hospitalization, baggage protection, and flight cancellation assistance across Europe (Schengen €30,000+), the United States, the United Kingdom, and all countries worldwide with automatic day calculation.
+              </p>
+            </div>
+            {activeTab === 'all' && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('insurance')}
+                className="text-link"
+                style={{ background: 'none', border: 0, cursor: 'pointer' }}
+              >
+                Focus on Insurance <ArrowRight size={15} />
+              </button>
+            )}
+          </div>
+
+          <InsuranceExplorer />
         </section>
       )}
 
