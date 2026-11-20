@@ -96,19 +96,33 @@ export default function HeroBanner() {
       {h.enableLiveOffers && (
         <div className="live-offer-ticker-bar">
           <div className="container live-offer-ticker-inner">
-            <div className="live-offer-pill">
-              <Flame size={14} className="offer-flame-icon" />
-              <span>{h.offerBadge || 'LIVE RUNNING OFFER'}</span>
+            <div className="live-offer-pill-wrapper">
+              <div className="live-offer-pill">
+                <Flame size={14} className="offer-flame-icon" />
+                <span>{h.offerBadge || 'LIMITED RUNNING OFFER'}</span>
+              </div>
             </div>
-            <div className="live-offer-marquee">
-              <span className="live-offer-text">
-                {h.offerHeadline ||
-                  'Special Offer: Flat ₹2,000 Off on US, UK & Schengen Visa Services | Fast-Track Slots Available!'}
-              </span>
+
+            <div className="live-offer-marquee" title="Hover to pause">
+              <div className="live-offer-marquee-track">
+                <span className="live-offer-text">
+                  {h.offerHeadline ||
+                    'Special Offer: Flat ₹ 1000Off on US, UK & Schengen Visa Consultations | Fast-Track Slots Available!'}
+                </span>
+                <span className="live-offer-separator">✦</span>
+                <span className="live-offer-text">
+                  {h.offerHeadline ||
+                    'Special Offer: Flat ₹ 1000Off on US, UK & Schengen Visa Consultations | Fast-Track Slots Available!'}
+                </span>
+                <span className="live-offer-separator">✦</span>
+              </div>
             </div>
-            <Link href={h.offerLink || '/visa'} className="live-offer-cta">
-              Claim Offer <ArrowRight size={13} />
-            </Link>
+
+            <div className="live-offer-cta-wrapper">
+              <Link href={h.offerLink || '/visa'} className="live-offer-cta">
+                Claim Offer <ArrowRight size={13} />
+              </Link>
+            </div>
           </div>
         </div>
       )}

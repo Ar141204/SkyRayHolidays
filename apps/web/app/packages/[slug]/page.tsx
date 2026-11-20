@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { API_URL, demoPackages, type PackageItem } from '@/lib/config';
+import PackageMediaGallery from '@/components/PackageMediaGallery';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -95,7 +96,8 @@ export default async function PackageDetail({
   const dates = Array.isArray(p.departureDates) ? p.departureDates : [];
 
   const mainImage = p.image || '/images/destinations/dubai.jpg';
-  const thumbnails = [
+  const customImages = Array.isArray(p.details?.images) && p.details.images.length > 0 ? p.details.images : null;
+  const galleryImages = customImages || [
     mainImage,
     p.kind === 'HAJJ'
       ? '/images/destinations/mecca.jpg'
@@ -106,6 +108,8 @@ export default async function PackageDetail({
       ? '/images/destinations/madinah.jpg'
       : '/images/destinations/kashmir.jpg',
   ];
+  const videoUrl = p.details?.videoUrl || null;
+  const mediaType = (p.details?.mediaType as 'IMAGES' | 'VIDEO') || (videoUrl ? 'VIDEO' : 'IMAGES');
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -185,37 +189,15 @@ export default async function PackageDetail({
 
       {/* Main Split Layout matching Preview Screen 5 */}
       <section className="container detail-hero-grid">
-        {/* Left Column: Photo Gallery (Main Photo + 3 Thumbnails) */}
+        {/* Left Column: Photo Gallery with 5-Second Auto-Slider & Video Toggle */}
         <div className="detail-gallery">
-          <div className="main-photo-frame">
-            <Image
-              src={mainImage}
-              alt={p.title}
-              fill
-              priority
-              style={{ objectFit: 'cover' }}
-              sizes="(max-width: 900px) 100vw, 55vw"
-              unoptimized={Boolean(mainImage?.startsWith('data:') || mainImage?.startsWith('/uploads'))}
-            />
-            <span className="gallery-kind-tag">
-              {p.kind === 'TOUR' ? p.category || 'HOLIDAY' : p.kind}
-            </span>
-          </div>
-
-          <div className="gallery-thumbnails">
-            {thumbnails.map((thumb, idx) => (
-              <div key={idx} className={`thumb-item ${idx === 0 ? 'active' : ''}`}>
-                <Image
-                  src={thumb}
-                  alt={`${p.title} preview ${idx + 1}`}
-                  fill
-                  style={{ objectFit: 'cover' }}
-                  sizes="120px"
-                  unoptimized={Boolean(thumb?.startsWith('data:') || thumb?.startsWith('/uploads'))}
-                />
-              </div>
-            ))}
-          </div>
+          <PackageMediaGallery
+            images={galleryImages}
+            videoUrl={videoUrl}
+            mediaType={mediaType}
+            title={p.title}
+            badgeText={p.kind === 'TOUR' ? p.category || 'HOLIDAY' : p.kind}
+          />
         </div>
 
         {/* Right Column: Key Details, Inclusions & Enquire CTA matching Preview Screen 5 */}

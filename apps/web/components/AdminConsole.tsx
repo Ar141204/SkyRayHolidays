@@ -167,6 +167,10 @@ export default function AdminConsole() {
 
   // File upload input refs
   const packageFileInputRef = useRef<HTMLInputElement | null>(null);
+  const packageMultiFileInputRef = useRef<HTMLInputElement | null>(null);
+  const packageVideoFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [newImageUrlInput, setNewImageUrlInput] = useState('');
   const heroFileInputRef = useRef<HTMLInputElement | null>(null);
   const aboutFileInputRef = useRef<HTMLInputElement | null>(null);
   const visaFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -242,7 +246,26 @@ export default function AdminConsole() {
   // Modals
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [editingPackage, setEditingPackage] = useState<any | null>(null);
-  const [packageFormData, setPackageFormData] = useState({
+  const [packageFormData, setPackageFormData] = useState<{
+    title: string;
+    slug: string;
+    destination: string;
+    kind: string;
+    category: string;
+    duration: string;
+    priceFrom: string;
+    currency: string;
+    status: string;
+    featured: boolean;
+    summary: string;
+    description: string;
+    image: string;
+    images: string[];
+    videoUrl: string;
+    mediaType: 'IMAGES' | 'VIDEO';
+    inclusions: string;
+    exclusions: string;
+  }>({
     title: '',
     slug: '',
     destination: '',
@@ -256,6 +279,9 @@ export default function AdminConsole() {
     summary: '',
     description: '',
     image: '/images/destinations/dubai.jpg',
+    images: ['/images/destinations/dubai.jpg'],
+    videoUrl: '',
+    mediaType: 'IMAGES',
     inclusions: 'Flight Tickets, Hotel Stay, City Tour, Transfers',
     exclusions: 'Personal Expenses, Visa Fees',
   });
@@ -713,7 +739,11 @@ export default function AdminConsole() {
     try {
       const dataUrl = await compressImageToDataUrl(file);
       if (dataUrl) {
-        setPackageFormData((prev) => ({ ...prev, image: dataUrl }));
+        setPackageFormData((prev) => ({
+          ...prev,
+          image: dataUrl,
+          images: [dataUrl, ...(prev.images || []).filter((x) => x !== dataUrl)],
+        }));
         setSavedMsg('Image loaded from device! Click "Save Package" to publish.');
         setTimeout(() => setSavedMsg(''), 4000);
       }
@@ -721,6 +751,82 @@ export default function AdminConsole() {
       alert('Could not read image file. Please try another image.');
     } finally {
       setUploadingImage(false);
+      if (e.target) e.target.value = '';
+    }
+  }
+
+  // Device Multiple Images Upload handler (Packages)
+  async function handlePackageMultiImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImage(true);
+    try {
+      const newImages: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 12 * 1024 * 1024) continue;
+        const dataUrl = await compressImageToDataUrl(file);
+        if (dataUrl) newImages.push(dataUrl);
+      }
+      if (newImages.length > 0) {
+        setPackageFormData((prev) => {
+          const existing = prev.images && prev.images.length > 0 ? prev.images : (prev.image ? [prev.image] : []);
+          const updated = [...existing, ...newImages];
+          return {
+            ...prev,
+            images: updated,
+            image: prev.image || updated[0],
+            mediaType: 'IMAGES',
+          };
+        });
+        setSavedMsg(`${newImages.length} photo(s) added! Click "Save Package" to publish.`);
+        setTimeout(() => setSavedMsg(''), 4000);
+      }
+    } catch {
+      alert('Could not read some image files. Please try again.');
+    } finally {
+      setUploadingImage(false);
+      if (e.target) e.target.value = '';
+    }
+  }
+
+  // Device Video Upload handler (Packages)
+  async function handlePackageVideoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      alert('Video file size exceeds 50MB limit. For larger videos, please enter a direct video URL.');
+      return;
+    }
+
+    setUploadingVideo(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (dataUrl) {
+          setPackageFormData((prev) => ({
+            ...prev,
+            videoUrl: dataUrl,
+            mediaType: 'VIDEO',
+          }));
+          setSavedMsg('Video loaded from device! Click "Save Package" to publish.');
+          setTimeout(() => setSavedMsg(''), 4000);
+        }
+        setUploadingVideo(false);
+      };
+      reader.onerror = () => {
+        alert('Could not read video file. Please try another video.');
+        setUploadingVideo(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      alert('Could not read video file. Please try another video.');
+      setUploadingVideo(false);
+    } finally {
+      if (e.target) e.target.value = '';
     }
   }
 
@@ -842,6 +948,21 @@ export default function AdminConsole() {
   async function savePackage(e: React.FormEvent) {
     e.preventDefault();
     try {
+      const primaryImage =
+        (packageFormData.images && packageFormData.images[0]) ||
+        packageFormData.image ||
+        '/images/destinations/dubai.jpg';
+
+      const imagesList =
+        packageFormData.images && packageFormData.images.length > 0
+          ? packageFormData.images
+          : [primaryImage];
+
+      const existingDetails =
+        editingPackage?.details && typeof editingPackage.details === 'object'
+          ? editingPackage.details
+          : {};
+
       const payload = {
         title: packageFormData.title.trim(),
         slug:
@@ -857,7 +978,13 @@ export default function AdminConsole() {
         featured: !!packageFormData.featured,
         summary: packageFormData.summary.trim(),
         description: packageFormData.description.trim(),
-        image: packageFormData.image,
+        image: primaryImage,
+        details: {
+          ...existingDetails,
+          images: imagesList,
+          videoUrl: packageFormData.videoUrl || '',
+          mediaType: packageFormData.mediaType || 'IMAGES',
+        },
         inclusions: typeof packageFormData.inclusions === 'string'
           ? packageFormData.inclusions.split(',').map((s) => s.trim()).filter(Boolean)
           : packageFormData.inclusions,
@@ -1916,9 +2043,13 @@ export default function AdminConsole() {
                     summary: '',
                     description: '',
                     image: '/images/destinations/dubai.jpg',
+                    images: ['/images/destinations/dubai.jpg'],
+                    videoUrl: '',
+                    mediaType: 'IMAGES',
                     inclusions: 'Flight Tickets, Hotel Stay, City Tour, Transfers',
                     exclusions: 'Personal Expenses, Visa Fees',
                   });
+                  setNewImageUrlInput('');
                   setShowPackageModal(true);
                 }}
               >
@@ -2023,6 +2154,10 @@ export default function AdminConsole() {
                               className="btn btn-outline small"
                               onClick={() => {
                                 setEditingPackage(pkg);
+                                const pkgDetails = pkg.details && typeof pkg.details === 'object' ? pkg.details : {};
+                                const existingImages = Array.isArray(pkgDetails.images) && pkgDetails.images.length > 0
+                                  ? pkgDetails.images
+                                  : pkg.image ? [pkg.image] : ['/images/destinations/dubai.jpg'];
                                 setPackageFormData({
                                   title: pkg.title || '',
                                   slug: pkg.slug || '',
@@ -2036,10 +2171,14 @@ export default function AdminConsole() {
                                   featured: !!pkg.featured,
                                   summary: pkg.summary || '',
                                   description: pkg.description || '',
-                                  image: pkg.image || '/images/destinations/dubai.jpg',
+                                  image: existingImages[0] || pkg.image || '/images/destinations/dubai.jpg',
+                                  images: existingImages,
+                                  videoUrl: pkgDetails.videoUrl || '',
+                                  mediaType: pkgDetails.mediaType === 'VIDEO' ? 'VIDEO' : 'IMAGES',
                                   inclusions: Array.isArray(pkg.inclusions) ? pkg.inclusions.join(', ') : pkg.inclusions || '',
                                   exclusions: Array.isArray(pkg.exclusions) ? pkg.exclusions.join(', ') : pkg.exclusions || '',
                                 });
+                                setNewImageUrlInput('');
                                 setShowPackageModal(true);
                               }}
                             >
@@ -4038,88 +4177,365 @@ export default function AdminConsole() {
                   </div>
                 </div>
 
-                {/* DEVICE IMAGE UPLOAD SECTION */}
-                <div style={{ marginBottom: '18px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
-                    Package Cover Image *
-                  </label>
-
-                  {/* Hidden native file input */}
-                  <input
-                    type="file"
-                    ref={packageFileInputRef}
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={handlePackageImageUpload}
-                  />
-
-                  <div
-                    style={{
-                      border: '2px dashed #cbd5e1',
-                      borderRadius: '8px',
-                      padding: '16px',
-                      backgroundColor: '#f8fafc',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '20px',
-                    }}
-                  >
-                    {/* Image Preview Box */}
-                    <div
-                      style={{
-                        width: '120px',
-                        height: '80px',
-                        borderRadius: '6px',
-                        overflow: 'hidden',
-                        position: 'relative',
-                        backgroundColor: '#e2e8f0',
-                        flexShrink: 0,
-                      }}
-                    >
-                      {packageFormData.image ? (
-                        <Image
-                          src={packageFormData.image}
-                          alt="Cover Preview"
-                          fill
-                          style={{ objectFit: 'cover' }}
-                          unoptimized={packageFormData.image.startsWith('data:') || packageFormData.image.startsWith('/uploads')}
-                        />
-                      ) : (
-                        <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#94a6b2' }}>
-                          <ImageIcon size={24} />
-                        </div>
-                      )}
+                {/* PACKAGE MEDIA SHOWCASE SECTION (PHOTOS SLIDER & VIDEO SHOWCASE) */}
+                <div style={{ marginBottom: '22px', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', backgroundColor: '#f8fafc' }}>
+                  {/* Top Bar with Section Title and Toggle Button */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>Package Media Showcase</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '999px', background: '#e0f2fe', color: '#0369a1' }}>
+                          5s Auto Slider &amp; Video
+                        </span>
+                      </h4>
+                      <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#64748b' }}>
+                        Choose whether this package presents an interactive 5s image slideshow or a featured video showcase.
+                      </p>
                     </div>
 
-                    <div style={{ flex: 1 }}>
-                      <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#334155', fontWeight: 600 }}>
-                        Upload photo directly from your device (phone/computer)
-                      </p>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {/* Toggle Button */}
+                    <div style={{ display: 'inline-flex', background: '#e2e8f0', padding: '3px', borderRadius: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setPackageFormData((prev) => ({ ...prev, mediaType: 'IMAGES' }))}
+                        style={{
+                          padding: '6px 14px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          borderRadius: '6px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          background: packageFormData.mediaType !== 'VIDEO' ? '#0284c7' : 'transparent',
+                          color: packageFormData.mediaType !== 'VIDEO' ? '#ffffff' : '#475569',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: packageFormData.mediaType !== 'VIDEO' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <ImageIcon size={14} /> Photo Gallery &amp; Slider (5s)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPackageFormData((prev) => ({ ...prev, mediaType: 'VIDEO' }))}
+                        style={{
+                          padding: '6px 14px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          borderRadius: '6px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          background: packageFormData.mediaType === 'VIDEO' ? '#0284c7' : 'transparent',
+                          color: packageFormData.mediaType === 'VIDEO' ? '#ffffff' : '#475569',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: packageFormData.mediaType === 'VIDEO' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <Film size={14} /> Video Showcase
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Hidden File Inputs */}
+                  <input
+                    type="file"
+                    ref={packageMultiFileInputRef}
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={handlePackageMultiImageUpload}
+                  />
+                  <input
+                    type="file"
+                    ref={packageVideoFileInputRef}
+                    accept="video/mp4,video/webm,video/ogg"
+                    style={{ display: 'none' }}
+                    onChange={handlePackageVideoUpload}
+                  />
+
+                  {/* TAB 1: PHOTO GALLERY & 5S SLIDER */}
+                  {packageFormData.mediaType !== 'VIDEO' && (
+                    <div>
+                      {/* Upload and Add Controls */}
+                      <div
+                        style={{
+                          border: '2px dashed #cbd5e1',
+                          borderRadius: '8px',
+                          padding: '14px 16px',
+                          backgroundColor: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '14px',
+                          flexWrap: 'wrap',
+                          marginBottom: '14px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            className="btn btn-primary small"
+                            disabled={uploadingImage}
+                            onClick={() => packageMultiFileInputRef.current?.click()}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+                          >
+                            {uploadingImage ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
+                            {uploadingImage ? 'Uploading Photos...' : 'Upload Multiple Photos from Device'}
+                          </button>
+                          <span style={{ fontSize: '12px', color: '#64748b' }}>
+                            Select 1 or more images (JPG, PNG, WEBP). Transitions every 5s automatically.
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Add Image URL bar */}
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+                        <input
+                          style={{ flex: 1, margin: 0, fontSize: '13px' }}
+                          value={newImageUrlInput}
+                          onChange={(e) => setNewImageUrlInput(e.target.value)}
+                          placeholder="Or paste an image URL (e.g. /images/destinations/... or https://...) and click Add"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (newImageUrlInput.trim()) {
+                                const url = newImageUrlInput.trim();
+                                setPackageFormData((prev) => {
+                                  const current = prev.images || [];
+                                  return {
+                                    ...prev,
+                                    images: [...current, url],
+                                    image: prev.image || url,
+                                  };
+                                });
+                                setNewImageUrlInput('');
+                              }
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-outline small"
+                          onClick={() => {
+                            if (newImageUrlInput.trim()) {
+                              const url = newImageUrlInput.trim();
+                              setPackageFormData((prev) => {
+                                const current = prev.images || [];
+                                return {
+                                  ...prev,
+                                  images: [...current, url],
+                                  image: prev.image || url,
+                                };
+                              });
+                              setNewImageUrlInput('');
+                            }
+                          }}
+                          style={{ flexShrink: 0, fontWeight: 600 }}
+                        >
+                          <Plus size={14} /> Add Image
+                        </button>
+                      </div>
+
+                      {/* Selected Images List / Grid */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>
+                            Selected Photos ({(packageFormData.images || []).length})
+                          </span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>
+                            First image (#1) is the Cover Photo. Reorder by clicking &quot;Make Cover&quot;.
+                          </span>
+                        </div>
+
+                        {(!packageFormData.images || packageFormData.images.length === 0) ? (
+                          <div style={{ padding: '20px', textAlign: 'center', color: '#94a6b2', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px' }}>
+                            No images added yet. Click &quot;Upload Multiple Photos&quot; above to select images from your phone or PC.
+                          </div>
+                        ) : (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
+                            {packageFormData.images.map((imgUrl, idx) => (
+                              <div
+                                key={idx}
+                                style={{
+                                  position: 'relative',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden',
+                                  border: idx === 0 ? '2px solid #0284c7' : '1px solid #cbd5e1',
+                                  background: '#e2e8f0',
+                                  aspectRatio: '4 / 3',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'space-between',
+                                }}
+                              >
+                                <Image
+                                  src={imgUrl}
+                                  alt={`Slide ${idx + 1}`}
+                                  fill
+                                  style={{ objectFit: 'cover' }}
+                                  unoptimized={imgUrl.startsWith('data:') || imgUrl.startsWith('/uploads')}
+                                />
+
+                                {/* Badge */}
+                                <div style={{ position: 'relative', zIndex: 2, padding: '4px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  {idx === 0 ? (
+                                    <span style={{ background: '#0284c7', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                                      #1 Cover
+                                    </span>
+                                  ) : (
+                                    <span style={{ background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '10px', fontWeight: 600, padding: '2px 5px', borderRadius: '4px' }}>
+                                      Slide #{idx + 1}
+                                    </span>
+                                  )}
+
+                                  {/* Delete Button */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setPackageFormData((prev) => {
+                                        const updated = (prev.images || []).filter((_, i) => i !== idx);
+                                        return {
+                                          ...prev,
+                                          images: updated,
+                                          image: updated[0] || '/images/destinations/dubai.jpg',
+                                        };
+                                      });
+                                    }}
+                                    style={{
+                                      background: 'rgba(220, 38, 38, 0.85)',
+                                      border: 'none',
+                                      color: '#fff',
+                                      borderRadius: '4px',
+                                      width: '22px',
+                                      height: '22px',
+                                      display: 'grid',
+                                      placeItems: 'center',
+                                      cursor: 'pointer',
+                                    }}
+                                    title="Delete photo"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+
+                                {/* Reorder / Make Cover action if not #1 */}
+                                {idx > 0 && (
+                                  <div style={{ position: 'relative', zIndex: 2, padding: '4px' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setPackageFormData((prev) => {
+                                          const current = [...(prev.images || [])];
+                                          const [chosen] = current.splice(idx, 1);
+                                          const reordered = [chosen, ...current];
+                                          return {
+                                            ...prev,
+                                            images: reordered,
+                                            image: chosen,
+                                          };
+                                        });
+                                      }}
+                                      style={{
+                                        width: '100%',
+                                        background: 'rgba(15, 23, 42, 0.75)',
+                                        border: 'none',
+                                        color: '#fff',
+                                        fontSize: '10px',
+                                        fontWeight: 600,
+                                        padding: '3px 0',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                      }}
+                                    >
+                                      Make Cover
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 2: VIDEO SHOWCASE */}
+                  {packageFormData.mediaType === 'VIDEO' && (
+                    <div>
+                      {/* Video upload row */}
+                      <div
+                        style={{
+                          border: '2px dashed #cbd5e1',
+                          borderRadius: '8px',
+                          padding: '14px 16px',
+                          backgroundColor: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '14px',
+                          flexWrap: 'wrap',
+                          marginBottom: '14px',
+                        }}
+                      >
                         <button
                           type="button"
                           className="btn btn-primary small"
-                          disabled={uploadingImage}
-                          onClick={() => packageFileInputRef.current?.click()}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                          disabled={uploadingVideo}
+                          onClick={() => packageVideoFileInputRef.current?.click()}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
                         >
-                          {uploadingImage ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
-                          {uploadingImage ? 'Uploading Image...' : 'Choose File from Device'}
+                          {uploadingVideo ? <Loader2 size={14} className="spin" /> : <Film size={14} />}
+                          {uploadingVideo ? 'Loading Video...' : 'Upload Video File from Device'}
                         </button>
-                        <span style={{ fontSize: '12px', color: '#64748b' }}>Supports JPG, PNG, WEBP (Max 8MB)</span>
+                        <span style={{ fontSize: '12px', color: '#64748b' }}>
+                          Supports MP4, WebM (Max 50MB direct). Or provide an external video URL below.
+                        </span>
                       </div>
-                    </div>
-                  </div>
 
-                  <div style={{ marginTop: '8px' }}>
-                    <small style={{ color: '#64748b' }}>Or enter image URL manually:</small>
-                    <input
-                      style={{ marginTop: '4px' }}
-                      value={packageFormData.image}
-                      onChange={(e) => setPackageFormData({ ...packageFormData, image: e.target.value })}
-                      placeholder="/images/destinations/dubai.jpg or https://..."
-                    />
-                  </div>
+                      {/* Video URL Input */}
+                      <div style={{ marginBottom: '14px' }}>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                          Video URL (Direct MP4, Cloudflare, or hosted video):
+                        </label>
+                        <input
+                          value={packageFormData.videoUrl}
+                          onChange={(e) => setPackageFormData({ ...packageFormData, videoUrl: e.target.value })}
+                          placeholder="https://.../video.mp4 or data:video/mp4;base64,..."
+                          style={{ margin: 0, fontSize: '13px' }}
+                        />
+                      </div>
+
+                      {/* Video Preview */}
+                      {packageFormData.videoUrl ? (
+                        <div style={{ background: '#0f172a', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                          <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#94a3b8', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Preview Video Player</span>
+                            <button
+                              type="button"
+                              onClick={() => setPackageFormData({ ...packageFormData, videoUrl: '' })}
+                              style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '11px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <Trash2 size={12} /> Remove Video
+                            </button>
+                          </p>
+                          <video
+                            src={packageFormData.videoUrl}
+                            controls
+                            playsInline
+                            style={{ maxHeight: '220px', width: '100%', borderRadius: '6px', backgroundColor: '#000' }}
+                          />
+                        </div>
+                      ) : (
+                        <div style={{ padding: '24px', textAlign: 'center', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#94a6b2', fontSize: '13px' }}>
+                          <Film size={28} style={{ margin: '0 auto 8px', display: 'block', opacity: 0.5 }} />
+                          No video file or URL provided yet. Upload a video or enter a URL above.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Short Summary */}
