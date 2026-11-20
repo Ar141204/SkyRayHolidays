@@ -186,19 +186,10 @@ export default function InsuranceExplorer() {
   }
 
   return (
-    <div className="insurance-explorer-container" style={{ margin: '0 auto', maxWidth: '1200px' }}>
+    <div className="insurance-explorer-container">
       {/* 1. Header Banner & Trust Badges */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #09263e 0%, #17496b 55%, #0284c7 100%)',
-          borderRadius: '16px',
-          padding: '32px 28px',
-          color: '#ffffff',
-          marginBottom: '32px',
-          boxShadow: '0 8px 24px rgba(2, 132, 199, 0.16)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+      <div className="insurance-hero-banner">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
           <span
             style={{
               fontSize: '11px',
@@ -215,117 +206,51 @@ export default function InsuranceExplorer() {
           <span style={{ fontSize: '11px', color: '#bdeaff' }}>• For All Countries</span>
         </div>
 
-        <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '0 0 10px 0', color: '#ffffff' }}>
-          International Travel Insurance
-        </h2>
+        <h2>International Travel Insurance</h2>
         <p style={{ margin: '0 0 20px 0', fontSize: '15px', color: '#e0f2fe', maxWidth: '780px', lineHeight: 1.6 }}>
           Embassy-approved travel medical protection with cashless emergency hospitalization, baggage loss, flight cancellation, and 24/7 global doctor helpline. Instant digital policy delivery for all destinations worldwide.
         </p>
 
         {/* 4 Trust Highlights */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-            gap: '12px',
-            marginTop: '16px',
-          }}
-        >
-          <div
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(6px)',
-              padding: '12px 14px',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-          >
-            <ShieldCheck size={20} color="#38bdf8" />
+        <div className="insurance-trust-grid">
+          <div className="insurance-trust-item">
+            <ShieldCheck size={20} color="#38bdf8" style={{ flexShrink: 0 }} />
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 700 }}>100% Embassy Approved</div>
-              <small style={{ color: '#cbd5e1', fontSize: '11px' }}>Schengen, US &amp; UK Compliant</small>
+              <div className="trust-title">100% Embassy Approved</div>
+              <small className="trust-sub">Schengen, US &amp; UK Compliant</small>
             </div>
           </div>
 
-          <div
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(6px)',
-              padding: '12px 14px',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-          >
-            <HeartPulse size={20} color="#38bdf8" />
+          <div className="insurance-trust-item">
+            <HeartPulse size={20} color="#38bdf8" style={{ flexShrink: 0 }} />
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 700 }}>Cashless Medical Network</div>
-              <small style={{ color: '#cbd5e1', fontSize: '11px' }}>Direct hospital settlements</small>
+              <div className="trust-title">Cashless Medical Network</div>
+              <small className="trust-sub">Direct hospital settlements</small>
             </div>
           </div>
 
-          <div
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(6px)',
-              padding: '12px 14px',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-          >
-            <FileCheck size={20} color="#38bdf8" />
+          <div className="insurance-trust-item">
+            <FileCheck size={20} color="#38bdf8" style={{ flexShrink: 0 }} />
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 700 }}>Instant Digital Policy</div>
-              <small style={{ color: '#cbd5e1', fontSize: '11px' }}>Delivered via WhatsApp &amp; Email</small>
+              <div className="trust-title">Instant Digital Policy</div>
+              <small className="trust-sub">Delivered via WhatsApp &amp; Email</small>
             </div>
           </div>
 
-          <div
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(6px)',
-              padding: '12px 14px',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-          >
-            <Clock size={20} color="#38bdf8" />
+          <div className="insurance-trust-item">
+            <Clock size={20} color="#38bdf8" style={{ flexShrink: 0 }} />
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 700 }}>24/7 Global Helpline</div>
-              <small style={{ color: '#cbd5e1', fontSize: '11px' }}>Assistance in multi-languages</small>
+              <div className="trust-title">24/7 Global Helpline</div>
+              <small className="trust-sub">Assistance in multi-languages</small>
             </div>
           </div>
         </div>
       </div>
 
       {/* 2. Interactive Form Section & Category Showcase Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1.2fr 1fr',
-          gap: '28px',
-          alignItems: 'start',
-          marginBottom: '36px',
-        }}
-        className="insurance-main-grid"
-      >
+      <div className="insurance-main-grid">
         {/* LEFT: THE INTERACTIVE TRAVEL INSURANCE ENQUIRY FORM */}
-        <div
-          style={{
-            background: '#ffffff',
-            border: '1px solid #e2edf3',
-            borderRadius: '16px',
-            padding: '24px 26px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
-          }}
-        >
+        <div className="insurance-form-card">
           {submittedRef ? (
             <div style={{ textAlign: 'center', padding: '30px 10px' }}>
               <div
@@ -402,38 +327,42 @@ export default function InsuranceExplorer() {
                 </h3>
 
                 {/* 4 Category Selection Buttons */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '14px' }}>
+                <div className="insurance-category-grid">
                   {INSURANCE_CATEGORIES.map((cat) => (
                     <button
                       key={cat.key}
                       type="button"
                       onClick={() => handleCategoryChange(cat.key)}
+                      className="insurance-category-btn"
                       style={{
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        border: '1.5px solid',
                         borderColor: formCategory === cat.key ? '#0284c7' : '#cbd5e1',
                         background: formCategory === cat.key ? '#f0f9ff' : '#ffffff',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        transition: 'all 0.15s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
                       }}
                     >
-                      <span style={{ fontSize: '18px' }}>{cat.icon}</span>
-                      <div>
+                      <span style={{ fontSize: '18px', flexShrink: 0 }}>{cat.icon}</span>
+                      <div style={{ minWidth: 0, overflow: 'hidden' }}>
                         <div
                           style={{
                             fontSize: '13px',
                             fontWeight: 700,
                             color: formCategory === cat.key ? '#0284c7' : '#334155',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                           }}
                         >
                           {cat.key}
                         </div>
-                        <small style={{ fontSize: '10.5px', color: '#64748b' }}>
+                        <small
+                          style={{
+                            fontSize: '10.5px',
+                            color: '#64748b',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: 'block',
+                          }}
+                        >
                           {cat.key === 'Europe' ? 'Schengen Approved' : cat.key === 'Rest of World' ? 'All Countries' : 'Comprehensive'}
                         </small>
                       </div>
@@ -450,7 +379,7 @@ export default function InsuranceExplorer() {
                   value={destinationCountry}
                   onChange={(e) => setDestinationCountry(e.target.value)}
                   placeholder="e.g. France, Switzerland, USA, UK, Singapore, Dubai..."
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13.5px' }}
+                  className="insurance-input"
                 />
               </div>
 
@@ -468,22 +397,20 @@ export default function InsuranceExplorer() {
                   STEP 2 &bull; NUMBER OF TRAVELERS
                 </span>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '8px' }}>
+                <div className="insurance-form-row" style={{ marginTop: '8px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
                       No of Adult (12+ yrs) *
                     </label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <input
-                        type="number"
-                        min={1}
-                        max={30}
-                        required
-                        value={adults}
-                        onChange={(e) => setAdults(Math.max(1, parseInt(e.target.value) || 1))}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13.5px' }}
-                      />
-                    </div>
+                    <input
+                      type="number"
+                      min={1}
+                      max={30}
+                      required
+                      value={adults}
+                      onChange={(e) => setAdults(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="insurance-input"
+                    />
                   </div>
 
                   <div>
@@ -496,7 +423,7 @@ export default function InsuranceExplorer() {
                       max={20}
                       value={children}
                       onChange={(e) => setChildren(Math.max(0, parseInt(e.target.value) || 0))}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13.5px' }}
+                      className="insurance-input"
                     />
                   </div>
                 </div>
@@ -505,7 +432,7 @@ export default function InsuranceExplorer() {
               {/* STEP 3: DATES & AUTOMATIC DAY COUNT */}
               {/* "Date of Entry and Return - Idha enter pan a, No of days - Automatic count" */}
               <div style={{ marginBottom: '18px', borderTop: '1px solid #f1f5f9', paddingTop: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div className="insurance-step-header">
                   <span
                     style={{
                       fontSize: '11px',
@@ -539,7 +466,7 @@ export default function InsuranceExplorer() {
                   )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div className="insurance-dates-grid">
                   <div>
                     <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
                       Date of Entry (Departure) *
@@ -550,7 +477,7 @@ export default function InsuranceExplorer() {
                       min={todayStr}
                       value={entryDate}
                       onChange={(e) => setEntryDate(e.target.value)}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13.5px' }}
+                      className="insurance-input"
                     />
                   </div>
 
@@ -564,7 +491,7 @@ export default function InsuranceExplorer() {
                       min={entryDate || todayStr}
                       value={returnDate}
                       onChange={(e) => setReturnDate(e.target.value)}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13.5px' }}
+                      className="insurance-input"
                     />
                   </div>
                 </div>
@@ -572,17 +499,11 @@ export default function InsuranceExplorer() {
                 {/* Duration Notification Pill */}
                 {entryDate && returnDate && (
                   <div
+                    className="insurance-duration-pill"
                     style={{
-                      marginTop: '10px',
-                      padding: '10px 14px',
-                      borderRadius: '8px',
                       background: calculatedDays > 0 ? '#f0fdf4' : '#fef2f2',
-                      border: '1px solid',
                       borderColor: calculatedDays > 0 ? '#bbf7d0' : '#fecaca',
-                      fontSize: '12.5px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
+                      border: '1px solid',
                     }}
                   >
                     {calculatedDays > 0 ? (
@@ -615,7 +536,7 @@ export default function InsuranceExplorer() {
                   STEP 4 &bull; CONTACT DETAILS FOR POLICY QUOTE
                 </span>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '8px' }}>
+                <div className="insurance-form-row" style={{ marginTop: '8px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '3px' }}>
                       Full Name *
@@ -626,7 +547,7 @@ export default function InsuranceExplorer() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="e.g. Rahul Sharma"
-                      style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                      className="insurance-input"
                     />
                   </div>
 
@@ -640,12 +561,12 @@ export default function InsuranceExplorer() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+91 98765 43210"
-                      style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                      className="insurance-input"
                     />
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
+                <div className="insurance-form-row" style={{ marginTop: '10px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '3px' }}>
                       Email Address *
@@ -656,7 +577,7 @@ export default function InsuranceExplorer() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="rahul@example.com"
-                      style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                      className="insurance-input"
                     />
                   </div>
 
@@ -669,7 +590,7 @@ export default function InsuranceExplorer() {
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="e.g. Chennai / Bangalore"
-                      style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                      className="insurance-input"
                     />
                   </div>
                 </div>
@@ -723,18 +644,15 @@ export default function InsuranceExplorer() {
                 <div
                   key={p.id}
                   onClick={() => handleCategoryChange(p.category)}
+                  className="insurance-policy-card"
                   style={{
                     background: isSelected ? '#f0f9ff' : '#ffffff',
                     border: '1.5px solid',
                     borderColor: isSelected ? '#0284c7' : '#e2e8f0',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
                     boxShadow: isSelected ? '0 4px 12px rgba(2, 132, 199, 0.12)' : '0 1px 4px rgba(0,0,0,0.02)',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: '6px' }}>
                     <div>
                       <span
                         style={{
@@ -788,18 +706,7 @@ export default function InsuranceExplorer() {
           </div>
 
           {/* Quick Support Card */}
-          <div
-            style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '12px',
-              padding: '16px',
-              marginTop: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
+          <div className="insurance-support-card">
             <div>
               <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>
                 Need Immediate Policy Assistance?
@@ -811,7 +718,7 @@ export default function InsuranceExplorer() {
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline small"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700, flexShrink: 0 }}
             >
               <PhoneCall size={13} color="#16a34a" /> WhatsApp Desk
             </a>
